@@ -10,11 +10,19 @@
   "parent": "auritus-8a79e5f2-b1d0-4962-b6f3-aadbfd52bb4d",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "04ac84ae-7638-47c5-988f-afcb5b1cbd0c",
+      "author": "ryan",
+      "text": "CI skeleton and make check gate on develop.",
+      "created_at": "2026-09-11T22:01:44.759242Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:40:21.468863Z",
-  "updated_at": "2026-09-11T21:40:21.468885Z",
+  "updated_at": "2026-09-11T22:01:44.759265Z",
   "closed_at": null,
-  "right_now_summary": "The CI workflow and Makefile quality gate are being set up and documented.",
-  "right_now_updated_at": "2026-09-11T21:40:22.697471Z",
+  "right_now_summary": "The CI skeleton and make check gate are now on the develop branch.",
+  "right_now_updated_at": "2026-09-11T22:01:46.866077Z",
   "custom": {}
 }

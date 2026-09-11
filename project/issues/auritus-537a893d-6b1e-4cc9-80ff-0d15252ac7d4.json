@@ -17,12 +17,19 @@
       "text": "Route 53 hosted zone created: Z0891357UAST0841IMEZ\n\nNameservers (set these in GoDaddy for aurit.us):\n- ns-1028.awsdns-00.org\n- ns-74.awsdns-09.com\n- ns-717.awsdns-25.net\n- ns-1772.awsdns-29.co.uk\n\ndig still shows GoDaddy ns55/ns56.domaincontrol.com — awaiting GoDaddy NS update (human step). Amplify must attach to this existing zone only.",
       "created_at": "2026-09-11T22:00:52.829317Z",
       "comment_type": "default"
+    },
+    {
+      "id": "94c2e96b-a0c8-4b76-915b-c9208e9226e0",
+      "author": "ryan",
+      "text": "Route 53 hosted zone exists: Z0891357UAST0841IMEZ.\n\nNS to set at GoDaddy (still on domaincontrol.com as of this comment):\n- ns-1028.awsdns-00.org\n- ns-74.awsdns-09.com\n- ns-717.awsdns-25.net\n- ns-1772.awsdns-29.co.uk\n\nScript: ./scripts/setup-dns.sh\nDocs: docs/DNS.md",
+      "created_at": "2026-09-11T22:01:41.917231Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:40:16.498951Z",
-  "updated_at": "2026-09-11T22:00:52.829610Z",
+  "updated_at": "2026-09-11T22:01:41.917245Z",
   "closed_at": null,
-  "right_now_summary": "GoDaddy still points aurit.us to its nameservers; update them to the new AWS nameservers.",
-  "right_now_updated_at": "2026-09-11T22:00:54.730562Z",
+  "right_now_summary": "GoDaddy still points aurit.us to its old nameservers; the AWS nameservers await manual setup.",
+  "right_now_updated_at": "2026-09-11T22:01:43.194421Z",
   "custom": {}
 }

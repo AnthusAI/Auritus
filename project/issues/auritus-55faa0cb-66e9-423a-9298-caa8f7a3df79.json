@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-11T21:38:21.475254Z",
   "closed_at": null,
-  "right_now_summary": "Auritus is being built, with core services, TTS backends, authentication, and deployment work underway.",
-  "right_now_updated_at": "2026-09-11T22:00:58.190936Z",
+  "right_now_summary": "The team is building the Qwen backend and core services while CI continues and DNS awaits manual changes.",
+  "right_now_updated_at": "2026-09-11T22:01:46.884449Z",
   "custom": {}
 }
