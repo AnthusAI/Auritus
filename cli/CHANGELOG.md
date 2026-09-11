@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.1.3 (2026-09-11)
+
+### Bug Fixes
+
+- Point Amplify artifacts to out/ for Next.js static export
+  ([`b546330`](https://github.com/AnthusAI/Auritus/commit/b5463302ddcf5541c2973a594a29b87937d37646))
+
+
 ## v0.1.2 (2026-09-11)
 
 ### Bug Fixes
