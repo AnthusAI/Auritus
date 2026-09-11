@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:24.323158Z",
   "updated_at": "2026-09-11T21:38:24.323616Z",
   "closed_at": null,
-  "right_now_summary": "Repository foundations are ready; CI is being added, and GoDaddy DNS changes are still propagating.",
-  "right_now_updated_at": "2026-09-11T22:13:27.137147Z",
+  "right_now_summary": "The foundations are in place while the CI check gate is being added on develop.",
+  "right_now_updated_at": "2026-09-11T23:25:03.896454Z",
   "custom": {}
 }

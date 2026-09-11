@@ -31,12 +31,19 @@
       "text": "GoDaddy nameservers set by user. dig still shows domaincontrol.com (propagating). Zone Z0891357UAST0841IMEZ ready.",
       "created_at": "2026-09-11T22:13:16.597511Z",
       "comment_type": "default"
+    },
+    {
+      "id": "ba19117f-62d5-4a68-95d8-55205eb636da",
+      "author": "ryan",
+      "text": "DNS propagated. dig NS aurit.us now shows AWS nameservers (ns-1028.awsdns-00.org etc.). Cognito domain set to auritus-auth.auth.us-east-1.amazoncognito.com.",
+      "created_at": "2026-09-11T23:25:01.010644Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:40:16.498951Z",
-  "updated_at": "2026-09-11T22:13:22.339612Z",
+  "updated_at": "2026-09-11T23:25:01.010923Z",
   "closed_at": "2026-09-11T22:13:22.339579Z",
-  "right_now_summary": "GoDaddy nameserver changes are propagating; DNS still returns domaincontrol.com instead of the AWS nameservers.",
-  "right_now_updated_at": "2026-09-11T22:13:23.875631Z",
+  "right_now_summary": "DNS now points aurit.us to Route 53, and the Cognito domain is configured.",
+  "right_now_updated_at": "2026-09-11T23:25:02.108547Z",
   "custom": {}
 }
