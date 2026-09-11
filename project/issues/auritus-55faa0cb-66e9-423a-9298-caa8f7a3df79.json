@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-11T21:38:21.475254Z",
   "closed_at": null,
-  "right_now_summary": "The code and tests pass, but real AWS verification remains.",
-  "right_now_updated_at": "2026-09-11T22:14:35.862799Z",
+  "right_now_summary": "The code and tests pass, but the team still needs to verify the system in real AWS.",
+  "right_now_updated_at": "2026-09-11T23:14:15.873332Z",
   "custom": {}
 }

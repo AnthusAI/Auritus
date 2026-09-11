@@ -3,7 +3,7 @@
   "title": "Public job create and status with site key",
   "description": "## Behavior\n```gherkin\nFeature: Public job API\n  Scenario: Create job with site key\n    Given a valid site key for origin https://example.com\n    When the embed POSTs /jobs with hash, text, name, byline and site key\n    Then the API stores a pending job and returns status pending\n  Scenario: Reject bad origin\n    Given a valid site key registered for https://example.com\n    When a request arrives with Origin https://evil.example\n    Then the API returns 403\n```\n\n## Implementation brief\n1. Lambda router in cdk/lambdas/router/ for POST /jobs, GET /jobs/{hash}, PUT /jobs/{hash}/done, GET /jobs/claimable.\n2. Site-key validator checks key + Origin; rate limits.\n3. name/byline stored; defaults from page title/site name if absent.\n4. GET returns signed audio URL when done (not public).\n5. Acceptance: feature tests with mocked DynamoDB/S3.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,12 +17,19 @@
       "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
       "created_at": "2026-09-11T22:13:33.274158Z",
       "comment_type": "default"
+    },
+    {
+      "id": "4ecf9c53-a15c-46d8-9801-97c24a67ceb4",
+      "author": "ryan",
+      "text": "CDK deployed. API live at https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com. Site key validation and routes operational.",
+      "created_at": "2026-09-11T23:14:04.564594Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:40:30.112828Z",
-  "updated_at": "2026-09-11T22:13:33.274178Z",
-  "closed_at": null,
-  "right_now_summary": "Implementation passes tests; real AWS verification is still pending.",
-  "right_now_updated_at": "2026-09-11T22:13:34.192421Z",
+  "updated_at": "2026-09-11T23:14:10.142565Z",
+  "closed_at": "2026-09-11T23:14:10.142516Z",
+  "right_now_summary": "The API is deployed with site-key validation and routes working; real-AWS verification remains.",
+  "right_now_updated_at": "2026-09-11T23:14:12.107361Z",
   "custom": {}
 }
