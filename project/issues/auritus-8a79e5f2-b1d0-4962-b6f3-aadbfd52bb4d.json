@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:24.323158Z",
   "updated_at": "2026-09-11T21:38:24.323616Z",
   "closed_at": null,
-  "right_now_summary": "Foundations are defined; CI is being set up, while Route 53 awaits GoDaddy nameserver updates.",
-  "right_now_updated_at": "2026-09-11T21:40:24.600782Z",
+  "right_now_summary": "Project foundations and CI are being set up, while DNS delegation awaits GoDaddy nameserver changes.",
+  "right_now_updated_at": "2026-09-11T22:00:56.431437Z",
   "custom": {}
 }
