@@ -143,7 +143,7 @@ GitHub or AWS secrets is.
 When present at the repo root, agents **must** consult `AGENTS.local.md`
 for machine-specific notes: AWS account id, Amplify app id, CloudFront
 domains before DNS propagates, Google OAuth client ids for Cognito, and
-budget thresholds. Copy `AGENTS.local.md.example` to `AGENTS.local.md`.
+budget thresholds. Create `AGENTS.local.md` locally as needed.
 That file is **gitignored and must never be committed**.
 
 ## Pull request review

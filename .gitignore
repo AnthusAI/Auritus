@@ -41,3 +41,4 @@ AGENTS.local.md
 project/events/
 project/.overlay/
 project/.cache/
+.claude/

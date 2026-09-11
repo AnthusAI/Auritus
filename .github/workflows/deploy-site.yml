@@ -1,0 +1,53 @@
+name: Deploy site (Amplify)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require Amplify app id
+        id: amplify
+        env:
+          AMPLIFY_APP_ID: ${{ secrets.AMPLIFY_APP_ID }}
+        run: |
+          if [ -z "$AMPLIFY_APP_ID" ]; then
+            echo "::notice::AMPLIFY_APP_ID secret is not set. Skipping Amplify deploy."
+            echo "To enable this workflow:"
+            echo "  1. Create an Amplify app for the site/ Next.js project."
+            echo "  2. Add repository secret AMPLIFY_APP_ID with the Amplify app id."
+            echo "  3. Configure AWS credentials (OIDC role or access keys) with amplify:StartJob."
+            echo "  4. Re-run this workflow or push to main."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Node.js
+        if: steps.amplify.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build site
+        if: steps.amplify.outputs.skip != 'true'
+        working-directory: site
+        run: |
+          npm ci
+          npm run build
+
+      - name: Start Amplify deployment (placeholder)
+        if: steps.amplify.outputs.skip != 'true'
+        env:
+          AMPLIFY_APP_ID: ${{ secrets.AMPLIFY_APP_ID }}
+          AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+        run: |
+          echo "Wire AWS credentials (OIDC recommended) and invoke:"
+          echo "  aws amplify start-job --app-id $AMPLIFY_APP_ID --branch-name main --job-type RELEASE"
+          echo "Amplify build spec lives in site/amplify.yml."

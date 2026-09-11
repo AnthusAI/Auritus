@@ -1,0 +1,160 @@
+:root {
+  --bg: #e8efe9;
+  --bg-deep: #1c2b24;
+  --ink: #14201a;
+  --accent: #2f6f5e;
+  --muted: #4a5c52;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background:
+    radial-gradient(ellipse at 20% 0%, #d7e6dc 0%, transparent 50%),
+    linear-gradient(165deg, #e8efe9 0%, #cfdfd4 45%, #b7cfc0 100%);
+  color: var(--ink);
+  font-family: var(--font-body);
+  min-height: 100%;
+}
+
+a {
+  color: var(--accent);
+}
+
+.hero {
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  padding: 4rem 1.5rem 3rem;
+  background:
+    linear-gradient(120deg, rgba(28, 43, 36, 0.92), rgba(47, 111, 94, 0.75)),
+    url("/hero.svg") center/cover no-repeat;
+  color: #f4f7f5;
+}
+
+.hero .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.75rem;
+  opacity: 0.75;
+  margin: 0 0 0.75rem;
+}
+
+.hero .brand {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 10vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin: 0 0 1rem;
+}
+
+.hero p {
+  max-width: 32rem;
+  font-size: 1.15rem;
+  opacity: 0.92;
+}
+
+.hero .cta {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.hero a.button,
+.button {
+  display: inline-block;
+  background: #f4f7f5;
+  color: var(--bg-deep);
+  text-decoration: none;
+  padding: 0.7rem 1.1rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.hero a.ghost {
+  color: #f4f7f5;
+  border: 1px solid rgba(244, 247, 245, 0.45);
+  background: transparent;
+}
+
+main.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 1.25rem 5rem;
+}
+
+nav.site {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+}
+
+.doc-index {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0 0;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.doc-index li {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.doc-index span {
+  color: var(--muted);
+  max-width: 36rem;
+}
+
+.snippet {
+  background: rgba(20, 32, 26, 0.06);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+}
+
+.example-article {
+  background: rgba(255, 255, 255, 0.55);
+  padding: 1.5rem;
+  border-radius: 10px;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero .brand,
+.hero p,
+.hero .cta {
+  animation: rise 0.7s ease both;
+}
+
+.hero p {
+  animation-delay: 0.12s;
+}
+
+.hero .cta {
+  animation-delay: 0.24s;
+}

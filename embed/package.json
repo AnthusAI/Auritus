@@ -1,0 +1,38 @@
+{
+  "name": "@anthusai/auritus",
+  "version": "0.1.0",
+  "description": "Auritus drop-in embed: generator + player for just-in-time page TTS",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/embed.esm.js",
+  "module": "./dist/embed.esm.js",
+  "browser": "./dist/embed.js",
+  "types": "./dist/embed.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/embed.d.ts",
+      "import": "./dist/embed.esm.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "lint": "eslint src tests",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.17.0",
+    "globals": "^15.14.0",
+    "jsdom": "^25.0.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.2",
+    "vitest": "^2.1.8"
+  }
+}

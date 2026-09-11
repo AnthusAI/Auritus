@@ -1,0 +1,23 @@
+"""Behave steps for pluggable TTS backend registry scenarios."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+from behave import then, when
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "worker-image" / "src"))
+
+
+@when("the TTS backend registry is loaded")
+def step_load_registry(context) -> None:
+    from tts import get_backend
+
+    context.registered_backends = [get_backend(name).name for name in ("higgs", "qwen")]
+
+
+@then('registered backends include "{name}"')
+def step_backend_registered(context, name: str) -> None:
+    assert name in context.registered_backends

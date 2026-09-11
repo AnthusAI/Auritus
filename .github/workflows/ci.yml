@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop]
+  push:
+    branches: [develop]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install CLI (editable)
+        working-directory: cli
+        run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+
+      - name: Black
+        working-directory: cli
+        run: python -m black --check src ../features ../cdk ../worker-image/src
+
+      - name: Ruff
+        working-directory: cli
+        run: python -m ruff check src ../features ../cdk ../worker-image/src
+
+      - name: Pytest
+        working-directory: cli
+        run: python -m pytest -q
+
+      - name: Embed — npm ci
+        working-directory: embed
+        run: npm ci
+
+      - name: Embed — lint
+        working-directory: embed
+        run: npm run lint
+
+      - name: Embed — test
+        working-directory: embed
+        run: npm test
+
+      - name: Embed — build
+        working-directory: embed
+        run: npm run build
+
+      - name: Site — npm ci
+        working-directory: site
+        run: npm ci
+
+      - name: Site — lint
+        working-directory: site
+        run: npm run lint
+
+      - name: Site — build
+        working-directory: site
+        run: npm run build
+
+      - name: CDK — install dependencies
+        working-directory: cdk
+        run: python -m pip install -r requirements.txt
+
+      - name: CDK synth
+        working-directory: cdk
+        run: python app.py

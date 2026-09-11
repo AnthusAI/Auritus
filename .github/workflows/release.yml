@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build tooling
+        working-directory: cli
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Semantic release
+        working-directory: cli
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python -m semantic_release version
+
+      - name: Publish to PyPI (trusted publishing)
+        if: success()
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: cli/dist/
+
+# PyPI setup (one-time, outside this workflow):
+# 1. Create the `auritus` project on PyPI.
+# 2. Configure a trusted publisher (OIDC) for this GitHub repo/workflow.
+# 3. Ensure `python-semantic-release` builds into cli/dist/ before the publish step.
+# 4. Store no long-lived PyPI passwords in GitHub; rely on `id-token: write` above.
