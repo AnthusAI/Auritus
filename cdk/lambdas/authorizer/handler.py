@@ -71,4 +71,3 @@ def _get_jwks(issuer: str) -> dict[str, Any]:
 
 def _deny(reason: str) -> dict[str, Any]:
     return {"isAuthorized": False, "context": {"reason": reason}}
-
