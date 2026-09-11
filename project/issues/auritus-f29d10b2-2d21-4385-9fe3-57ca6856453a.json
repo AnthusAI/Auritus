@@ -3,7 +3,7 @@
   "title": "aurit.us example pages drive acceptance",
   "description": "## Behavior\n```gherkin\nFeature: Website examples\n  Scenario: Example page embeds the player\n    Given the site is deployed at aurit.us\n    When a visitor opens an example page\n    Then the Auritus player mounts with themed styles\n    And acceptance tests can drive generation end-to-end\n```\n\n## Implementation brief\n1. site/ Next.js: landing, docs (usage, ignore rules, theming, self-hosting), example pages.\n2. Amplify Hosting; custom domain via existing Route 53 zone.\n3. Acceptance suite against examples.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -24,12 +24,19 @@
       "text": "Amplify app d1xec2o22j5yq2 connected to GitHub repo. Custom domain aurit.us connected via Route 53 A record. Build job 4 running with fixed monorepo amplify.yml.",
       "created_at": "2026-09-11T23:37:27.268647Z",
       "comment_type": "default"
+    },
+    {
+      "id": "dcfb84cc-8be0-4d16-80b3-c84838596797",
+      "author": "ryan",
+      "text": "SITE IS LIVE at https://aurit.us! Amplify app d1xec2o22j5yq2, custom domain connected via Route 53. Build job 9 succeeded with output: export + baseDirectory: out.",
+      "created_at": "2026-09-11T23:51:48.337435Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:47:43.028876Z",
-  "updated_at": "2026-09-11T23:37:27.268676Z",
-  "closed_at": null,
-  "right_now_summary": "Amplify is building aurit.us with the example pages and connected Route 53 domain for AWS verification.",
-  "right_now_updated_at": "2026-09-11T23:37:30.273840Z",
+  "updated_at": "2026-09-11T23:51:53.908636Z",
+  "closed_at": "2026-09-11T23:51:53.908598Z",
+  "right_now_summary": "The site is live at aurit.us, and its example pages are ready for end-to-end acceptance testing.",
+  "right_now_updated_at": "2026-09-11T23:51:56.247314Z",
   "custom": {}
 }
