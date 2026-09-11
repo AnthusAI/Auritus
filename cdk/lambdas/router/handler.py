@@ -134,7 +134,6 @@ def _site_from_headers(headers: dict[str, str]) -> dict[str, Any]:
 
 def _check_daily_quota(site: dict[str, Any]) -> None:
     day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    counter_key = f"quota:{site['site_id']}:{day}"
     # Lightweight quota via sites table attribute; production may use a dedicated counter.
     used = int(site.get("daily_usage") or 0)
     if site.get("usage_day") != day:
@@ -302,7 +301,9 @@ def _list_claimable(headers: dict[str, str]) -> dict[str, Any]:
     )
 
 
-def _mark_done(content_hash: str, body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]:
+def _mark_done(
+    content_hash: str, body: dict[str, Any], headers: dict[str, str]
+) -> dict[str, Any]:
     _require_operator(headers)
     audio_key = body.get("audio_key")
     if not audio_key:

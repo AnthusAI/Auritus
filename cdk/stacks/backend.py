@@ -125,7 +125,7 @@ class BackendStack(Stack):
             self,
             "AuritusAudioCdn",
             default_behavior=cloudfront.BehaviorOptions(
-                origin=origins.S3Origin(audio_bucket),
+                origin=origins.S3BucketOrigin(audio_bucket),
                 viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 cache_policy=cloudfront.CachePolicy.CACHING_OPTIMIZED,
             ),
@@ -352,7 +352,7 @@ class BackendStack(Stack):
         )
 
         job_queue_name = "auritus-gpu"
-        job_queue = batch.CfnJobQueue(
+        batch.CfnJobQueue(
             self,
             "AuritusJobQueue",
             job_queue_name=job_queue_name,
@@ -463,22 +463,26 @@ class BackendStack(Stack):
         still_open = sfn.Choice(self, "PendingOrStale")
         succeed = sfn.Succeed(self, "LocalWorkerOwnsJob")
 
-        definition = wait.next(get_job).next(estimate_now).next(
-            still_open.when(
-                sfn.Condition.string_equals("$.job.Item.status.S", "pending"),
-                submit_batch,
-            )
-            .when(
-                sfn.Condition.and_(
-                    sfn.Condition.string_equals("$.job.Item.status.S", "claimed"),
-                    sfn.Condition.number_less_than(
-                        "$.job.Item.claim_deadline.N",
-                        sfn.JsonPath.number_at("$.now_epoch"),
+        definition = (
+            wait.next(get_job)
+            .next(estimate_now)
+            .next(
+                still_open.when(
+                    sfn.Condition.string_equals("$.job.Item.status.S", "pending"),
+                    submit_batch,
+                )
+                .when(
+                    sfn.Condition.and_(
+                        sfn.Condition.string_equals("$.job.Item.status.S", "claimed"),
+                        sfn.Condition.number_less_than(
+                            "$.job.Item.claim_deadline.N",
+                            sfn.JsonPath.number_at("$.now_epoch"),
+                        ),
                     ),
-                ),
-                submit_batch,
+                    submit_batch,
+                )
+                .otherwise(succeed)
             )
-            .otherwise(succeed)
         )
 
         fallback = sfn.StateMachine(

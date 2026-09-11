@@ -16,7 +16,9 @@ def step_text_becomes(context, text: str) -> None:
 def step_compute_again(context) -> None:
     from common_steps import _hash as hash_fn
 
-    context.hash_other = hash_fn(context.tts_text, context.voice_id, context.tts_backend)
+    context.hash_other = hash_fn(
+        context.tts_text, context.voice_id, context.tts_backend
+    )
 
 
 @then("the two content hashes match")
