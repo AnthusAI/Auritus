@@ -2,6 +2,24 @@
 
 <!-- version list -->
 
+## v0.1.2 (2026-09-11)
+
+### Bug Fixes
+
+- Add output: export to next.config.js for Amplify static hosting
+  ([`35850ef`](https://github.com/AnthusAI/Auritus/commit/35850ef07edf43a4550d8ea57f26bbc41e73c40e))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`40e9911`](https://github.com/AnthusAI/Auritus/commit/40e991175b9d3d53ce539d129e7b9962583373ee))
+
+### Code Style
+
+- Apply black formatting to authorizer handler
+  ([`d021783`](https://github.com/AnthusAI/Auritus/commit/d021783cc89ce4c74d9af74b8b22f2795bdb361a))
+
+
 ## v0.1.1 (2026-09-11)
 
 ### Bug Fixes
