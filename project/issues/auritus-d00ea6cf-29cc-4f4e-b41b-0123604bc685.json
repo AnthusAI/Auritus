@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:27.631748Z",
   "updated_at": "2026-09-11T21:38:27.631776Z",
   "closed_at": null,
-  "right_now_summary": "The team is building secure APIs, job locking, authentication, and private audio delivery.",
-  "right_now_updated_at": "2026-09-11T21:40:41.224279Z",
+  "right_now_summary": "The backend is implemented and tested, but real AWS verification is still pending.",
+  "right_now_updated_at": "2026-09-11T22:13:45.742470Z",
   "custom": {}
 }

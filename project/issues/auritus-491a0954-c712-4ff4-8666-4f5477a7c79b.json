@@ -10,11 +10,19 @@
   "parent": "auritus-d00ea6cf-29cc-4f4e-b41b-0123604bc685",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "37244dd8-f1d9-4bad-b61f-d367ac8e26a0",
+      "author": "ryan",
+      "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
+      "created_at": "2026-09-11T22:13:33.274158Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:40:30.112828Z",
-  "updated_at": "2026-09-11T21:40:30.112853Z",
+  "updated_at": "2026-09-11T22:13:33.274178Z",
   "closed_at": null,
-  "right_now_summary": "The team is building public job creation and status APIs with site-key validation and origin checks.",
-  "right_now_updated_at": "2026-09-11T21:40:31.360157Z",
+  "right_now_summary": "Implementation passes tests; real AWS verification is still pending.",
+  "right_now_updated_at": "2026-09-11T22:13:34.192421Z",
   "custom": {}
 }

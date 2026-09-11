@@ -10,11 +10,19 @@
   "parent": "auritus-0d333d68-d6ef-4a2a-b393-808e92afa91b",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "7c4ba4a8-fdf0-4c5c-ad12-0dafff1489ff",
+      "author": "ryan",
+      "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
+      "created_at": "2026-09-11T22:14:14.043295Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:47:28.925113Z",
-  "updated_at": "2026-09-11T21:47:28.925137Z",
+  "updated_at": "2026-09-11T22:14:14.043318Z",
   "closed_at": null,
-  "right_now_summary": "The issue calls for adding a Qwen TTS backend and selecting it from each job’s metadata.",
-  "right_now_updated_at": "2026-09-11T21:47:30.625708Z",
+  "right_now_summary": "The code and tests pass, but real AWS verification is still pending.",
+  "right_now_updated_at": "2026-09-11T22:14:15.122363Z",
   "custom": {}
 }

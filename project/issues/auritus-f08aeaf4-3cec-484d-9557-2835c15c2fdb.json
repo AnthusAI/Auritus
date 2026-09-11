@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:35.242Z",
   "updated_at": "2026-09-11T21:38:35.242040Z",
   "closed_at": null,
-  "right_now_summary": "The CLI login and local worker are being built to narrate a page with the first TTS backend.",
-  "right_now_updated_at": "2026-09-11T21:47:27.455857Z",
+  "right_now_summary": "The code and local worker pass tests, but real AWS login and verification are still pending.",
+  "right_now_updated_at": "2026-09-11T22:14:11.664925Z",
   "custom": {}
 }

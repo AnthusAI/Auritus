@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:43.348323Z",
   "updated_at": "2026-09-11T21:38:43.348346Z",
   "closed_at": null,
-  "right_now_summary": "Cloud fallback and spend guardrails are being defined, including stale-job recovery, quotas, and a budget kill-switch.",
-  "right_now_updated_at": "2026-09-11T21:47:41.724799Z",
+  "right_now_summary": "Fallback and guardrails pass tests; real-AWS verification is still pending.",
+  "right_now_updated_at": "2026-09-11T22:14:25.971327Z",
   "custom": {}
 }

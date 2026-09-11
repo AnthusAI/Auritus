@@ -10,11 +10,19 @@
   "parent": "auritus-d00ea6cf-29cc-4f4e-b41b-0123604bc685",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "dd023253-f8bd-41b0-a323-566449543ab5",
+      "author": "ryan",
+      "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
+      "created_at": "2026-09-11T22:13:28.406446Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:40:26.209158Z",
-  "updated_at": "2026-09-11T21:40:26.209190Z",
+  "updated_at": "2026-09-11T22:13:28.406472Z",
   "closed_at": null,
-  "right_now_summary": "The team is building a DynamoDB mutex so one worker claims each job and stale claims can be reclaimed.",
-  "right_now_updated_at": "2026-09-11T21:40:27.148639Z",
+  "right_now_summary": "The mutex is implemented and tests pass; real-AWS verification is still pending.",
+  "right_now_updated_at": "2026-09-11T22:13:30.216889Z",
   "custom": {}
 }

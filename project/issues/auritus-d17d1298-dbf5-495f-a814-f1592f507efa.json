@@ -10,11 +10,19 @@
   "parent": "auritus-f9b2a4b9-4a73-4c3b-aba9-b0825bc31906",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "72fc04de-d49b-4a05-a917-5dd4827bdc0e",
+      "author": "ryan",
+      "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
+      "created_at": "2026-09-11T22:13:48.080515Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:47:06.039181Z",
-  "updated_at": "2026-09-11T21:47:06.039251Z",
+  "updated_at": "2026-09-11T22:13:48.080533Z",
   "closed_at": null,
-  "right_now_summary": "The generator is being built to extract speakable text while ignoring marked regions and applying pronunciation and",
-  "right_now_updated_at": "2026-09-11T21:47:07.391553Z",
+  "right_now_summary": "Generator code and tests pass; real AWS verification is still pending.",
+  "right_now_updated_at": "2026-09-11T22:13:49.090944Z",
   "custom": {}
 }

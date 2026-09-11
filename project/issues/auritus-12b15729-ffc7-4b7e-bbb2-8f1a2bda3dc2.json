@@ -10,11 +10,19 @@
   "parent": "auritus-d00ea6cf-29cc-4f4e-b41b-0123604bc685",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "8d489c56-0f3e-4fcf-8c4f-41c76331f947",
+      "author": "ryan",
+      "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
+      "created_at": "2026-09-11T22:13:37.722118Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:40:34.767696Z",
-  "updated_at": "2026-09-11T21:40:34.767718Z",
+  "updated_at": "2026-09-11T22:13:37.722145Z",
   "closed_at": null,
-  "right_now_summary": "Cognito Google OAuth and JWT protection are being added for operator routes.",
-  "right_now_updated_at": "2026-09-11T21:40:36.044880Z",
+  "right_now_summary": "Cognito auth is implemented and tested, but real AWS verification is still pending.",
+  "right_now_updated_at": "2026-09-11T22:13:38.665920Z",
   "custom": {}
 }

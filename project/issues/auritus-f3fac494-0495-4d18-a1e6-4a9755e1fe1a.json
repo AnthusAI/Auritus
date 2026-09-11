@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:46.796266Z",
   "updated_at": "2026-09-11T21:38:46.796293Z",
   "closed_at": null,
-  "right_now_summary": "The aurit.us site is being built on Amplify with themed player examples for acceptance tests.",
-  "right_now_updated_at": "2026-09-11T21:47:46.841129Z",
+  "right_now_summary": "The site is built and tests pass, but real AWS verification is still pending.",
+  "right_now_updated_at": "2026-09-11T22:14:30.217800Z",
   "custom": {}
 }

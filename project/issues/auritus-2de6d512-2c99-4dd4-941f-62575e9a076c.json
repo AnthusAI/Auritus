@@ -10,11 +10,19 @@
   "parent": "auritus-d00ea6cf-29cc-4f4e-b41b-0123604bc685",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "26bbb4fa-d983-4d56-a6e8-be16a4f123a5",
+      "author": "ryan",
+      "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
+      "created_at": "2026-09-11T22:13:42.814375Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:40:39.102866Z",
-  "updated_at": "2026-09-11T21:40:39.102880Z",
+  "updated_at": "2026-09-11T22:13:42.814399Z",
   "closed_at": null,
-  "right_now_summary": "Signed audio delivery is being secured with short-lived URLs while direct S3 access stays private.",
-  "right_now_updated_at": "2026-09-11T21:40:40.193890Z",
+  "right_now_summary": "Code and tests pass; real AWS verification is still needed to confirm private audio delivery.",
+  "right_now_updated_at": "2026-09-11T22:13:44.187229Z",
   "custom": {}
 }

@@ -3,7 +3,7 @@
   "title": "DNS delegation for aurit.us starts early",
   "description": "## Behavior\n```gherkin\nFeature: DNS long pole\n  Scenario: Route 53 owns aurit.us\n    Given aurit.us is registered at GoDaddy\n    When the Route 53 hosted zone is created and GoDaddy NS are updated\n    Then dig NS aurit.us returns the AWS nameservers\n    And Amplify later attaches to this zone without creating a second zone\n```\n\n## Implementation brief\n1. Follow docs/DNS.md.\n2. `aws route53 create-hosted-zone --name aurit.us ...`\n3. Update GoDaddy nameservers manually.\n4. Record ROUTE53_HOSTED_ZONE_ID in AGENTS.local.md.\n5. Acceptance: `dig NS aurit.us +short` shows AWS NS.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -24,12 +24,19 @@
       "text": "Route 53 hosted zone exists: Z0891357UAST0841IMEZ.\n\nNS to set at GoDaddy (still on domaincontrol.com as of this comment):\n- ns-1028.awsdns-00.org\n- ns-74.awsdns-09.com\n- ns-717.awsdns-25.net\n- ns-1772.awsdns-29.co.uk\n\nScript: ./scripts/setup-dns.sh\nDocs: docs/DNS.md",
       "created_at": "2026-09-11T22:01:41.917231Z",
       "comment_type": "default"
+    },
+    {
+      "id": "fe65d499-176f-45b9-a10c-b21f63f10fbd",
+      "author": "ryan",
+      "text": "GoDaddy nameservers set by user. dig still shows domaincontrol.com (propagating). Zone Z0891357UAST0841IMEZ ready.",
+      "created_at": "2026-09-11T22:13:16.597511Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:40:16.498951Z",
-  "updated_at": "2026-09-11T22:01:41.917245Z",
-  "closed_at": null,
-  "right_now_summary": "GoDaddy still points aurit.us to its old nameservers; the AWS nameservers await manual setup.",
-  "right_now_updated_at": "2026-09-11T22:01:43.194421Z",
+  "updated_at": "2026-09-11T22:13:22.339612Z",
+  "closed_at": "2026-09-11T22:13:22.339579Z",
+  "right_now_summary": "GoDaddy nameserver changes are propagating; DNS still returns domaincontrol.com instead of the AWS nameservers.",
+  "right_now_updated_at": "2026-09-11T22:13:23.875631Z",
   "custom": {}
 }

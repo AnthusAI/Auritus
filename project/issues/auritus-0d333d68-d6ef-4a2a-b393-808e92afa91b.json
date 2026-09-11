@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:39.302550Z",
   "updated_at": "2026-09-11T21:38:39.302585Z",
   "closed_at": null,
-  "right_now_summary": "Work is focused on adding a Qwen TTS backend with per-job selection through the shared interface.",
-  "right_now_updated_at": "2026-09-11T21:47:32.146506Z",
+  "right_now_summary": "The code and tests pass, but real AWS verification is still pending.",
+  "right_now_updated_at": "2026-09-11T22:14:16.309585Z",
   "custom": {}
 }

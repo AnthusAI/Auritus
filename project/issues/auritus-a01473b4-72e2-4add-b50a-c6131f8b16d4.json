@@ -10,11 +10,19 @@
   "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "c6bb550f-44ea-4d52-b750-9561a11ab93d",
+      "author": "ryan",
+      "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
+      "created_at": "2026-09-11T22:14:31.942945Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:47:49.015523Z",
-  "updated_at": "2026-09-11T21:47:49.015554Z",
+  "updated_at": "2026-09-11T22:14:31.942969Z",
   "closed_at": null,
-  "right_now_summary": "The release workflow is specified, but no implementation activity has been recorded yet.",
-  "right_now_updated_at": "2026-09-11T21:47:51.252978Z",
+  "right_now_summary": "The release workflow is implemented and tested, but awaits real-AWS verification.",
+  "right_now_updated_at": "2026-09-11T22:14:33.048671Z",
   "custom": {}
 }

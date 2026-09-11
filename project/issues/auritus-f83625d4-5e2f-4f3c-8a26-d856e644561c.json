@@ -10,11 +10,19 @@
   "parent": "auritus-f08aeaf4-3cec-484d-9557-2835c15c2fdb",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "c3cf0c33-b678-4958-8ca2-753c0c41b61c",
+      "author": "ryan",
+      "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
+      "created_at": "2026-09-11T22:14:07.902545Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:47:24.781404Z",
-  "updated_at": "2026-09-11T21:47:24.781449Z",
+  "updated_at": "2026-09-11T22:14:07.902569Z",
   "closed_at": null,
-  "right_now_summary": "The local worker is being built to claim jobs, use Higgs TTS, upload audio, and mark them done.",
-  "right_now_updated_at": "2026-09-11T21:47:26.484035Z",
+  "right_now_summary": "The local worker code passes tests, but real-AWS verification is still pending.",
+  "right_now_updated_at": "2026-09-11T22:14:09.385620Z",
   "custom": {}
 }

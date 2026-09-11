@@ -10,11 +10,19 @@
   "parent": "auritus-f9b2a4b9-4a73-4c3b-aba9-b0825bc31906",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "cbbbe4b0-b980-4711-8016-3ee9269b436f",
+      "author": "ryan",
+      "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
+      "created_at": "2026-09-11T22:13:57.558891Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:47:15.164374Z",
-  "updated_at": "2026-09-11T21:47:15.164410Z",
+  "updated_at": "2026-09-11T22:13:57.558917Z",
   "closed_at": null,
-  "right_now_summary": "The player is being built to show clip metadata and use host CSS theme tokens.",
-  "right_now_updated_at": "2026-09-11T21:47:16.836763Z",
+  "right_now_summary": "The player is implemented and passing tests, with real-AWS verification still needed.",
+  "right_now_updated_at": "2026-09-11T22:13:58.885511Z",
   "custom": {}
 }

@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-11T21:38:21.475254Z",
   "closed_at": null,
-  "right_now_summary": "The team is building Auritus, adding Qwen TTS, secure APIs, cloud fallback, a CLI, and a web player.",
-  "right_now_updated_at": "2026-09-11T22:01:56.807618Z",
+  "right_now_summary": "The code and tests pass, but real AWS verification remains.",
+  "right_now_updated_at": "2026-09-11T22:14:35.862799Z",
   "custom": {}
 }

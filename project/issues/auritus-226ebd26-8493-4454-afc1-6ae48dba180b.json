@@ -10,11 +10,19 @@
   "parent": "auritus-e5d525e2-52c4-414f-8c17-6ceb78e8d6f7",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "a88b7c8b-69c4-44f9-94f5-9e710c70644e",
+      "author": "ryan",
+      "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
+      "created_at": "2026-09-11T22:14:23.322496Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:47:39.355920Z",
-  "updated_at": "2026-09-11T21:47:39.355988Z",
+  "updated_at": "2026-09-11T22:14:23.322521Z",
   "closed_at": null,
-  "right_now_summary": "AWS Budgets will disable the Batch queue when daily spending exceeds the threshold.",
-  "right_now_updated_at": "2026-09-11T21:47:40.623484Z",
+  "right_now_summary": "The guardrail code passes tests, but real-AWS verification is still pending.",
+  "right_now_updated_at": "2026-09-11T22:14:24.319177Z",
   "custom": {}
 }
