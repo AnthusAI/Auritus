@@ -1,0 +1,20 @@
+{
+  "id": "auritus-a01473b4-72e2-4add-b50a-c6131f8b16d4",
+  "title": "CLI publishes to PyPI via semantic-release",
+  "description": "## Behavior\n```gherkin\nFeature: Release\n  Scenario: Merge to main releases\n    Given conventional commits on main\n    When the release workflow runs\n    Then python-semantic-release publishes auritus to PyPI via OIDC trusted publishing\n    And CHANGELOG is updated\n```\n\n## Implementation brief\n1. cli/pyproject.toml semantic_release config.\n2. .github/workflows/release.yml on main with PyPI trusted publisher.\n3. Docs model license verdict recorded.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:47:49.015523Z",
+  "updated_at": "2026-09-11T21:47:49.015554Z",
+  "closed_at": null,
+  "right_now_summary": "The release workflow is specified, but no implementation activity has been recorded yet.",
+  "right_now_updated_at": "2026-09-11T21:47:51.252978Z",
+  "custom": {}
+}

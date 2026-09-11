@@ -1,0 +1,20 @@
+{
+  "id": "auritus-0d333d68-d6ef-4a2a-b393-808e92afa91b",
+  "title": "M4 - Pluggable second TTS backend",
+  "description": "Second backend behind same interface; per-job backend selection. Proves the abstraction.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:38:39.302550Z",
+  "updated_at": "2026-09-11T21:38:39.302585Z",
+  "closed_at": null,
+  "right_now_summary": "Work is focused on adding a Qwen TTS backend with per-job selection through the shared interface.",
+  "right_now_updated_at": "2026-09-11T21:47:32.146506Z",
+  "custom": {}
+}

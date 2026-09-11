@@ -1,0 +1,20 @@
+{
+  "id": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "title": "Auritus",
+  "description": "Open-source (MIT) just-in-time TTS embed for the web: drop-in player, client-side generator, AWS CDK backend with DynamoDB mutex, local GPU worker race, and AWS Batch fallback. TTS backends: Higgs + Qwen 3 (pluggable). Operator auth: Cognito + Google. Browser auth: site keys. Site: aurit.us on Amplify. CLI on PyPI via semantic-release.\n\nArchitect plans and reviews; coding agents implement Stories with step-by-step briefs. Behavior-driven (Gherkin in features/). Git Flow: develop integrates, main releases.",
+  "type": "initiative",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:38:21.475165Z",
+  "updated_at": "2026-09-11T21:38:21.475254Z",
+  "closed_at": null,
+  "right_now_summary": "The team is building the TTS backend, secure APIs, CLI, site, player, and cloud fallback.",
+  "right_now_updated_at": "2026-09-11T21:47:55.040221Z",
+  "custom": {}
+}

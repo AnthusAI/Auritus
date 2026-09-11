@@ -1,0 +1,20 @@
+{
+  "id": "auritus-f3fac494-0495-4d18-a1e6-4a9755e1fe1a",
+  "title": "M6 - Website + acceptance",
+  "description": "aurit.us on Amplify via Route 53 zone; marketing + docs; example pages as acceptance fixtures; acceptance suite.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:38:46.796266Z",
+  "updated_at": "2026-09-11T21:38:46.796293Z",
+  "closed_at": null,
+  "right_now_summary": "The aurit.us site is being built on Amplify with themed player examples for acceptance tests.",
+  "right_now_updated_at": "2026-09-11T21:47:46.841129Z",
+  "custom": {}
+}

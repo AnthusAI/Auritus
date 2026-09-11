@@ -1,0 +1,20 @@
+{
+  "id": "auritus-e5d525e2-52c4-414f-8c17-6ceb78e8d6f7",
+  "title": "M5 - Cloud fallback + spend guardrails",
+  "description": "Step Functions fallback with lease/heartbeat/reclaim; GPU Batch image; single-job token; AWS Budgets disables Batch queue; per-site-key quotas; CLI kill-switch.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:38:43.348323Z",
+  "updated_at": "2026-09-11T21:38:43.348346Z",
+  "closed_at": null,
+  "right_now_summary": "Cloud fallback and spend guardrails are being defined, including stale-job recovery, quotas, and a budget kill-switch.",
+  "right_now_updated_at": "2026-09-11T21:47:41.724799Z",
+  "custom": {}
+}

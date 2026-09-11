@@ -1,0 +1,20 @@
+{
+  "id": "auritus-226ebd26-8493-4454-afc1-6ae48dba180b",
+  "title": "AWS Budgets disables Batch queue on spend threshold",
+  "description": "## Behavior\n```gherkin\nFeature: Spend guardrails\n  Scenario: Daily budget exceeded disables Batch\n    Given AWS Budgets is configured with a daily threshold\n    When the budget alert fires\n    Then an EventBridge-triggered Lambda disables the Batch job queue\n    And operators can still use the CLI kill-switch manually\n```\n\n## Implementation brief\n1. Budgets + SNS + EventBridge + budget_guard Lambda in CDK.\n2. Per-site-key quotas in router.\n3. auritus killswitch command.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-e5d525e2-52c4-414f-8c17-6ceb78e8d6f7",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:47:39.355920Z",
+  "updated_at": "2026-09-11T21:47:39.355988Z",
+  "closed_at": null,
+  "right_now_summary": "AWS Budgets will disable the Batch queue when daily spending exceeds the threshold.",
+  "right_now_updated_at": "2026-09-11T21:47:40.623484Z",
+  "custom": {}
+}

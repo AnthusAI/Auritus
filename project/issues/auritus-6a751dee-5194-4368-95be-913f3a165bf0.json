@@ -1,0 +1,20 @@
+{
+  "id": "auritus-6a751dee-5194-4368-95be-913f3a165bf0",
+  "title": "Job mutex via conditional DynamoDB PutItem",
+  "description": "## Behavior\n```gherkin\nFeature: Job claim mutex\n  Scenario: First claimer wins\n    Given a pending job with content_hash H\n    When worker A and worker B both PUT /jobs/H/claim\n    Then exactly one receives success\n    And the job status becomes claimed with claim_owner and claim_deadline\n  Scenario: Stale claim can be reclaimed\n    Given a claimed job whose claim_deadline is in the past\n    When a worker PUT /jobs/H/claim\n    Then the claim succeeds and ownership transfers\n```\n\n## Implementation brief\n1. cdk/stacks/backend.py: DynamoDB table AuritusJobs PK=content_hash.\n2. API Gateway HTTP API route PUT /jobs/{hash}/claim with direct DynamoDB PutItem ConditionExpression: attribute_not_exists(#s) OR #s = :pending OR ( #s = :claimed AND claim_deadline < :now ).\n3. Acceptance: unit/integration test with moto or local DynamoDB proves single winner.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-d00ea6cf-29cc-4f4e-b41b-0123604bc685",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:40:26.209158Z",
+  "updated_at": "2026-09-11T21:40:26.209190Z",
+  "closed_at": null,
+  "right_now_summary": "The team is building a DynamoDB mutex so one worker claims each job and stale claims can be reclaimed.",
+  "right_now_updated_at": "2026-09-11T21:40:27.148639Z",
+  "custom": {}
+}

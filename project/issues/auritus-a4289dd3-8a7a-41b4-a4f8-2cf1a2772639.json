@@ -1,0 +1,20 @@
+{
+  "id": "auritus-a4289dd3-8a7a-41b4-a4f8-2cf1a2772639",
+  "title": "Content hash excludes cosmetics",
+  "description": "## Behavior\n```gherkin\nFeature: Content hash scope\n  Scenario: Name and byline do not change hash\n    Given identical text, voice_id, and tts_backend\n    When name or byline changes\n    Then computeContentHash returns the same value\n  Scenario: Text voice or backend changes hash\n    Given a baseline hash\n    When text, voice_id, or tts_backend changes\n    Then the hash changes\n```\n\n## Implementation brief\n1. embed/src/generator/hash.ts — hash = normalize(text)+voice_id+tts_backend.\n2. Tests in embed/tests/hash.test.ts.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-f9b2a4b9-4a73-4c3b-aba9-b0825bc31906",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:47:10.786497Z",
+  "updated_at": "2026-09-11T21:47:10.786527Z",
+  "closed_at": null,
+  "right_now_summary": "The hash should ignore name and byline but change with text, voice, or backend.",
+  "right_now_updated_at": "2026-09-11T21:47:12.070980Z",
+  "custom": {}
+}

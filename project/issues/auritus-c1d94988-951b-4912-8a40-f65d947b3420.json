@@ -1,0 +1,20 @@
+{
+  "id": "auritus-c1d94988-951b-4912-8a40-f65d947b3420",
+  "title": "Player shows name byline and theme tokens",
+  "description": "## Behavior\n```gherkin\nFeature: Embed player\n  Scenario: Renders clip metadata\n    Given a job with name and byline\n    When the player mounts\n    Then name and byline are visible\n  Scenario: Theme via CSS variables\n    Given host CSS sets --auritus-accent and --auritus-font\n    When the player mounts\n    Then the player uses those tokens\n```\n\n## Implementation brief\n1. embed/src/player — shadow DOM, poll GET /jobs/{hash}, CSS vars.\n2. Drop-in src/index.ts with data-auritus-site-key/name/byline.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-f9b2a4b9-4a73-4c3b-aba9-b0825bc31906",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:47:15.164374Z",
+  "updated_at": "2026-09-11T21:47:15.164410Z",
+  "closed_at": null,
+  "right_now_summary": "The player is being built to show clip metadata and use host CSS theme tokens.",
+  "right_now_updated_at": "2026-09-11T21:47:16.836763Z",
+  "custom": {}
+}

@@ -1,0 +1,20 @@
+{
+  "id": "auritus-6d2273fe-e33a-4a0b-8fd6-132329316a09",
+  "title": "Operator logs in with auritus login",
+  "description": "## Behavior\n```gherkin\nFeature: CLI login\n  Scenario: Login stores short-lived tokens\n    Given Cognito and Google IdP are configured\n    When the operator runs auritus login\n    Then a browser OAuth code flow completes via loopback\n    And JWTs are cached in keyring or ~/.auritus/credentials mode 0600\n    And no long-lived API key is written\n```\n\n## Implementation brief\n1. cli/src/auritus/auth.py + commands/login.py.\n2. Acceptance: unit test of token cache permissions; manual login smoke.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-f08aeaf4-3cec-484d-9557-2835c15c2fdb",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:47:20.332704Z",
+  "updated_at": "2026-09-11T21:47:20.332744Z",
+  "closed_at": null,
+  "right_now_summary": "Implementing CLI login with browser OAuth and secure short-lived token storage.",
+  "right_now_updated_at": "2026-09-11T21:47:21.259653Z",
+  "custom": {}
+}

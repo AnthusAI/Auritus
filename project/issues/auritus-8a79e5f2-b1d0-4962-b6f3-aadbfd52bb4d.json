@@ -1,0 +1,20 @@
+{
+  "id": "auritus-8a79e5f2-b1d0-4962-b6f3-aadbfd52bb4d",
+  "title": "M0 - Foundations",
+  "description": "Repo, AGENTS.md (Chatticus-style Git Flow), .kanbus.yml (port 4257), GitHub AnthusAI/Auritus, CI skeleton, semantic-release config, DNS delegation (Route 53 owns aurit.us; GoDaddy NS; Amplify attaches). Parallel long pole: DNS.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:38:24.323158Z",
+  "updated_at": "2026-09-11T21:38:24.323616Z",
+  "closed_at": null,
+  "right_now_summary": "Foundations are defined; CI is being set up, while Route 53 awaits GoDaddy nameserver updates.",
+  "right_now_updated_at": "2026-09-11T21:40:24.600782Z",
+  "custom": {}
+}

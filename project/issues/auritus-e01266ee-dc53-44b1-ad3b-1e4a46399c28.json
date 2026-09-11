@@ -1,0 +1,20 @@
+{
+  "id": "auritus-e01266ee-dc53-44b1-ad3b-1e4a46399c28",
+  "title": "Cloud fallback submits Batch only if unclaimed or stale",
+  "description": "## Behavior\n```gherkin\nFeature: Step Functions cloud fallback\n  Scenario: Claimed job skips Batch\n    Given a job claimed by the local worker before the wait ends\n    When the fallback Choice runs\n    Then Batch is not submitted\n  Scenario: Unclaimed job submits Batch\n    Given a still-pending job after the wait\n    When the fallback Choice runs\n    Then a Batch GPU job is submitted with a single-job token\n```\n\n## Implementation brief\n1. CDK Step Functions + Batch + ECR as in stacks/backend.py.\n2. worker-image runner redeems single-job token; no long-lived keys.\n3. Lease heartbeat + reclaim path.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-e5d525e2-52c4-414f-8c17-6ceb78e8d6f7",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:47:33.990701Z",
+  "updated_at": "2026-09-11T21:47:33.990742Z",
+  "closed_at": null,
+  "right_now_summary": "The cloud fallback submits a Batch job only when the job remains unclaimed or becomes stale.",
+  "right_now_updated_at": "2026-09-11T21:47:35.728399Z",
+  "custom": {}
+}

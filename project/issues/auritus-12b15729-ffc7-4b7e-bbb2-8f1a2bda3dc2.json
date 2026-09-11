@@ -1,0 +1,20 @@
+{
+  "id": "auritus-12b15729-ffc7-4b7e-bbb2-8f1a2bda3dc2",
+  "title": "Operator auth via Cognito Google OAuth",
+  "description": "## Behavior\n```gherkin\nFeature: Operator Cognito auth\n  Scenario: Operator routes require JWT\n    Given no Authorization header\n    When a client calls GET /jobs/claimable\n    Then the API returns 401\n  Scenario: Valid Cognito JWT is accepted\n    Given a valid Cognito access token from Google IdP login\n    When a client calls GET /jobs/claimable with Bearer token\n    Then the API returns 200\n```\n\n## Implementation brief\n1. Cognito user pool + Google IdP (client secret in Secrets Manager) + app client with loopback callback.\n2. JWT authorizer on operator routes.\n3. Export pool/client IDs as stack outputs.\n4. Acceptance: CDK synth includes Cognito; authorizer rejects missing token in unit test.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-d00ea6cf-29cc-4f4e-b41b-0123604bc685",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:40:34.767696Z",
+  "updated_at": "2026-09-11T21:40:34.767718Z",
+  "closed_at": null,
+  "right_now_summary": "Cognito Google OAuth and JWT protection are being added for operator routes.",
+  "right_now_updated_at": "2026-09-11T21:40:36.044880Z",
+  "custom": {}
+}

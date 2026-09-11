@@ -1,0 +1,20 @@
+{
+  "id": "auritus-d17d1298-dbf5-495f-a814-f1592f507efa",
+  "title": "Generator extracts speakable text with ignore rules",
+  "description": "## Behavior\n```gherkin\nFeature: Content generator\n  Scenario: Ignore marked regions\n    Given a page with a nav marked data-auritus-ignore and an article paragraph\n    When the generator runs\n    Then the TTS input string includes the article text\n    And excludes the nav text\n  Scenario: Pronounce and break markup\n    Given text with data-auritus-pronounce and data-auritus-break\n    When the generator runs\n    Then pronounce replacements and break markers appear in the TTS input\n```\n\n## Implementation brief\n1. embed/src/generator/index.ts — DOM walk, ignore selectors + data-auritus-ignore, pronounce/break.\n2. Acceptance: vitest scenarios in embed/tests/generator.test.ts.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-f9b2a4b9-4a73-4c3b-aba9-b0825bc31906",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:47:06.039181Z",
+  "updated_at": "2026-09-11T21:47:06.039251Z",
+  "closed_at": null,
+  "right_now_summary": "The generator is being built to extract speakable text while ignoring marked regions and applying pronunciation and",
+  "right_now_updated_at": "2026-09-11T21:47:07.391553Z",
+  "custom": {}
+}

@@ -1,0 +1,20 @@
+{
+  "id": "auritus-f08aeaf4-3cec-484d-9557-2835c15c2fdb",
+  "title": "M3 - Local worker + first TTS backend (thin slice)",
+  "description": "TTSBackend interface; first backend with license verified; local worker daemon; CLI login/config/deploy/site/player; thin-slice acceptance: one example page narrates via local worker.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:38:35.242Z",
+  "updated_at": "2026-09-11T21:38:35.242040Z",
+  "closed_at": null,
+  "right_now_summary": "The CLI login and local worker are being built to narrate a page with the first TTS backend.",
+  "right_now_updated_at": "2026-09-11T21:47:27.455857Z",
+  "custom": {}
+}

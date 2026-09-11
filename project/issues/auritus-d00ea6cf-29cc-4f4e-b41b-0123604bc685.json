@@ -1,0 +1,20 @@
+{
+  "id": "auritus-d00ea6cf-29cc-4f4e-b41b-0123604bc685",
+  "title": "M1 - Backend core (no fallback)",
+  "description": "DynamoDB AuritusJobs; API Gateway direct DynamoDB conditional PutItem mutex; router Lambda routes; site-key + Origin auth; Cognito + Google IdP + JWT authorizer; S3 + CloudFront signed URLs scoped to site key (not public); stack outputs to .auritus/config.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:38:27.631748Z",
+  "updated_at": "2026-09-11T21:38:27.631776Z",
+  "closed_at": null,
+  "right_now_summary": "The team is building secure APIs, job locking, authentication, and private audio delivery.",
+  "right_now_updated_at": "2026-09-11T21:40:41.224279Z",
+  "custom": {}
+}

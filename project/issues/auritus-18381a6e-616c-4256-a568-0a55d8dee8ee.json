@@ -1,0 +1,20 @@
+{
+  "id": "auritus-18381a6e-616c-4256-a568-0a55d8dee8ee",
+  "title": "Second TTS backend is selected per job",
+  "description": "## Behavior\n```gherkin\nFeature: Pluggable TTS backends\n  Scenario: Qwen backend selected by job metadata\n    Given a job with tts_backend=qwen\n    When a worker generates audio\n    Then the Qwen TTSBackend implementation is used\n```\n\n## Implementation brief\n1. Add cli and worker-image tts/qwen.py implementing TTSBackend.\n2. Registry selects by job.tts_backend.\n3. BDD/feature + unit test with fake backends.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-0d333d68-d6ef-4a2a-b393-808e92afa91b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:47:28.925113Z",
+  "updated_at": "2026-09-11T21:47:28.925137Z",
+  "closed_at": null,
+  "right_now_summary": "The issue calls for adding a Qwen TTS backend and selecting it from each job’s metadata.",
+  "right_now_updated_at": "2026-09-11T21:47:30.625708Z",
+  "custom": {}
+}

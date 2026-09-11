@@ -1,0 +1,20 @@
+{
+  "id": "auritus-f9b2a4b9-4a73-4c3b-aba9-b0825bc31906",
+  "title": "M2 - Embed (generator + player)",
+  "description": "Generator DOM extraction + ignore rules; content hash (text+voice+backend, excludes name/byline); clip metadata; player UI with name/byline; CSS custom property theming; drop-in @anthusai/auritus.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:38:31.134704Z",
+  "updated_at": "2026-09-11T21:38:31.134725Z",
+  "closed_at": null,
+  "right_now_summary": "The generator and player are being built with text extraction, hashing, metadata, and theme support.",
+  "right_now_updated_at": "2026-09-11T21:47:18.578701Z",
+  "custom": {}
+}

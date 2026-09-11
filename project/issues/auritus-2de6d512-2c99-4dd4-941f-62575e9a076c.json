@@ -1,0 +1,20 @@
+{
+  "id": "auritus-2de6d512-2c99-4dd4-941f-62575e9a076c",
+  "title": "Signed audio delivery is not public",
+  "description": "## Behavior\n```gherkin\nFeature: Audio access control\n  Scenario: Done job returns short-lived signed URL\n    Given a done job for a site key\n    When GET /jobs/{hash} is called with that site key\n    Then the response includes a short-lived signed CloudFront or S3 URL\n    And the raw S3 object is not publicly readable\n```\n\n## Implementation brief\n1. S3 bucket block public access; CloudFront with signed URLs.\n2. Router signs URL scoped to site key request.\n3. Acceptance: bucket policy denies public GetObject.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-d00ea6cf-29cc-4f4e-b41b-0123604bc685",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:40:39.102866Z",
+  "updated_at": "2026-09-11T21:40:39.102880Z",
+  "closed_at": null,
+  "right_now_summary": "Signed audio delivery is being secured with short-lived URLs while direct S3 access stays private.",
+  "right_now_updated_at": "2026-09-11T21:40:40.193890Z",
+  "custom": {}
+}

@@ -1,0 +1,20 @@
+{
+  "id": "auritus-f83625d4-5e2f-4f3c-8a26-d856e644561c",
+  "title": "Local worker claims and narrates with first TTS backend",
+  "description": "## Behavior\n```gherkin\nFeature: Local worker thin slice\n  Scenario: Local worker wins claim and marks done\n    Given a pending job and a running auritus worker\n    When the worker polls claimable and claims the job\n    Then it runs the configured TTSBackend locally\n    And uploads audio\n    And marks the job done before the cloud fallback timeout\n```\n\n## Implementation brief\n1. cli/src/auritus/worker/daemon.py + tts/base.py + tts/higgs.py.\n2. Verify Higgs license in docs/MODEL_LICENSES.md; runtime-fetch weights.\n3. Thin-slice acceptance via example page.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-f08aeaf4-3cec-484d-9557-2835c15c2fdb",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:47:24.781404Z",
+  "updated_at": "2026-09-11T21:47:24.781449Z",
+  "closed_at": null,
+  "right_now_summary": "The local worker is being built to claim jobs, use Higgs TTS, upload audio, and mark them done.",
+  "right_now_updated_at": "2026-09-11T21:47:26.484035Z",
+  "custom": {}
+}

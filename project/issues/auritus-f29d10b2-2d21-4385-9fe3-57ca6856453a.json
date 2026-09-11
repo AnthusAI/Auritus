@@ -1,0 +1,20 @@
+{
+  "id": "auritus-f29d10b2-2d21-4385-9fe3-57ca6856453a",
+  "title": "aurit.us example pages drive acceptance",
+  "description": "## Behavior\n```gherkin\nFeature: Website examples\n  Scenario: Example page embeds the player\n    Given the site is deployed at aurit.us\n    When a visitor opens an example page\n    Then the Auritus player mounts with themed styles\n    And acceptance tests can drive generation end-to-end\n```\n\n## Implementation brief\n1. site/ Next.js: landing, docs (usage, ignore rules, theming, self-hosting), example pages.\n2. Amplify Hosting; custom domain via existing Route 53 zone.\n3. Acceptance suite against examples.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-f3fac494-0495-4d18-a1e6-4a9755e1fe1a",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:47:43.028876Z",
+  "updated_at": "2026-09-11T21:47:43.028905Z",
+  "closed_at": null,
+  "right_now_summary": "The aurit.us site is being built with themed player examples for end-to-end acceptance tests.",
+  "right_now_updated_at": "2026-09-11T21:47:44.894190Z",
+  "custom": {}
+}

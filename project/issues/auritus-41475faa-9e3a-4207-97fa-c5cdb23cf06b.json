@@ -1,0 +1,20 @@
+{
+  "id": "auritus-41475faa-9e3a-4207-97fa-c5cdb23cf06b",
+  "title": "Repo foundations and AGENTS.md exist",
+  "description": "## Behavior\n```gherkin\nFeature: Repository foundations\n  Scenario: Agent reads project conventions\n    Given the Auritus repository is checked out\n    When an agent opens AGENTS.md\n    Then it sees Git Flow with develop as integration and main as release\n    And Kanbus is mandatory\n    And .kanbus.yml uses console_port 4257 and project_key auritus\n```\n\n## Implementation brief\n1. Ensure LICENSE (MIT), README.md, .gitignore, AGENTS.md, CONTRIBUTING_AGENT.md, .kanbus.yml, Makefile exist at repo root.\n2. GitHub remote AnthusAI/Auritus public.\n3. Branches: develop (integration), main (release).\n4. Acceptance: files present; `gh repo view AnthusAI/Auritus` succeeds.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-8a79e5f2-b1d0-4962-b6f3-aadbfd52bb4d",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-11T21:40:11.152486Z",
+  "updated_at": "2026-09-11T21:40:11.152534Z",
+  "closed_at": null,
+  "right_now_summary": "Repository foundation files and project conventions are defined, including Git Flow, Kanbus, and GitHub settings.",
+  "right_now_updated_at": "2026-09-11T21:40:12.548140Z",
+  "custom": {}
+}
