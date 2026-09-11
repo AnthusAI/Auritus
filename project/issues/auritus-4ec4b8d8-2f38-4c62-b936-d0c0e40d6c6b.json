@@ -3,7 +3,7 @@
   "title": "CI skeleton and make check gate",
   "description": "## Behavior\n```gherkin\nFeature: Quality gate\n  Scenario: make check runs local gates\n    Given the repository is checked out with dependencies installed\n    When a developer runs make check\n    Then Python lint, TypeScript lint, unit tests, embed build, and CDK synth are invoked\n```\n\n## Implementation brief\n1. Root Makefile with check target.\n2. .github/workflows/ci.yml: lint/test on PRs to develop.\n3. Acceptance: workflow file exists; make check is documented in README.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -20,9 +20,9 @@
     }
   ],
   "created_at": "2026-09-11T21:40:21.468863Z",
-  "updated_at": "2026-09-11T22:01:44.759265Z",
-  "closed_at": null,
-  "right_now_summary": "The CI skeleton and make check gate are now on the develop branch.",
-  "right_now_updated_at": "2026-09-11T22:01:46.866077Z",
+  "updated_at": "2026-09-11T22:01:50.545269Z",
+  "closed_at": "2026-09-11T22:01:50.545239Z",
+  "right_now_summary": "The CI skeleton and make check gate are being added on develop.",
+  "right_now_updated_at": "2026-09-11T22:01:52.186621Z",
   "custom": {}
 }

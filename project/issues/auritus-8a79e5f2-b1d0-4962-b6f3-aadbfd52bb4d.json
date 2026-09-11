@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:24.323158Z",
   "updated_at": "2026-09-11T21:38:24.323616Z",
   "closed_at": null,
-  "right_now_summary": "Repository foundations are complete; CI setup continues, while DNS awaits manual nameserver changes.",
-  "right_now_updated_at": "2026-09-11T22:01:45.123075Z",
+  "right_now_summary": "Repository foundations are complete; CI is being added, while DNS awaits manual nameserver setup.",
+  "right_now_updated_at": "2026-09-11T22:01:55.100044Z",
   "custom": {}
 }
