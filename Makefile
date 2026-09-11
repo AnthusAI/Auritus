@@ -1,4 +1,4 @@
-.PHONY: check lint-python test-python lint-embed test-embed synth-cdk help
+.PHONY: check lint-python test-python lint-embed test-embed synth-cdk sync-embed build-embed build-site help
 
 help:
 	@echo "Auritus make targets"
@@ -24,6 +24,11 @@ lint-embed:
 
 test-embed:
 	cd embed && npm test
+
+sync-embed: build-embed
+	cp embed/dist/embed.js site/public/embed.js
+
+build-site: sync-embed
 
 synth-cdk:
 	cd cdk && python3 -m pip install -q -r requirements.txt && npx --yes aws-cdk@2 synth --quiet

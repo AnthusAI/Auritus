@@ -4,19 +4,18 @@ from __future__ import annotations
 
 import json
 import os
+import urllib.request
 from typing import Any
+
+import jwt
 
 USER_POOL_ID = os.environ.get("USER_POOL_ID", "")
 CLIENT_ID = os.environ.get("CLIENT_ID", "")
+_jwks_cache: dict[str, dict[str, Any]] = {}
 
 
 def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
-    """Authorize operator requests using a Bearer JWT shape check.
-
-    Full JWKS signature verification against the Cognito user pool should be
-    added here (fetch ``/.well-known/jwks.json``, validate ``iss``, ``aud``,
-    ``exp``, and RS256 signature). This stub only enforces header presence and
-    JWT structure so local stacks can deploy before JWKS wiring is complete.
+    """Authorize operator requests using Cognito JWKS signature verification.
 
     :param event: API Gateway authorizer event (HTTP API payload 2.0).
     :param _context: Lambda context (unused).
@@ -33,25 +32,23 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         return _deny("missing_bearer")
 
     token = auth.split(" ", 1)[1].strip()
-    parts = token.split(".")
-    if len(parts) != 3:
-        return _deny("invalid_jwt_shape")
-
     try:
-        header = _decode_segment(parts[0])
-        payload = _decode_segment(parts[1])
-    except (json.JSONDecodeError, UnicodeDecodeError):
-        return _deny("invalid_jwt_encoding")
-
-    if header.get("alg") not in ("RS256", "RS384", "RS512"):
-        return _deny("unsupported_alg")
-
-    if USER_POOL_ID and USER_POOL_ID not in str(payload.get("iss", "")):
-        return _deny("issuer_mismatch")
-
-    audience = payload.get("aud") or payload.get("client_id")
-    if CLIENT_ID and audience != CLIENT_ID:
-        return _deny("audience_mismatch")
+        payload = jwt.decode(token, options={"verify_signature": False})
+        issuer = str(payload["iss"])
+        jwks = _get_jwks(issuer)
+        header = jwt.get_unverified_header(token)
+        jwk = next(jwk for jwk in jwks["keys"] if jwk.get("kid") == header["kid"])
+        key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(jwk))
+        payload = jwt.decode(
+            token, key, algorithms=["RS256"], audience=CLIENT_ID, issuer=issuer
+        )
+    except (
+        jwt.exceptions.InvalidTokenError,
+        KeyError,
+        StopIteration,
+        ValueError,
+    ) as exc:
+        return _deny(str(exc))
 
     route_arn = event.get("routeArn") or event.get("methodArn") or "*"
     return {
@@ -61,6 +58,15 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
             "routeArn": route_arn,
         },
     }
+
+
+def _get_jwks(issuer: str) -> dict[str, Any]:
+    if issuer not in _jwks_cache:
+        with urllib.request.urlopen(
+            f"{issuer}/.well-known/jwks.json", timeout=5
+        ) as response:
+            _jwks_cache[issuer] = json.load(response)
+    return _jwks_cache[issuer]
 
 
 def _deny(reason: str) -> dict[str, Any]:
