@@ -1,0 +1,15 @@
+# Local desk configuration (gitignored when copied to AGENTS.local.md)
+
+Copy this file to `AGENTS.local.md` and fill in desk-specific values.
+Never commit `AGENTS.local.md`.
+
+```
+AWS_ACCOUNT_ID=
+AWS_REGION=us-east-1
+ROUTE53_HOSTED_ZONE_ID=
+AMPLIFY_APP_ID=
+GOOGLE_OAUTH_CLIENT_ID=
+GOOGLE_OAUTH_CLIENT_SECRET_ARN=
+AURITUS_DAILY_BUDGET_USD=50
+AURITUS_CLAIM_TIMEOUT_SECONDS=900
+```
