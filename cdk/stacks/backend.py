@@ -276,50 +276,11 @@ class BackendStack(Stack):
                 authorizer=lambda_authorizer,
             )
 
-        claim_role = iam.Role(
-            self,
-            "ClaimIntegrationRole",
-            assumed_by=iam.ServicePrincipal("apigateway.amazonaws.com"),
-        )
-        jobs.grant_read_write_data(claim_role)
-
-        claim_integration = apigwv2.CfnIntegration(
-            self,
-            "ClaimDynamoIntegration",
-            api_id=http_api.http_api_id,
-            integration_type="AWS_PROXY",
-            integration_subtype="DynamoDB-UpdateItem",
-            credentials_arn=claim_role.role_arn,
-            payload_format_version="1.0",
-            request_parameters={
-                "TableName": jobs.table_name,
-                "Key": {"content_hash": {"S": "${request.path.hash}"}},
-                "UpdateExpression": (
-                    "SET #status = :claimed, claim_owner = :owner, "
-                    "claim_deadline = :deadline, updated_at = :updated"
-                ),
-                "ConditionExpression": (
-                    "#status = :pending OR "
-                    "(#status = :claimed AND claim_deadline < :now_epoch)"
-                ),
-                "ExpressionAttributeNames": {"#status": "status"},
-                "ExpressionAttributeValues": {
-                    ":claimed": {"S": "claimed"},
-                    ":pending": {"S": "pending"},
-                    ":owner": {"S": "${request.body.claim_owner}"},
-                    ":deadline": {"N": "${request.body.claim_deadline}"},
-                    ":updated": {"S": "${context.requestTime}"},
-                    ":now_epoch": {"N": "${context.requestTimeEpoch}"},
-                },
-            },
-        )
-
-        apigwv2.CfnRoute(
-            self,
-            "ClaimJobRoute",
-            api_id=http_api.http_api_id,
-            route_key="PUT /jobs/{hash}/claim",
-            target=f"integrations/{claim_integration.ref}",
+        http_api.add_routes(
+            path="/jobs/{hash}/claim",
+            methods=[apigwv2.HttpMethod.PUT],
+            integration=router_integration,
+            authorizer=lambda_authorizer,
         )
 
         worker_repo = ecr.Repository(
@@ -437,7 +398,7 @@ class BackendStack(Stack):
                 "job_token.$": "$.job_token",
                 "tts_backend.$": "$.tts_backend",
                 "job.$": "$.job",
-                "now_epoch.$": "States.MathAdd($.baseline_epoch, $.fallback_seconds)",
+                "now_epoch.$": "States.Format('{}', States.MathAdd($.baseline_epoch, $.fallback_seconds))",
             },
         )
 
@@ -474,9 +435,9 @@ class BackendStack(Stack):
                 .when(
                     sfn.Condition.and_(
                         sfn.Condition.string_equals("$.job.Item.status.S", "claimed"),
-                        sfn.Condition.number_less_than(
+                        sfn.Condition.string_less_than(
                             "$.job.Item.claim_deadline.N",
-                            sfn.JsonPath.number_at("$.now_epoch"),
+                            sfn.JsonPath.string_at("$.now_epoch"),
                         ),
                     ),
                     submit_batch,

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Script from "next/script";
+import { AuritusEmbed } from "@/components/AuritusEmbed";
 
 export default function BasicExamplePage() {
   return (
@@ -10,29 +10,12 @@ export default function BasicExamplePage() {
       </nav>
       <article className="example-article">
         <h1>Basic narration example</h1>
-        <p>
-          This page loads the embed the same way a production article would: a
-          single async script with data attributes for the site key and display
-          metadata.
-        </p>
-        <p>
-          When a local worker is running, narration should complete without
-          waiting for the cloud Batch fallback.
-        </p>
+        <p>This page demonstrates the default Auritus player.</p>
       </article>
-      <pre className="snippet">{`<script
-  src="https://aurit.us/embed.js"
-  async
-  data-auritus-site-key="demo-site-key"
-  data-auritus-name="Basic narration example"
-  data-auritus-byline="Auritus docs"
-></script>`}</pre>
-      <Script
-        src="/embed.js"
-        strategy="afterInteractive"
-        data-auritus-site-key="demo-site-key"
-        data-auritus-name="Basic narration example"
-        data-auritus-byline="Auritus docs"
+      <AuritusEmbed
+        siteKey="demo-site-key"
+        name="Basic narration example"
+        byline="Auritus docs"
       />
     </main>
   );

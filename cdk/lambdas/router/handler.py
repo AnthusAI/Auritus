@@ -55,6 +55,9 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
             return _get_job(content_hash, headers)
         if method == "GET" and path == "/jobs/claimable":
             return _list_claimable(headers)
+        if method == "PUT" and path.endswith("/claim"):
+            content_hash = path_params.get("hash") or ""
+            return _claim_job(content_hash, body, headers)
         if method == "PUT" and path.endswith("/done"):
             content_hash = path_params.get("hash") or ""
             return _mark_done(content_hash, body, headers)
@@ -299,6 +302,51 @@ def _list_claimable(headers: dict[str, str]) -> dict[str, Any]:
             ]
         },
     )
+
+
+def _claim_job(
+    content_hash: str, body: dict[str, Any], headers: dict[str, str]
+) -> dict[str, Any]:
+    """Atomically claim a job via a conditional DynamoDB UpdateItem.
+
+    :param content_hash: The content hash identifying the job.
+    :param body: Request body with ``claim_owner`` and ``claim_deadline``.
+    :param headers: Request headers for auth.
+    :returns: 200 on success, 409 if already claimed.
+    """
+    _require_operator(headers)
+    claim_owner = body.get("claim_owner")
+    if not claim_owner:
+        raise ValueError("claim_owner_required")
+    claim_deadline = str(body.get("claim_deadline") or int(time.time() + 900))
+    now = _utc_now_iso()
+    now_epoch = str(int(time.time()))
+    try:
+        _jobs.update_item(
+            Key={"content_hash": content_hash},
+            UpdateExpression=(
+                "SET #status = :claimed, claim_owner = :owner, "
+                "claim_deadline = :deadline, updated_at = :now"
+            ),
+            ConditionExpression=(
+                "#status = :pending OR "
+                "(#status = :claimed AND claim_deadline < :now_epoch)"
+            ),
+            ExpressionAttributeNames={"#status": "status"},
+            ExpressionAttributeValues={
+                ":claimed": "claimed",
+                ":pending": "pending",
+                ":owner": claim_owner,
+                ":deadline": claim_deadline,
+                ":now": now,
+                ":now_epoch": now_epoch,
+            },
+        )
+    except ClientError as exc:
+        if "ConditionalCheckFailed" in str(exc):
+            return _response(409, {"error": "already_claimed"})
+        raise
+    return _response(200, {"content_hash": content_hash, "status": "claimed"})
 
 
 def _mark_done(

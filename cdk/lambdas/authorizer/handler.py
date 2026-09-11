@@ -72,10 +72,3 @@ def _get_jwks(issuer: str) -> dict[str, Any]:
 def _deny(reason: str) -> dict[str, Any]:
     return {"isAuthorized": False, "context": {"reason": reason}}
 
-
-def _decode_segment(segment: str) -> dict[str, Any]:
-    import base64
-
-    padded = segment + "=" * (-len(segment) % 4)
-    raw = base64.urlsafe_b64decode(padded.encode("ascii"))
-    return json.loads(raw.decode("utf-8"))

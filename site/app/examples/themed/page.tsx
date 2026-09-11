@@ -3,7 +3,18 @@ import { AuritusEmbed } from "@/components/AuritusEmbed";
 
 export default function ThemedExamplePage() {
   return (
-    <main className="page">
+    <main
+      className="page"
+      style={
+        {
+          "--auritus-bg": "#102018",
+          "--auritus-fg": "#e8efe9",
+          "--auritus-accent": "#3f8f78",
+          "--auritus-radius": "12px",
+          "--auritus-track": "#294238",
+        } as React.CSSProperties
+      }
+    >
       <nav className="site">
         <Link href="/">Auritus</Link>
         <Link href="/docs">Docs</Link>
@@ -11,18 +22,12 @@ export default function ThemedExamplePage() {
       </nav>
       <article className="example-article">
         <h1>Themed player example</h1>
-        <p>
-          The player on this page uses custom colors and font to match a darker
-          host aesthetic.
-        </p>
+        <p>The player uses custom colors and shape variables.</p>
       </article>
       <AuritusEmbed
+        siteKey="demo-site-key"
         name="Themed player example"
         byline="Design lab"
-        bg="#102018"
-        fg="#e8efe9"
-        accent="#3f8f78"
-        font="Source Sans 3, Helvetica Neue, sans-serif"
       />
     </main>
   );
