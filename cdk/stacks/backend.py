@@ -301,6 +301,8 @@ class BackendStack(Stack):
             (apigwv2.HttpMethod.GET, "/jobs/{hash}"),
             (apigwv2.HttpMethod.POST, "/jobs/{hash}/redeem"),
             (apigwv2.HttpMethod.PUT, "/jobs/{hash}/claim"),
+            (apigwv2.HttpMethod.PUT, "/jobs/{hash}/done"),
+            (apigwv2.HttpMethod.POST, "/jobs/{hash}/presign-upload"),
         ]:
             http_api.add_routes(
                 path=path,
