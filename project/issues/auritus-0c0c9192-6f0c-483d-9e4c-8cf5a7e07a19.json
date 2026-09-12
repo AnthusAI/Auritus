@@ -1,0 +1,20 @@
+{
+  "id": "auritus-0c0c9192-6f0c-483d-9e4c-8cf5a7e07a19",
+  "title": "M-TTS-2: Qwen3-TTS integration",
+  "description": "Implement Qwen3-TTS-0.6B (Apache-2.0) as second real TTS backend on GPU.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a4de887a-f93e-428d-944a-a1e497994a0c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-12T12:31:26.166888Z",
+  "updated_at": "2026-09-12T12:31:26.166921Z",
+  "closed_at": null,
+  "right_now_summary": "The team is adding Qwen3-TTS-0.6B as a GPU-based text-to-speech backend.",
+  "right_now_updated_at": "2026-09-12T12:31:27.564148Z",
+  "custom": {}
+}
