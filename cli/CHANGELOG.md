@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.3.3 (2026-09-12)
+
+### Bug Fixes
+
+- Presign-upload route, S3 presigned GET URLs, remove Content-Type on upload
+  ([`a088ed8`](https://github.com/AnthusAI/Auritus/commit/a088ed8a758861e6bc39e204ecb31b85e1e800d6))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`22252f0`](https://github.com/AnthusAI/Auritus/commit/22252f098717cda3ef5076eab3e7bc7fe3685f51))
+
+
 ## v0.3.2 (2026-09-12)
 
 ### Bug Fixes
