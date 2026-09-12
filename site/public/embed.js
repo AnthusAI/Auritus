@@ -225,8 +225,8 @@ var Auritus = (() => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--auritus-accent, currentColor);
-  color: var(--auritus-bg, #fff);
+  background: var(--auritus-accent, #2d5f3f);
+  color: var(--auritus-bg, #ffffff);
   font-size: 0.75rem;
   font-weight: 700;
   flex-shrink: 0;
@@ -329,6 +329,7 @@ var Auritus = (() => {
       playBtn.disabled = true;
     }
     function applyJob(job) {
+      statusEl.hidden = false;
       statusEl.textContent = statusLabel(job);
       if (job.status === "failed") {
         setError("Audio could not be generated.");
@@ -339,7 +340,7 @@ var Auritus = (() => {
         stopPolling();
         audio.src = job.audio_url;
         playBtn.disabled = false;
-        statusEl.textContent = "Ready";
+        statusEl.hidden = true;
       }
     }
     function stopPolling() {

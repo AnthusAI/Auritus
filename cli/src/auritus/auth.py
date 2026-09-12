@@ -20,7 +20,7 @@ from auritus.config import config_dir, load_config
 
 SERVICE_NAME = "auritus"
 TOKEN_USERNAME = "cognito"
-REFRESH_SKEW_SECONDS = 60
+REFRESH_SKEW_SECONDS = 30
 
 
 class AuthError(RuntimeError):
@@ -123,7 +123,7 @@ def _access_token_expired(tokens: dict[str, Any]) -> bool:
     obtained = int(tokens.get("obtained_at") or 0)
     expires_in = int(tokens.get("expires_in") or 3600)
     if obtained <= 0:
-        return False
+        return True
     return time.time() >= obtained + expires_in - REFRESH_SKEW_SECONDS
 
 
