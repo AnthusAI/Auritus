@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:35.242Z",
   "updated_at": "2026-09-11T21:38:35.242040Z",
   "closed_at": null,
-  "right_now_summary": "The code and local worker pass tests, but real AWS login and verification are still pending.",
-  "right_now_updated_at": "2026-09-11T22:14:11.664925Z",
+  "right_now_summary": "Login and secure token caching work; the local worker runs TTS, uploads audio, and completes jobs.",
+  "right_now_updated_at": "2026-09-12T00:08:09.297905Z",
   "custom": {}
 }

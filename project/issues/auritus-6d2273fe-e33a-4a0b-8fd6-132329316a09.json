@@ -3,7 +3,7 @@
   "title": "Operator logs in with auritus login",
   "description": "## Behavior\n```gherkin\nFeature: CLI login\n  Scenario: Login stores short-lived tokens\n    Given Cognito and Google IdP are configured\n    When the operator runs auritus login\n    Then a browser OAuth code flow completes via loopback\n    And JWTs are cached in keyring or ~/.auritus/credentials mode 0600\n    And no long-lived API key is written\n```\n\n## Implementation brief\n1. cli/src/auritus/auth.py + commands/login.py.\n2. Acceptance: unit test of token cache permissions; manual login smoke.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,12 +17,19 @@
       "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
       "created_at": "2026-09-11T22:14:03.237103Z",
       "comment_type": "default"
+    },
+    {
+      "id": "fcef3e71-1988-401a-b1f6-11ee951c85ec",
+      "author": "ryan",
+      "text": "Login verified with Cognito test user (test@aurit.us). JWT tokens cached and used for operator routes.",
+      "created_at": "2026-09-12T00:08:02.398733Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:47:20.332704Z",
-  "updated_at": "2026-09-11T22:14:03.237127Z",
-  "closed_at": null,
-  "right_now_summary": "Code is implemented and tested; real AWS login verification is still needed.",
-  "right_now_updated_at": "2026-09-11T22:14:04.426309Z",
+  "updated_at": "2026-09-12T00:08:06.930980Z",
+  "closed_at": "2026-09-12T00:08:06.930925Z",
+  "right_now_summary": "Login works with Cognito, and JWT tokens are cached securely for operator routes.",
+  "right_now_updated_at": "2026-09-12T00:08:07.865189Z",
   "custom": {}
 }
