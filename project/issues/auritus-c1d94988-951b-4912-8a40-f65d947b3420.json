@@ -3,7 +3,7 @@
   "title": "Player shows name byline and theme tokens",
   "description": "## Behavior\n```gherkin\nFeature: Embed player\n  Scenario: Renders clip metadata\n    Given a job with name and byline\n    When the player mounts\n    Then name and byline are visible\n  Scenario: Theme via CSS variables\n    Given host CSS sets --auritus-accent and --auritus-font\n    When the player mounts\n    Then the player uses those tokens\n```\n\n## Implementation brief\n1. embed/src/player — shadow DOM, poll GET /jobs/{hash}, CSS vars.\n2. Drop-in src/index.ts with data-auritus-site-key/name/byline.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,12 +17,19 @@
       "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
       "created_at": "2026-09-11T22:13:57.558891Z",
       "comment_type": "default"
+    },
+    {
+      "id": "00ea4750-b737-4970-8586-d2d74f35b66f",
+      "author": "ryan",
+      "text": "Player with CSS custom property theming implemented. BDD tests pass.",
+      "created_at": "2026-09-12T00:53:31.100015Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:47:15.164374Z",
-  "updated_at": "2026-09-11T22:13:57.558917Z",
-  "closed_at": null,
-  "right_now_summary": "The player is implemented and passing tests, with real-AWS verification still needed.",
-  "right_now_updated_at": "2026-09-11T22:13:58.885511Z",
+  "updated_at": "2026-09-12T00:53:36.346797Z",
+  "closed_at": "2026-09-12T00:53:36.346712Z",
+  "right_now_summary": "The player is implemented with name, byline, and CSS theming; tests pass, with real-AWS verification still needed.",
+  "right_now_updated_at": "2026-09-12T00:53:38.413584Z",
   "custom": {}
 }

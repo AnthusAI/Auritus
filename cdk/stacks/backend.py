@@ -247,20 +247,12 @@ class BackendStack(Stack):
         sites.grant_read_write_data(router_fn)
         audio_bucket.grant_read_write(router_fn)
 
-        authorizer_layer = lambda_.LayerVersion(
-            self,
-            "AuthorizerDeps",
-            code=lambda_.Code.from_asset(str(LAMBDA_ROOT / "authorizer-layer")),
-            compatible_runtimes=[lambda_.Runtime.PYTHON_3_11],
-            description="PyJWT and cryptography for JWKS verification",
-        )
         authorizer_fn = lambda_.Function(
             self,
             "AuthorizerFn",
             runtime=lambda_.Runtime.PYTHON_3_11,
             handler="handler.handler",
             code=lambda_.Code.from_asset(str(LAMBDA_ROOT / "authorizer")),
-            layers=[authorizer_layer],
             timeout=Duration.seconds(10),
             environment={
                 "USER_POOL_ID": user_pool.user_pool_id,

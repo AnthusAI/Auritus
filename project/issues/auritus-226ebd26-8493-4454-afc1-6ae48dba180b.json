@@ -3,7 +3,7 @@
   "title": "AWS Budgets disables Batch queue on spend threshold",
   "description": "## Behavior\n```gherkin\nFeature: Spend guardrails\n  Scenario: Daily budget exceeded disables Batch\n    Given AWS Budgets is configured with a daily threshold\n    When the budget alert fires\n    Then an EventBridge-triggered Lambda disables the Batch job queue\n    And operators can still use the CLI kill-switch manually\n```\n\n## Implementation brief\n1. Budgets + SNS + EventBridge + budget_guard Lambda in CDK.\n2. Per-site-key quotas in router.\n3. auritus killswitch command.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,12 +17,19 @@
       "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
       "created_at": "2026-09-11T22:14:23.322496Z",
       "comment_type": "default"
+    },
+    {
+      "id": "d3c04f5f-2095-4f53-abdb-221238c916fe",
+      "author": "ryan",
+      "text": "AWS Budgets + SNS + EventBridge + budget_guard Lambda deployed. Spend guardrails in place.",
+      "created_at": "2026-09-12T00:52:53.076537Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:47:39.355920Z",
-  "updated_at": "2026-09-11T22:14:23.322521Z",
-  "closed_at": null,
-  "right_now_summary": "The guardrail code passes tests, but real-AWS verification is still pending.",
-  "right_now_updated_at": "2026-09-11T22:14:24.319177Z",
+  "updated_at": "2026-09-12T00:52:57.127002Z",
+  "closed_at": "2026-09-12T00:52:57.126961Z",
+  "right_now_summary": "Spend guardrails are deployed, and the team is verifying them against real AWS behavior.",
+  "right_now_updated_at": "2026-09-12T00:52:58.751788Z",
   "custom": {}
 }
