@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.3.1 (2026-09-12)
+
+### Bug Fixes
+
+- Add data-auritus-api to Script tag so embed uses live API
+  ([`640a535`](https://github.com/AnthusAI/Auritus/commit/640a535de122633c9125cb5cd9eb37cfa1cf13d3))
+
+
 ## v0.3.0 (2026-09-12)
 
 ### Features
