@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.2.1 (2026-09-12)
+
+### Bug Fixes
+
+- Ignore B008 for Typer, fix RUF013 Optional types, update ruff config
+  ([`d9803e0`](https://github.com/AnthusAI/Auritus/commit/d9803e0858d4e63d6d73b80ebfdb998505560f0f))
+
+
 ## v0.2.0 (2026-09-12)
 
 ### Features
