@@ -27,8 +27,7 @@ jobs:
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v2
         with:
-          registry: 335163751677
-          region: us-east-1
+          registries: 335163751677
 
       - name: Build and push
         uses: docker/build-push-action@v5
@@ -38,5 +37,3 @@ jobs:
           tags: |
             335163751677.dkr.ecr.us-east-1.amazonaws.com/auritus-worker:latest
             335163751677.dkr.ecr.us-east-1.amazonaws.com/auritus-worker:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
