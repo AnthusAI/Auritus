@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.2.5 (2026-09-12)
+
+### Bug Fixes
+
+- Revert authorizer to shape check, remove Lambda layer, fix test
+  ([`d0d8ab4`](https://github.com/AnthusAI/Auritus/commit/d0d8ab4f7f81f6a0629141a35d5d015e0d0085ef))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`acaa056`](https://github.com/AnthusAI/Auritus/commit/acaa056da6a0e8d47c90d51f9a1e7356bb09de1c))
+
+
 ## v0.2.4 (2026-09-12)
 
 ### Bug Fixes
