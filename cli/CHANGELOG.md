@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.4.2 (2026-09-12)
+
+### Bug Fixes
+
+- Correct ECR login inputs for amazon-ecr-login@v2
+  ([`232316b`](https://github.com/AnthusAI/Auritus/commit/232316b367d238e18498d5c9ec3a17c0d8edadc2))
+
+
 ## v0.4.1 (2026-09-12)
 
 ### Bug Fixes
