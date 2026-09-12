@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -15,7 +14,7 @@ app = typer.Typer(help="Print or verify an embed snippet.")
 @app.callback(invoke_without_command=True)
 def player(
     ctx: typer.Context,
-    site_key: Optional[str] = typer.Option(
+    site_key: str | None = typer.Option(
         None, "--site-key", help="Site key (required when printing a snippet)."
     ),
     name: str = typer.Option("", "--name", help="Clip name"),

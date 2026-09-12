@@ -148,7 +148,7 @@ def login_interactive(
     error_box: list[str] = []
 
     class Handler(BaseHTTPRequestHandler):
-        def do_GET(self) -> None:  # noqa: N802
+        def do_GET(self) -> None:
             parsed = urllib.parse.urlparse(self.path)
             if parsed.path != "/callback":
                 self.send_response(404)
@@ -173,7 +173,7 @@ def login_interactive(
             self.end_headers()
             self.wfile.write(b"Auritus login complete. You can close this tab.")
 
-        def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
+        def log_message(self, format: str, *args: Any) -> None:
             return
 
     server = HTTPServer(("127.0.0.1", 0), Handler)
