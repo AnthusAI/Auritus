@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v0.1.4 (2026-09-12)
+
+### Bug Fixes
+
+- Revert authorizer to shape check for Lambda runtime compatibility
+  ([`068c6f6`](https://github.com/AnthusAI/Auritus/commit/068c6f67d9702e90779d8bec08476e21383649f9))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`a202d46`](https://github.com/AnthusAI/Auritus/commit/a202d462883862240dc80c504e098d1a16aab651))
+
+- **kanbus**: Commit board state (issues)
+  ([`660b3f8`](https://github.com/AnthusAI/Auritus/commit/660b3f8ae53f8ca6442f736281ba01ab799993c9))
+
+
 ## v0.1.3 (2026-09-11)
 
 ### Bug Fixes
