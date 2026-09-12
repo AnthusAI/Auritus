@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-worker = ["kokoro>=0.9.0", "torch>=2.0.0", "soundfile>=0.12.0"]
+worker = ["mlx-audio>=0.5.0", "kokoro>=0.9.0", "torch>=2.0.0", "soundfile>=0.12.0"]
 dev = [
   "behave>=1.2.6",
   "pytest>=8.0",

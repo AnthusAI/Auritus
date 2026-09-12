@@ -320,6 +320,9 @@ def _list_claimable(headers: dict[str, str]) -> dict[str, Any]:
                     "status": row["status"],
                     "tts_backend": row.get("tts_backend"),
                     "claim_deadline": row.get("claim_deadline"),
+                    "text": row.get("text", ""),
+                    "name": row.get("name", ""),
+                    "byline": row.get("byline", ""),
                 }
                 for row in items
             ]

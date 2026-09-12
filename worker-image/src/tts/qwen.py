@@ -1,4 +1,4 @@
-"""Qwen3-TTS backend (Apache-2.0, CUDA required)."""
+"""Qwen3-TTS backend (Apache-2.0, MLX on Apple Silicon)."""
 
 from __future__ import annotations
 
@@ -7,26 +7,71 @@ import struct
 import wave
 from typing import Any
 
+import numpy as np
+
 from tts.base import TTSBackend
 
 
 class QwenBackend(TTSBackend):
-    """Qwen 3 TTS backend. Loads Qwen3-TTS-0.6B at runtime on GPU."""
+    """Qwen 3 TTS backend using mlx-audio on Apple Silicon.
+
+    Loads mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit at runtime.
+    Falls back to PyTorch qwen_tts on non-Apple platforms.
+    """
 
     name = "qwen"
     _model = None
+    _is_mlx = None
+
+    @classmethod
+    def _detect_mlx(cls) -> bool:
+        """Detect whether MLX is available on this platform."""
+        import platform
+
+        if platform.system() != "Darwin":
+            return False
+        machine = platform.machine().lower()
+        return machine.startswith(("arm", "aarch"))
 
     def generate(self, text: str, meta: dict[str, Any]) -> bytes:
         """Generate speech audio using Qwen3-TTS.
 
-        Loads the model on first call (lazy init, requires CUDA). Returns WAV
-        bytes at 24000 Hz mono 16-bit.
+        On Apple Silicon: uses mlx-audio (fast, native MLX).
+        On other platforms: falls back to PyTorch qwen_tts (CUDA).
+
+        :param text: TTS input text.
+        :param meta: Job metadata (voice_id, name, byline).
+        :returns: WAV audio bytes at 24000 Hz mono 16-bit.
         """
         if not text.strip():
             raise ValueError("Cannot generate audio for empty text")
-        if QwenBackend._model is None:
-            from qwen_tts import QwenTTS
+        if QwenBackend._is_mlx is None:
+            QwenBackend._is_mlx = QwenBackend._detect_mlx()
 
+        if QwenBackend._is_mlx:
+            return self._generate_mlx(text, meta)
+        return self._generate_torch(text, meta)
+
+    def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
+        """Generate via mlx-audio (Apple Silicon)."""
+        from mlx_audio.tts.utils import load_model
+
+        if QwenBackend._model is None:
+            QwenBackend._model = load_model(
+                "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+                lazy=False,
+            )
+        voice = meta.get("voice_id", "Chelsie")
+        gen = QwenBackend._model.generate(text, voice=voice)
+        result = next(iter(gen))
+        audio_np = np.array(result.audio)
+        return _to_wav(audio_np, sample_rate=24000)
+
+    def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
+        """Generate via PyTorch qwen_tts (fallback for non-Apple)."""
+        from qwen_tts import QwenTTS
+
+        if QwenBackend._model is None:
             QwenBackend._model = QwenTTS(
                 "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
             )
@@ -43,7 +88,7 @@ class QwenBackend(TTSBackend):
         return _to_wav(samples, sample_rate=24000)
 
 
-def _to_wav(samples: list[Any], sample_rate: int = 24000) -> bytes:
+def _to_wav(samples: list, sample_rate: int = 24000) -> bytes:
     """Convert normalized audio samples to mono 16-bit WAV bytes."""
     buffer = io.BytesIO()
     with wave.open(buffer, "wb") as handle:
