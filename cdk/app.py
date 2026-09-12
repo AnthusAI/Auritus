@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Auritus CDK application entrypoint."""
 
 from __future__ import annotations
