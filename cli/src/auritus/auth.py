@@ -45,13 +45,11 @@ def save_tokens(tokens: dict[str, Any]) -> None:
 
 
 def load_tokens() -> dict[str, Any] | None:
-    """Load cached Cognito tokens if present."""
-    try:
-        raw = keyring.get_password(SERVICE_NAME, TOKEN_USERNAME)
-        if raw:
-            return json.loads(raw)
-    except (OSError, ValueError, RuntimeError):
-        pass
+    """Load cached Cognito tokens from the credentials file.
+
+    The file is the source of truth — the keyring is not used
+    to avoid stale-token issues on shared machines.
+    """
     path = credentials_path()
     if path.exists():
         return json.loads(path.read_text(encoding="utf-8"))

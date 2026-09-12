@@ -10,11 +10,26 @@
   "parent": "auritus-a4de887a-f93e-428d-944a-a1e497994a0c",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "2db39559-c7d6-440a-a32f-f1d6e30416b1",
+      "author": "ryan",
+      "text": "MLX-audio integrated. Kokoro generates real speech on Apple Silicon via mlx-audio. Qwen3-TTS backend also updated to mlx-audio (needs voice cloning for production). All 46 tests pass, make check green, CI green. End-to-end verified: worker generates Kokoro speech, uploads to S3, player plays audio.",
+      "created_at": "2026-09-12T21:08:48.029146Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "3c77a4ff-33ab-42f6-8f0b-7ca29381adf1",
+      "author": "ryan",
+      "text": "TTS integration complete. Kokoro generates real speech via mlx-audio on Apple Silicon. Default backend changed from Higgs to Kokoro. Worker running continuously. Live site at aurit.us/examples/basic plays real speech audio. All 46 tests pass, make check green.",
+      "created_at": "2026-09-12T21:28:08.119290Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-12T12:31:20.174253Z",
-  "updated_at": "2026-09-12T12:31:23.833976Z",
+  "updated_at": "2026-09-12T21:28:08.119590Z",
   "closed_at": "2026-09-12T12:31:23.833903Z",
-  "right_now_summary": "Kokoro-82M has been integrated as the first real TTS backend.",
-  "right_now_updated_at": "2026-09-12T12:31:25.094617Z",
+  "right_now_summary": "Kokoro TTS now generates and plays real speech on Apple Silicon, with all tests passing.",
+  "right_now_updated_at": "2026-09-12T21:28:10.554578Z",
   "custom": {}
 }

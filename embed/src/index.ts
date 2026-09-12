@@ -115,7 +115,7 @@ export async function boot(options: BootOptions = {}): Promise<HTMLElement> {
     text,
     name,
     byline,
-    tts_backend: config.ttsBackend,
+    tts_backend: config.ttsBackend ?? "kokoro",
     voice_id: config.voiceId,
   });
 

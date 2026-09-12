@@ -455,7 +455,7 @@ var Auritus = (() => {
       text,
       name,
       byline,
-      tts_backend: config.ttsBackend,
+      tts_backend: config.ttsBackend ?? "kokoro",
       voice_id: config.voiceId
     });
     const host = document.createElement("div");

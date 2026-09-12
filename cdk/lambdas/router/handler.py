@@ -186,7 +186,7 @@ def _create_job(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]
 
     text = body.get("text") or ""
     voice_id = body.get("voice_id") or "default"
-    tts_backend = body.get("tts_backend") or "higgs"
+    tts_backend = body.get("tts_backend") or "kokoro"
     name = body.get("name") or ""
     byline = body.get("byline") or ""
     if not text.strip():
@@ -420,7 +420,7 @@ def _redeem_token(
             "content_hash": content_hash,
             "text": item.get("text", ""),
             "voice_id": item.get("voice_id", "default"),
-            "tts_backend": item.get("tts_backend", "higgs"),
+            "tts_backend": item.get("tts_backend", "kokoro"),
             "name": item.get("name", ""),
             "byline": item.get("byline", ""),
             "bearer": token,
