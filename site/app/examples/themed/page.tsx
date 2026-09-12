@@ -26,6 +26,7 @@ export default function ThemedExamplePage() {
       </article>
       <AuritusEmbed
         siteKey="demo-site-key"
+        apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
         name="Themed player example"
         byline="Design lab"
       />
