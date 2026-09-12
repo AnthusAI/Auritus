@@ -19,10 +19,10 @@ Feature: Content hash scope
     And the name and byline are changed
     Then the content hash stays the same
 
-  Scenario: Backend change changes the hash
+  Scenario: Backend change does not affect the hash
     Given the TTS text "Article body"
     And voice_id "default"
     And tts_backend "higgs"
     When the content hash is computed
     And tts_backend becomes "qwen"
-    Then the content hash changes
+    Then the content hash stays the same

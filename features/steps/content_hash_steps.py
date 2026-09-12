@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from behave import then, when
-from common_steps import _hash  # used by step_compute_again below
+from common_steps import _hash
 
 
 @when('the TTS text becomes "{text}"')
@@ -13,10 +13,8 @@ def step_text_becomes(context, text: str) -> None:
 
 @when("the content hash is computed again")
 def step_compute_again(context) -> None:
-    from common_steps import _hash as hash_fn
-
-    context.hash_other = hash_fn(
-        context.tts_text, context.voice_id, context.tts_backend
+    context.hash_other = _hash(
+        context.tts_text, context.voice_id
     )
 
 
