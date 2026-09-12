@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.4.6 (2026-09-12)
+
+### Bug Fixes
+
+- Install typing_extensions and setuptools before main deps
+  ([`b661b35`](https://github.com/AnthusAI/Auritus/commit/b661b35d07fa993d8becc156423e5fd0ef71dc07))
+
+
 ## v0.4.5 (2026-09-12)
 
 ### Bug Fixes
