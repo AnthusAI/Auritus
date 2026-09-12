@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.1.6 (2026-09-12)
+
+### Bug Fixes
+
+- Resolve ruff I001 import sorting across all Python files
+  ([`8c01dee`](https://github.com/AnthusAI/Auritus/commit/8c01dee356250ac64b6c213bbd20329a3d05bfd2))
+
+
 ## v0.1.5 (2026-09-12)
 
 ### Bug Fixes
