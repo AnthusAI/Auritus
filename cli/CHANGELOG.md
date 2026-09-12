@@ -2,6 +2,25 @@
 
 <!-- version list -->
 
+## v0.6.1 (2026-09-12)
+
+### Bug Fixes
+
+- Default embed tts_backend to kokoro
+  ([`453e653`](https://github.com/AnthusAI/Auritus/commit/453e653b0594d6468db2702dbf900a7ec78f6e66))
+
+- Default TTS backend to Kokoro, file-based token storage, continuous worker
+  ([`d7d5ca6`](https://github.com/AnthusAI/Auritus/commit/d7d5ca6603a92c0e7c01a9b50259ca7275db06ff))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`d2e95cd`](https://github.com/AnthusAI/Auritus/commit/d2e95cdb3301b5c07ff314643ba5139b1e5cbcdf))
+
+- **kanbus**: Commit board state (issues)
+  ([`f790da8`](https://github.com/AnthusAI/Auritus/commit/f790da8e51a76bc481e0e88011bf3c148ed21f8f))
+
+
 ## v0.6.0 (2026-09-12)
 
 ### Bug Fixes
