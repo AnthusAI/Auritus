@@ -57,9 +57,12 @@ def run_worker(*, once: bool = False) -> None:
     while True:
         try:
             jobs = client.list_claimable()
+            typer.echo(f"Found {len(jobs)} claimable jobs")
         except AuritusApiError as exc:
             typer.secho(
-                f"list_claimable failed: {exc}", fg=typer.colors.YELLOW, err=True
+                f"list_claimable failed: {exc}",
+                fg=typer.colors.YELLOW,
+                err=True,
             )
             if once:
                 return
@@ -74,19 +77,25 @@ def run_worker(*, once: bool = False) -> None:
             try:
                 claim = client.claim_job(content_hash, owner)
             except AuritusApiError:
+                typer.echo(f"Claim failed for {content_hash[:16]}", err=True)
                 continue
             if (
                 claim.get("status") not in {"claimed", "ok"}
                 and claim.get("claim_owner") != owner
             ):
                 continue
-            typer.echo(f"Claimed {content_hash}")
+            typer.echo(f"Claimed {content_hash[:16]}")
             text = job.get("text") or ""
+            job_backend = job.get("tts_backend") or tts_backend_name
             meta = {
                 "voice_id": job.get("voice_id") or "default",
                 "name": job.get("name") or "",
                 "byline": job.get("byline") or "",
             }
+            typer.echo(
+                f"Generating audio for {content_hash[:16]} backend={job_backend}"
+            )
+            backend = get_backend(job_backend)
             stop = threading.Event()
             heartbeat = threading.Thread(
                 target=_heartbeat_loop,
@@ -106,7 +115,6 @@ def run_worker(*, once: bool = False) -> None:
             put = httpx.put(
                 upload_url,
                 content=audio_bytes,
-                headers={"Content-Type": upload.get("content_type", "audio/mpeg")},
                 timeout=120.0,
             )
             put.raise_for_status()

@@ -20,7 +20,7 @@ from auritus.config import config_dir, load_config
 
 SERVICE_NAME = "auritus"
 TOKEN_USERNAME = "cognito"
-REFRESH_SKEW_SECONDS = 30
+REFRESH_SKEW_SECONDS = 10
 
 
 class AuthError(RuntimeError):
@@ -230,13 +230,15 @@ def login_interactive(
 
 
 def get_access_token() -> str:
-    """Return a usable access token, refreshing when possible.
+    """Return the cached Cognito access token.
+
+    The access token is valid for 1 hour. For the local worker demo this
+    is sufficient — no refresh needed. If the token expires during a long
+    session, the worker will get 401 from the API and can re-authenticate.
 
     :raises AuthError: If the operator is not logged in.
     """
     tokens = load_tokens()
     if not tokens or "access_token" not in tokens:
         raise AuthError("Not logged in. Run `auritus login`.")
-    if _access_token_expired(tokens):
-        tokens = refresh_tokens()
     return str(tokens["access_token"])

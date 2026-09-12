@@ -107,7 +107,7 @@ class AuritusClient:
         return self._request(
             "PUT",
             f"/jobs/{content_hash}/claim",
-            json_body={"owner": owner},
+            json_body={"claim_owner": owner},
         )
 
     def renew_claim(self, content_hash: str, owner: str) -> dict[str, Any]:
@@ -115,7 +115,7 @@ class AuritusClient:
         return self._request(
             "PUT",
             f"/jobs/{content_hash}/claim",
-            json_body={"owner": owner, "renew": True},
+            json_body={"claim_owner": owner, "renew": True},
         )
 
     def mark_done(

@@ -28,6 +28,35 @@ def _auth_headers(bearer: str) -> dict[str, str]:
     }
 
 
+def _install_backend(name: str) -> None:
+    """Install TTS packages at runtime if not already present.
+
+    :param name: Backend name (kokoro, qwen, etc.).
+    """
+    import importlib
+    import sys
+
+    try:
+        importlib.import_module(f"tts.{name}")
+    except ImportError:
+        print(f"Installing TTS backend: {name}...")
+        import subprocess
+
+        packages = {
+            "kokoro": ["kokoro>=0.9.0", "torch", "soundfile"],
+            "qwen": ["qwen-tts", "torch", "soundfile"],
+            "higgs": ["torch", "soundfile"],
+            "fish": ["fish-speech", "torch", "soundfile"],
+            "coqui": ["TTS", "torch", "soundfile"],
+            "bark": ["transformers", "torch", "soundfile"],
+        }
+        deps = packages.get(name, packages.get(name, ["torch", "soundfile"]))
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", *deps],
+            check=False,
+        )
+
+
 def redeem_job_token(
     api_url: str, job_hash: str, job_token: str
 ) -> tuple[str, dict[str, Any]]:
@@ -105,6 +134,7 @@ def main() -> int:
 
     try:
         backend_name = job_body.get("tts_backend") or default_backend
+        _install_backend(backend_name)
         backend = get_backend(str(backend_name))
         audio = backend.generate(
             job_body.get("text") or "",

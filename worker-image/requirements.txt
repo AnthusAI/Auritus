@@ -1,5 +1,2 @@
 httpx>=0.27.0
 numpy
-kokoro>=0.9.0
-torch
-soundfile

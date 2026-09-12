@@ -364,9 +364,9 @@ class BackendStack(Stack):
         job_queue_name = "auritus-gpu"
         batch.CfnJobQueue(
             self,
-            "AuritusJobQueue",
+            "AuritusJobQueueV2",
             job_queue_name=job_queue_name,
-            priority=1,
+            priority=2,
             compute_environment_order=[
                 batch.CfnJobQueue.ComputeEnvironmentOrderProperty(
                     order=1,
