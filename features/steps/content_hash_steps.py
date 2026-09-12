@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from behave import then, when
-
 from common_steps import _hash  # noqa: F401  # used below via context helpers
 
 
