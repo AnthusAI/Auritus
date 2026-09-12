@@ -1,0 +1,20 @@
+{
+  "id": "auritus-23dc540e-f2fc-467b-94dc-37f15fb411c1",
+  "title": "Implement real Qwen3-TTS backend",
+  "description": "Replace worker and CLI Qwen stubs with lazy qwen-tts model inference and WAV conversion; add qwen-tts dependency; preserve registry registration; run requested checks without committing.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-12T12:36:38.897526Z",
+  "updated_at": "2026-09-12T12:37:27.154124Z",
+  "closed_at": null,
+  "right_now_summary": "The worker and CLI need real Qwen3-TTS inference, WAV conversion, and the new dependency.",
+  "right_now_updated_at": "2026-09-12T12:37:28.670093Z",
+  "custom": {}
+}
