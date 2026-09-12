@@ -7,6 +7,7 @@ Feature: Pluggable TTS backends
     Then registered backends include "higgs"
     And registered backends include "qwen"
 
+  @integration
   Scenario: Job requests the Qwen backend
     Given a claimable job with tts_backend "qwen"
     When the worker generates audio for the job

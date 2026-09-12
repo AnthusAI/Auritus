@@ -7,6 +7,7 @@ Feature: CLI operator login
     And the operator completes the OAuth loopback flow
     Then Cognito tokens are cached for the CLI
 
+  @integration
   Scenario: Expired access token refreshes before API calls
     Given cached Cognito tokens that are near expiry
     When the CLI refreshes credentials
