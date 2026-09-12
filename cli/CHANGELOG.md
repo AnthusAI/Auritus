@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.1.5 (2026-09-12)
+
+### Bug Fixes
+
+- Resolve all ruff BLE001 and RUF022 errors across CLI and worker-image
+  ([`3065c0c`](https://github.com/AnthusAI/Auritus/commit/3065c0cc930cf2b3db91a91756b991ed823b1a2b))
+
+### Testing
+
+- Update authorizer test for stdlib shape-check version
+  ([`50d552c`](https://github.com/AnthusAI/Auritus/commit/50d552c3ace30c25bc1110742448e6bac5647c48))
+
+
 ## v0.1.4 (2026-09-12)
 
 ### Bug Fixes
