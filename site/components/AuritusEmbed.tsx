@@ -30,6 +30,7 @@ export function AuritusEmbed({
         src="/embed.js"
         strategy="afterInteractive"
         data-auritus-site-key={siteKey}
+        data-auritus-api={apiUrl}
         data-auritus-name={name}
         data-auritus-byline={byline}
         data-auritus-origin={origin}
