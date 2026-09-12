@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.4.5 (2026-09-12)
+
+### Bug Fixes
+
+- Install numpy in separate Docker layer before other deps
+  ([`a5517b2`](https://github.com/AnthusAI/Auritus/commit/a5517b2478902a08953b542879b04f46be8985c8))
+
+
 ## v0.4.4 (2026-09-12)
 
 ### Bug Fixes
