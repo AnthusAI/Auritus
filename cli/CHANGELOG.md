@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.6.2 (2026-09-12)
+
+### Bug Fixes
+
+- Exclude tts_backend from content hash for backend portability
+  ([`b688909`](https://github.com/AnthusAI/Auritus/commit/b688909c6604ad19b52aec69a3781f8ce33019f2))
+
+
 ## v0.6.1 (2026-09-12)
 
 ### Bug Fixes
