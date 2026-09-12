@@ -10,11 +10,19 @@
   "parent": "auritus-a4de887a-f93e-428d-944a-a1e497994a0c",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "1222db9f-011c-432d-9f1e-f31847184792",
+      "author": "ryan",
+      "text": "Kokoro-82M integrated and tested with real speech. Qwen3-TTS, Fish Speech, Coqui XTTS-v2, Bark also integrated. Worker image build in progress via GitHub Actions to ECR.",
+      "created_at": "2026-09-12T13:26:55.440729Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-12T12:31:37.000701Z",
-  "updated_at": "2026-09-12T12:31:37.000737Z",
+  "updated_at": "2026-09-12T13:26:55.440995Z",
   "closed_at": null,
-  "right_now_summary": "The worker image needs an ECR push and an end-to-end test from job claim through playback.",
-  "right_now_updated_at": "2026-09-12T12:31:40.273370Z",
+  "right_now_summary": "The worker image is being built for ECR after real-speech TTS tests passed.",
+  "right_now_updated_at": "2026-09-12T13:26:58.654773Z",
   "custom": {}
 }
