@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.2.2 (2026-09-12)
+
+### Bug Fixes
+
+- Remove unused noqa and fix UP045 Optional types
+  ([`3bf2125`](https://github.com/AnthusAI/Auritus/commit/3bf212538705e245d81c36333fa850cba71cc8dd))
+
+
 ## v0.2.1 (2026-09-12)
 
 ### Bug Fixes
