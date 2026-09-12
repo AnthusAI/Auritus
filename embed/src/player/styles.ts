@@ -48,8 +48,8 @@ export const PLAYER_STYLES = `
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--auritus-accent, currentColor);
-  color: var(--auritus-bg, #fff);
+  background: var(--auritus-accent, #2d5f3f);
+  color: var(--auritus-bg, #ffffff);
   font-size: 0.75rem;
   font-weight: 700;
   flex-shrink: 0;

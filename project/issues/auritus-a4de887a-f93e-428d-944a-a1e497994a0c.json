@@ -1,0 +1,20 @@
+{
+  "id": "auritus-a4de887a-f93e-428d-944a-a1e497994a0c",
+  "title": "Real TTS Model Integration",
+  "description": "Replace TTS stub backends with real model inference (Kokoro, Qwen3-TTS, Fish Speech, Higgs, etc.) so the Auritus player generates actual speech. Fix worker token refresh. Test locally without deploying each time.",
+  "type": "initiative",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-12T12:31:18.123624Z",
+  "updated_at": "2026-09-12T12:31:18.123671Z",
+  "closed_at": null,
+  "right_now_summary": "Real TTS backends are being added, while token refresh, UI issues, and local end-to-end testing are fixed.",
+  "right_now_updated_at": "2026-09-12T12:31:41.563911Z",
+  "custom": {}
+}

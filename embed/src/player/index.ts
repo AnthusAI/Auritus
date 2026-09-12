@@ -87,6 +87,7 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
   }
 
   function applyJob(job: JobRecord): void {
+    statusEl.hidden = false;
     statusEl.textContent = statusLabel(job);
     if (job.status === "failed") {
       setError("Audio could not be generated.");
@@ -97,7 +98,7 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
       stopPolling();
       audio.src = job.audio_url;
       playBtn.disabled = false;
-      statusEl.textContent = "Ready";
+      statusEl.hidden = true;
     }
   }
 

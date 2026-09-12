@@ -2,13 +2,21 @@
 
 from __future__ import annotations
 
+from tts.bark import BarkBackend
 from tts.base import TTSBackend
+from tts.coqui import CoquiBackend
+from tts.fish import FishBackend
 from tts.higgs import HiggsBackend
+from tts.kokoro import KokoroBackend
 from tts.qwen import QwenBackend
 
 _BACKENDS: dict[str, type[TTSBackend]] = {
     "higgs": HiggsBackend,
     "qwen": QwenBackend,
+    "kokoro": KokoroBackend,
+    "fish": FishBackend,
+    "coqui": CoquiBackend,
+    "bark": BarkBackend,
 }
 
 
