@@ -1,8 +1,8 @@
 httpx>=0.27.0
 kokoro>=0.9.0
 qwen-tts
-fish-speech>=1.5
-TTS>=0.22
-transformers>=4.0
-torch>=2.0.0
-soundfile>=0.12.0
+fish-speech
+TTS
+transformers
+torch
+soundfile
