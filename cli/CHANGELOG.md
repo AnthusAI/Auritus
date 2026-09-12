@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.2.0 (2026-09-12)
+
+### Features
+
+- Add Lambda layer for JWKS verification and fix all ruff issues
+  ([`7046c7c`](https://github.com/AnthusAI/Auritus/commit/7046c7c6e71a32b6ee6898b511948c9870ffdd93))
+
+
 ## v0.1.6 (2026-09-12)
 
 ### Bug Fixes
