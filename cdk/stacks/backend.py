@@ -299,6 +299,7 @@ class BackendStack(Stack):
         for method, path in [
             (apigwv2.HttpMethod.POST, "/jobs"),
             (apigwv2.HttpMethod.GET, "/jobs/{hash}"),
+            (apigwv2.HttpMethod.POST, "/jobs/{hash}/redeem"),
         ]:
             http_api.add_routes(
                 path=path,

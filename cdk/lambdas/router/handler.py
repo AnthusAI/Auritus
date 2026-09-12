@@ -52,6 +52,9 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         if method == "GET" and path.startswith("/jobs/") and path != "/jobs/claimable":
             content_hash = path_params.get("hash") or path.removeprefix("/jobs/")
             return _get_job(content_hash, headers)
+        if method == "POST" and path.endswith("/redeem"):
+            content_hash = path_params.get("hash") or ""
+            return _redeem_token(content_hash, body, headers)
         if method == "GET" and path == "/jobs/claimable":
             return _list_claimable(headers)
         if method == "PUT" and path.endswith("/claim"):
@@ -116,6 +119,15 @@ def _require_operator(_headers: dict[str, str]) -> None:
     auth = _headers.get("authorization", "")
     if not auth.lower().startswith("bearer "):
         raise PermissionError("operator_auth_required")
+
+
+def _check_job_token(headers: dict[str, str], content_hash: str) -> bool:
+    """Return whether the request has the token belonging to a job."""
+    token = headers.get("x-auritus-job-token", "")
+    if not token:
+        return False
+    item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
+    return bool(item and item.get("job_token") == token)
 
 
 def _site_from_headers(headers: dict[str, str]) -> dict[str, Any]:
@@ -249,12 +261,13 @@ def _audio_url(audio_key: str | None) -> str | None:
 
 
 def _get_job(content_hash: str, headers: dict[str, str]) -> dict[str, Any]:
-    site = _site_from_headers(headers)
     item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
     if not item:
         raise LookupError("job_not_found")
-    if item.get("site_id") and item["site_id"] != site["site_id"]:
-        raise PermissionError("site_mismatch")
+    if not _check_job_token(headers, content_hash):
+        site = _site_from_headers(headers)
+        if item.get("site_id") and item["site_id"] != site["site_id"]:
+            raise PermissionError("site_mismatch")
 
     payload = {
         "content_hash": content_hash,
@@ -316,7 +329,8 @@ def _claim_job(
     :param headers: Request headers for auth.
     :returns: 200 on success, 409 if already claimed.
     """
-    _require_operator(headers)
+    if not _check_job_token(headers, content_hash):
+        _require_operator(headers)
     claim_owner = body.get("claim_owner")
     if not claim_owner:
         raise ValueError("claim_owner_required")
@@ -354,7 +368,8 @@ def _claim_job(
 def _mark_done(
     content_hash: str, body: dict[str, Any], headers: dict[str, str]
 ) -> dict[str, Any]:
-    _require_operator(headers)
+    if not _check_job_token(headers, content_hash):
+        _require_operator(headers)
     audio_key = body.get("audio_key")
     if not audio_key:
         raise ValueError("audio_key_required")
@@ -378,6 +393,30 @@ def _mark_done(
     return _response(200, {"content_hash": content_hash, "status": "done"})
 
 
+def _redeem_token(
+    content_hash: str, body: dict[str, Any], headers: dict[str, str]
+) -> dict[str, Any]:
+    """Validate a job token and return job details plus a bearer token."""
+    token = body.get("job_token") or headers.get("x-auritus-job-token", "")
+    if not token:
+        raise ValueError("job_token required")
+    item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
+    if not item or item.get("job_token") != token:
+        raise LookupError("invalid job token")
+    return _response(
+        200,
+        {
+            "content_hash": content_hash,
+            "text": item.get("text", ""),
+            "voice_id": item.get("voice_id", "default"),
+            "tts_backend": item.get("tts_backend", "higgs"),
+            "name": item.get("name", ""),
+            "byline": item.get("byline", ""),
+            "bearer": token,
+        },
+    )
+
+
 def _presign_upload(content_hash: str, headers: dict[str, str]) -> dict[str, Any]:
     """Generate a presigned S3 PUT URL for audio upload.
 
@@ -385,7 +424,8 @@ def _presign_upload(content_hash: str, headers: dict[str, str]) -> dict[str, Any
     :param headers: Request headers for auth.
     :returns: 200 with ``upload_url``, ``audio_key``, and ``content_type``.
     """
-    _require_operator(headers)
+    if not _check_job_token(headers, content_hash):
+        _require_operator(headers)
     audio_key = f"audio/{content_hash}.wav"
     upload_url = _s3.generate_presigned_url(
         "put_object",
