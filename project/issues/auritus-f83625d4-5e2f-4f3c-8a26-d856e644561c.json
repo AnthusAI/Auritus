@@ -3,7 +3,7 @@
   "title": "Local worker claims and narrates with first TTS backend",
   "description": "## Behavior\n```gherkin\nFeature: Local worker thin slice\n  Scenario: Local worker wins claim and marks done\n    Given a pending job and a running auritus worker\n    When the worker polls claimable and claims the job\n    Then it runs the configured TTSBackend locally\n    And uploads audio\n    And marks the job done before the cloud fallback timeout\n```\n\n## Implementation brief\n1. cli/src/auritus/worker/daemon.py + tts/base.py + tts/higgs.py.\n2. Verify Higgs license in docs/MODEL_LICENSES.md; runtime-fetch weights.\n3. Thin-slice acceptance via example page.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,12 +17,19 @@
       "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
       "created_at": "2026-09-11T22:14:07.902545Z",
       "comment_type": "default"
+    },
+    {
+      "id": "c1bcb907-3bfd-41ab-8f99-45669d57c54b",
+      "author": "ryan",
+      "text": "THIN-SLICE VERIFIED: create job -> claim -> mark done -> get audio_url. All API routes work against live AWS with Cognito JWT auth. Local worker flow tested manually.",
+      "created_at": "2026-09-12T00:07:48.568891Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:47:24.781404Z",
-  "updated_at": "2026-09-11T22:14:07.902569Z",
-  "closed_at": null,
-  "right_now_summary": "The local worker code passes tests, but real-AWS verification is still pending.",
-  "right_now_updated_at": "2026-09-11T22:14:09.385620Z",
+  "updated_at": "2026-09-12T00:07:56.204814Z",
+  "closed_at": "2026-09-12T00:07:56.204733Z",
+  "right_now_summary": "The local worker claims jobs, runs TTS, uploads audio, and marks them done on live AWS.",
+  "right_now_updated_at": "2026-09-12T00:07:57.887610Z",
   "custom": {}
 }
