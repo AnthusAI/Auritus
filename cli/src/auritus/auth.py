@@ -37,7 +37,7 @@ def save_tokens(tokens: dict[str, Any]) -> None:
     payload = json.dumps(tokens)
     try:
         keyring.set_password(SERVICE_NAME, TOKEN_USERNAME, payload)
-    except Exception:
+    except (OSError, ValueError, RuntimeError):
         path = credentials_path()
         config_dir().mkdir(parents=True, exist_ok=True)
         path.write_text(payload, encoding="utf-8")
@@ -50,7 +50,7 @@ def load_tokens() -> dict[str, Any] | None:
         raw = keyring.get_password(SERVICE_NAME, TOKEN_USERNAME)
         if raw:
             return json.loads(raw)
-    except Exception:
+    except (OSError, ValueError, RuntimeError):
         pass
     path = credentials_path()
     if path.exists():
@@ -62,7 +62,7 @@ def clear_tokens() -> None:
     """Remove cached tokens."""
     try:
         keyring.delete_password(SERVICE_NAME, TOKEN_USERNAME)
-    except Exception:
+    except (OSError, ValueError, RuntimeError):
         pass
     path = credentials_path()
     if path.exists():

@@ -7,4 +7,4 @@ from tts.higgs import HiggsBackend
 from tts.qwen import QwenBackend
 from tts.registry import get_backend
 
-__all__ = ["TTSBackend", "HiggsBackend", "QwenBackend", "get_backend"]
+__all__ = ["HiggsBackend", "QwenBackend", "TTSBackend", "get_backend"]
