@@ -8,7 +8,6 @@ import traceback
 from typing import Any
 
 import httpx
-
 from tts.registry import get_backend
 
 

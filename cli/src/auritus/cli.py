@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import typer
 
-from auritus.commands import config_cmd
+from auritus.commands import config_cmd, worker_cmd
 from auritus.commands import deploy as deploy_cmd
 from auritus.commands import killswitch as killswitch_cmd
 from auritus.commands import login as login_cmd
 from auritus.commands import player as player_cmd
 from auritus.commands import site as site_cmd
-from auritus.commands import worker_cmd
 
 app = typer.Typer(
     name="auritus",

@@ -5,10 +5,10 @@ import json
 import os
 import sys
 from typing import Any
+from unittest.mock import Mock
 
 import boto3
 import pytest
-from unittest.mock import Mock
 from moto import mock_aws
 
 

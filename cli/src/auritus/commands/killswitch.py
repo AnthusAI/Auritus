@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import typer
-
 import boto3
+import typer
 from botocore.exceptions import BotoCoreError, ClientError
 
 from auritus.api import AuritusApiError, AuritusClient
