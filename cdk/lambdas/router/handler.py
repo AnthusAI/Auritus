@@ -11,7 +11,6 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
-from urllib.parse import quote
 
 import boto3
 from botocore.exceptions import ClientError
@@ -61,6 +60,9 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         if method == "PUT" and path.endswith("/done"):
             content_hash = path_params.get("hash") or ""
             return _mark_done(content_hash, body, headers)
+        if method == "POST" and path.endswith("/presign-upload"):
+            content_hash = path_params.get("hash") or ""
+            return _presign_upload(content_hash, headers)
         if method == "POST" and path == "/sites":
             return _create_site(body, headers)
         if method == "GET" and path == "/sites":
@@ -239,8 +241,6 @@ def _create_job(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]
 def _audio_url(audio_key: str | None) -> str | None:
     if not audio_key:
         return None
-    if CLOUDFRONT_DOMAIN:
-        return f"https://{CLOUDFRONT_DOMAIN}/{quote(audio_key, safe='/')}"
     return _s3.generate_presigned_url(
         "get_object",
         Params={"Bucket": AUDIO_BUCKET, "Key": audio_key},
@@ -376,6 +376,31 @@ def _mark_done(
         },
     )
     return _response(200, {"content_hash": content_hash, "status": "done"})
+
+
+def _presign_upload(content_hash: str, headers: dict[str, str]) -> dict[str, Any]:
+    """Generate a presigned S3 PUT URL for audio upload.
+
+    :param content_hash: The content hash identifying the job.
+    :param headers: Request headers for auth.
+    :returns: 200 with ``upload_url``, ``audio_key``, and ``content_type``.
+    """
+    _require_operator(headers)
+    audio_key = f"audio/{content_hash}.wav"
+    upload_url = _s3.generate_presigned_url(
+        "put_object",
+        Params={"Bucket": AUDIO_BUCKET, "Key": audio_key},
+        ExpiresIn=300,
+        HttpMethod="PUT",
+    )
+    return _response(
+        200,
+        {
+            "upload_url": upload_url,
+            "audio_key": audio_key,
+            "content_type": "audio/wav",
+        },
+    )
 
 
 def _create_site(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]:
