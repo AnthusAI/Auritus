@@ -141,7 +141,7 @@ def main() -> int:
         done.raise_for_status()
         print(f"done {job_hash}")
         return 0
-    except Exception as exc:
+    except (httpx.HTTPError, OSError, ValueError, KeyError) as exc:
         reason = f"{type(exc).__name__}: {exc}"
         print(reason, file=sys.stderr)
         traceback.print_exc()

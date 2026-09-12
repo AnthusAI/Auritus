@@ -24,4 +24,4 @@ def get_backend(name: str) -> TTSBackend:
     return backends[key]()
 
 
-__all__ = ["TTSBackend", "HiggsBackend", "QwenBackend", "get_backend"]
+__all__ = ["HiggsBackend", "QwenBackend", "TTSBackend", "get_backend"]
