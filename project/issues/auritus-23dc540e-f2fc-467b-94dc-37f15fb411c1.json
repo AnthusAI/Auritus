@@ -3,18 +3,26 @@
   "title": "Implement real Qwen3-TTS backend",
   "description": "Replace worker and CLI Qwen stubs with lazy qwen-tts model inference and WAV conversion; add qwen-tts dependency; preserve registry registration; run requested checks without committing.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "9c3da3a8-cb04-483e-8ae0-4e03252f5079",
+      "author": "ryan",
+      "text": "Implemented lazy Qwen3-TTS inference in worker and CLI backends, added qwen-tts dependency, preserved registry registration, removed obsolete stub-dependent test assertion. CLI checks: black, ruff, pytest 7 passed. Worker checks: black, ruff passed.",
+      "created_at": "2026-09-12T12:43:48.247190Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-12T12:36:38.897526Z",
-  "updated_at": "2026-09-12T12:37:27.154124Z",
-  "closed_at": null,
-  "right_now_summary": "The worker and CLI need real Qwen3-TTS inference, WAV conversion, and the new dependency.",
-  "right_now_updated_at": "2026-09-12T12:37:28.670093Z",
+  "updated_at": "2026-09-12T12:43:50.065715Z",
+  "closed_at": "2026-09-12T12:43:50.065688Z",
+  "right_now_summary": "Qwen3-TTS now uses lazy inference in the worker and CLI, with WAV conversion and checks passing.",
+  "right_now_updated_at": "2026-09-12T12:43:51.566028Z",
   "custom": {}
 }

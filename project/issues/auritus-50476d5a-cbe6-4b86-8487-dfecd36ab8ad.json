@@ -1,0 +1,31 @@
+{
+  "id": "auritus-50476d5a-cbe6-4b86-8487-dfecd36ab8ad",
+  "title": "Add Fish Speech and additional TTS backends",
+  "description": "Implement Fish Speech, Coqui XTTS-v2, and Bark backends behind the pluggable TTS interfaces in worker-image and cli. Register all backends, add runtime dependencies, preserve lazy model imports, and verify formatting, lint, and tests.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "44787dab-e143-4eb9-aafb-56adf0d848c8",
+      "author": "ryan",
+      "text": "Implemented Fish Speech, Coqui XTTS-v2, and Bark backends in cli and worker-image, registered all three, and added runtime dependencies. Acceptance checks pass: CLI black, Ruff, and 7 pytest tests; worker-image black and Ruff.",
+      "created_at": "2026-09-12T12:58:01.162346Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-12T12:46:25.186995Z",
+  "updated_at": "2026-09-12T12:58:02.608444Z",
+  "closed_at": "2026-09-12T12:58:02.608397Z",
+  "right_now_summary": "Fish Speech, Coqui XTTS-v2, and Bark backends are implemented, registered, and passing formatting, lint, and tests.",
+  "right_now_updated_at": "2026-09-12T12:58:04.286692Z",
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
+}
