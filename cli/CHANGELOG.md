@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.2.3 (2026-09-12)
+
+### Bug Fixes
+
+- Restore cross-step import and ignore F401 for behave step files
+  ([`683f528`](https://github.com/AnthusAI/Auritus/commit/683f5282ccfb7946d43edafd55139c2e2ad73bf1))
+
+
 ## v0.2.2 (2026-09-12)
 
 ### Bug Fixes
