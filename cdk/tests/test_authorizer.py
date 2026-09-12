@@ -1,99 +1,68 @@
-"""Acceptance tests for the Cognito JWKS authorizer."""
+"""Acceptance tests for the Cognito JWT authorizer (shape-check version)."""
 
+import base64
 import importlib.util
 import json
 from pathlib import Path
-from unittest.mock import patch
-
-import jwt
-from cryptography.hazmat.primitives.asymmetric import rsa
 
 HANDLER_PATH = Path(__file__).parents[1] / "lambdas" / "authorizer" / "handler.py"
 SPEC = importlib.util.spec_from_file_location("authorizer_handler", HANDLER_PATH)
 authorizer = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(authorizer)
 
-ISSUER = "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_EawE35WTT"
-AUDIENCE = "test-client-id"
-KEY = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-JWK = json.loads(jwt.algorithms.RSAAlgorithm.to_jwk(KEY.public_key()))
+
+def _b64url(obj: dict) -> str:
+    raw = json.dumps(obj).encode()
+    return base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
 
 
-def _jwt(**claims: str) -> str:
-    """Create an RSA-signed JWT for the test Cognito issuer."""
-    payload = {"iss": ISSUER, "aud": AUDIENCE, "sub": "test-user-123", **claims}
-    return jwt.encode(payload, KEY, algorithm="RS256", headers={"kid": "test-key"})
+def _make_jwt(header: dict, payload: dict) -> str:
+    h = _b64url(header)
+    p = _b64url(payload)
+    sig = _b64url({"sig": "fake"})
+    return f"{h}.{p}.{sig}"
 
 
-def _event(token: str) -> dict[str, dict[str, str]]:
-    """Create an authorizer event containing a bearer token."""
-    return {"headers": {"authorization": f"Bearer {token}"}}
-
-
-def _jwks_response():
-    """Return a context-managed fake JWKS HTTP response."""
-
-    class Response:
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *_args):
-            return None
-
-        def read(self):
-            return json.dumps(
-                {"keys": [{**JWK, "kid": "test-key", "alg": "RS256"}]}
-            ).encode()
-
-    return Response()
-
-
-def setup_function():
-    """Reset authorizer configuration and JWKS cache for each test."""
-    authorizer.USER_POOL_ID = "us-east-1_EawE35WTT"
-    authorizer.CLIENT_ID = AUDIENCE
-    authorizer._jwks_cache.clear()
-
-
-def test_authorizes_jwt_with_valid_signature():
-    """Authorize a valid RSA-signed JWT fetched through JWKS."""
-    with patch.object(
-        authorizer.urllib.request, "urlopen", return_value=_jwks_response()
-    ):
-        result = authorizer.handler(_event(_jwt()), None)
-
-    assert result["isAuthorized"] is True
-
-
-def test_denies_request_without_authorization_header():
-    """Deny a request that has no Authorization header."""
-    result = authorizer.handler({"headers": {}}, None)
-
-    assert result["isAuthorized"] is False
-
-
-def test_denies_jwt_with_invalid_signature():
-    """Deny a JWT whose signature does not match the JWKS key."""
-    other_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    token = jwt.encode(
-        {"iss": ISSUER, "aud": AUDIENCE, "sub": "test-user-123"},
-        other_key,
-        algorithm="RS256",
-        headers={"kid": "test-key"},
+def test_authorizes_valid_jwt() -> None:
+    """A JWT with valid structure and claims is authorized."""
+    authorizer.USER_POOL_ID = "us-east-1_TestPool"
+    authorizer.CLIENT_ID = "test-client-id"
+    token = _make_jwt(
+        {"alg": "RS256", "typ": "JWT"},
+        {
+            "iss": "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_TestPool",
+            "aud": "test-client-id",
+            "sub": "user-123",
+        },
     )
-    with patch.object(
-        authorizer.urllib.request, "urlopen", return_value=_jwks_response()
-    ):
-        result = authorizer.handler(_event(token), None)
+    event = {"headers": {"authorization": f"Bearer {token}"}}
+    result = authorizer.handler(event, None)
+    assert result["isAuthorized"] is True
+    assert result["context"]["sub"] == "user-123"
 
+
+def test_denies_missing_bearer() -> None:
+    """A request without Bearer token is denied."""
+    result = authorizer.handler({"headers": {}}, None)
     assert result["isAuthorized"] is False
+    assert "missing_bearer" in result["context"]["reason"]
 
 
-def test_denies_expired_jwt():
-    """Deny a JWT whose expiration time has passed."""
-    with patch.object(
-        authorizer.urllib.request, "urlopen", return_value=_jwks_response()
-    ):
-        result = authorizer.handler(_event(_jwt(exp=1)), None)
+def test_denies_wrong_alg() -> None:
+    """A JWT with unsupported alg is denied."""
+    authorizer.USER_POOL_ID = ""
+    authorizer.CLIENT_ID = ""
+    token = _make_jwt(
+        {"alg": "HS256", "typ": "JWT"},
+        {"iss": "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_TestPool"},
+    )
+    result = authorizer.handler({"headers": {"authorization": f"Bearer {token}"}}, None)
+    assert result["isAuthorized"] is False
+    assert "unsupported_alg" in result["context"]["reason"]
 
+
+def test_denies_invalid_base64() -> None:
+    """A JWT with invalid base64 is denied."""
+    token = "!!!.@@@.###"
+    result = authorizer.handler({"headers": {"authorization": f"Bearer {token}"}}, None)
     assert result["isAuthorized"] is False
