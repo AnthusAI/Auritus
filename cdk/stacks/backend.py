@@ -300,6 +300,7 @@ class BackendStack(Stack):
             (apigwv2.HttpMethod.POST, "/jobs"),
             (apigwv2.HttpMethod.GET, "/jobs/{hash}"),
             (apigwv2.HttpMethod.POST, "/jobs/{hash}/redeem"),
+            (apigwv2.HttpMethod.PUT, "/jobs/{hash}/claim"),
         ]:
             http_api.add_routes(
                 path=path,
@@ -321,13 +322,6 @@ class BackendStack(Stack):
                 integration=router_integration,
                 authorizer=lambda_authorizer,
             )
-
-        http_api.add_routes(
-            path="/jobs/{hash}/claim",
-            methods=[apigwv2.HttpMethod.PUT],
-            integration=router_integration,
-            authorizer=lambda_authorizer,
-        )
 
         worker_repo = ecr.Repository(
             self,
