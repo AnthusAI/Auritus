@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.4.1 (2026-09-12)
+
+### Bug Fixes
+
+- Use dedicated IAM role for worker image ECR push
+  ([`2632fe2`](https://github.com/AnthusAI/Auritus/commit/2632fe293c446e3dbbdb80559832034efac8eeef))
+
+
 ## v0.4.0 (2026-09-12)
 
 ### Bug Fixes
