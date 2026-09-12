@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.6.0 (2026-09-12)
+
+### Bug Fixes
+
+- Mlx-audio integration, worker-image TTS backends, test fixes
+  ([`06f8bf5`](https://github.com/AnthusAI/Auritus/commit/06f8bf5ae3d50454ab265313de6467669638a8e8))
+
+### Features
+
+- Integrate mlx-audio for Apple Silicon TTS generation
+  ([`6eda1bd`](https://github.com/AnthusAI/Auritus/commit/6eda1bd45bb7831f1381a923d54e905ca6d786c4))
+
+
 ## v0.5.0 (2026-09-12)
 
 ### Bug Fixes
