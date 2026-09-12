@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.3.2 (2026-09-12)
+
+### Bug Fixes
+
+- Use content_hash from embed if provided (FNV-1a vs SHA-256 mismatch)
+  ([`73e7b12`](https://github.com/AnthusAI/Auritus/commit/73e7b12f78584129baccd1508c2e165199fa0418))
+
+
 ## v0.3.1 (2026-09-12)
 
 ### Bug Fixes
