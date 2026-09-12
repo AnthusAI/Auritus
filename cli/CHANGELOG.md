@@ -2,6 +2,35 @@
 
 <!-- version list -->
 
+## v0.4.0 (2026-09-12)
+
+### Bug Fixes
+
+- Remove unused noqa from test_tts, verify all tests pass
+  ([`7a3a3a5`](https://github.com/AnthusAI/Auritus/commit/7a3a3a5b5d82fc054b404d66ea39db3defa06160))
+
+- Worker token refresh, player UI, TTS tone stub, black formatting
+  ([`3252fe2`](https://github.com/AnthusAI/Auritus/commit/3252fe27ab4a266d95b9ec933fa3ff0458d97e4f))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`97bef1f`](https://github.com/AnthusAI/Auritus/commit/97bef1fbce07788a598495599f86a09c63bbb9a6))
+
+### Continuous Integration
+
+- Add workflow to build and push worker image to ECR
+  ([`3daf65c`](https://github.com/AnthusAI/Auritus/commit/3daf65c291cb3df88ee23cb0986890b2b2d5c7e0))
+
+### Features
+
+- Add Fish Speech, Coqui XTTS-v2, and Bark TTS backends
+  ([`461e784`](https://github.com/AnthusAI/Auritus/commit/461e784863b09c969e9e9d444b29a81064a18f07))
+
+- Integrate Kokoro-82M as first real TTS backend
+  ([`9f55d18`](https://github.com/AnthusAI/Auritus/commit/9f55d18a69cccfd307c4c4a22f84c328377faf93))
+
+
 ## v0.3.3 (2026-09-12)
 
 ### Bug Fixes
