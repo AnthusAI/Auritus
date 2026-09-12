@@ -3,7 +3,7 @@
   "title": "M-TTS-5: ECR push and end-to-end test",
   "description": "Build and push worker image to ECR. Test end-to-end: job -> claim -> real TTS -> upload -> play.",
   "type": "epic",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,12 +17,19 @@
       "text": "Kokoro-82M integrated and tested with real speech. Qwen3-TTS, Fish Speech, Coqui XTTS-v2, Bark also integrated. Worker image build in progress via GitHub Actions to ECR.",
       "created_at": "2026-09-12T13:26:55.440729Z",
       "comment_type": "default"
+    },
+    {
+      "id": "7d908ea0-3124-4ddc-89b0-9469bc9895ce",
+      "author": "ryan",
+      "text": "Worker image built and pushed to ECR via GitHub Actions. Image includes Kokoro, torch, soundfile, numpy, httpx. Tag: latest.",
+      "created_at": "2026-09-12T14:54:17.769064Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-12T12:31:37.000701Z",
-  "updated_at": "2026-09-12T13:26:55.440995Z",
-  "closed_at": null,
-  "right_now_summary": "The worker image is being built for ECR after real-speech TTS tests passed.",
-  "right_now_updated_at": "2026-09-12T13:26:58.654773Z",
+  "updated_at": "2026-09-12T14:54:22.561519Z",
+  "closed_at": "2026-09-12T14:54:22.561479Z",
+  "right_now_summary": "The worker image is in ECR, and real-speech end-to-end testing is underway.",
+  "right_now_updated_at": "2026-09-12T14:54:24.563151Z",
   "custom": {}
 }

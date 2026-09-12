@@ -126,7 +126,6 @@ def main() -> int:
         put = httpx.put(
             upload["upload_url"],
             content=audio,
-            headers={"Content-Type": upload.get("content_type", "audio/wav")},
             timeout=300.0,
         )
         put.raise_for_status()

@@ -299,6 +299,10 @@ class BackendStack(Stack):
         for method, path in [
             (apigwv2.HttpMethod.POST, "/jobs"),
             (apigwv2.HttpMethod.GET, "/jobs/{hash}"),
+            (apigwv2.HttpMethod.POST, "/jobs/{hash}/redeem"),
+            (apigwv2.HttpMethod.PUT, "/jobs/{hash}/claim"),
+            (apigwv2.HttpMethod.PUT, "/jobs/{hash}/done"),
+            (apigwv2.HttpMethod.POST, "/jobs/{hash}/presign-upload"),
         ]:
             http_api.add_routes(
                 path=path,
@@ -308,8 +312,15 @@ class BackendStack(Stack):
 
         for method, path in [
             (apigwv2.HttpMethod.GET, "/jobs/claimable"),
-            (apigwv2.HttpMethod.PUT, "/jobs/{hash}/done"),
-            (apigwv2.HttpMethod.POST, "/jobs/{hash}/presign-upload"),
+        ]:
+            http_api.add_routes(
+                path=path,
+                methods=[method],
+                integration=router_integration,
+                authorizer=lambda_authorizer,
+            )
+
+        for method, path in [
             (apigwv2.HttpMethod.POST, "/sites"),
             (apigwv2.HttpMethod.GET, "/sites"),
             (apigwv2.HttpMethod.DELETE, "/sites/{id}"),
@@ -320,13 +331,6 @@ class BackendStack(Stack):
                 integration=router_integration,
                 authorizer=lambda_authorizer,
             )
-
-        http_api.add_routes(
-            path="/jobs/{hash}/claim",
-            methods=[apigwv2.HttpMethod.PUT],
-            integration=router_integration,
-            authorizer=lambda_authorizer,
-        )
 
         worker_repo = ecr.Repository(
             self,
