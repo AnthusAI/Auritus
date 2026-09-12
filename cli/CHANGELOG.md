@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.4.4 (2026-09-12)
+
+### Bug Fixes
+
+- Install numpy first in worker image for build deps
+  ([`57ea78c`](https://github.com/AnthusAI/Auritus/commit/57ea78cb9d95856de00a02f0bb062d7429c6376e))
+
+
 ## v0.4.3 (2026-09-12)
 
 ### Bug Fixes
