@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.4.3 (2026-09-12)
+
+### Bug Fixes
+
+- Relax fish-speech version constraint for pip install
+  ([`f0e6cd6`](https://github.com/AnthusAI/Auritus/commit/f0e6cd659421a7f3dc6d6560a8fc7bc41453223e))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`188f53a`](https://github.com/AnthusAI/Auritus/commit/188f53a04195ccedd38a3989076cd40b31907786))
+
+
 ## v0.4.2 (2026-09-12)
 
 ### Bug Fixes
