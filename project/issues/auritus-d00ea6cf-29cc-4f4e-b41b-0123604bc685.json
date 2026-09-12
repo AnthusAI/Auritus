@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:27.631748Z",
   "updated_at": "2026-09-11T21:38:27.631776Z",
   "closed_at": null,
-  "right_now_summary": "The backend is deployed and tested, but real AWS verification is still needed.",
-  "right_now_updated_at": "2026-09-11T23:14:13.739481Z",
+  "right_now_summary": "Core backend features are deployed and tested, but real-AWS verification is still needed.",
+  "right_now_updated_at": "2026-09-12T00:52:42.867268Z",
   "custom": {}
 }

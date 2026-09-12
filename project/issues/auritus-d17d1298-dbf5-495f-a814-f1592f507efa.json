@@ -3,7 +3,7 @@
   "title": "Generator extracts speakable text with ignore rules",
   "description": "## Behavior\n```gherkin\nFeature: Content generator\n  Scenario: Ignore marked regions\n    Given a page with a nav marked data-auritus-ignore and an article paragraph\n    When the generator runs\n    Then the TTS input string includes the article text\n    And excludes the nav text\n  Scenario: Pronounce and break markup\n    Given text with data-auritus-pronounce and data-auritus-break\n    When the generator runs\n    Then pronounce replacements and break markers appear in the TTS input\n```\n\n## Implementation brief\n1. embed/src/generator/index.ts — DOM walk, ignore selectors + data-auritus-ignore, pronounce/break.\n2. Acceptance: vitest scenarios in embed/tests/generator.test.ts.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,12 +17,19 @@
       "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
       "created_at": "2026-09-11T22:13:48.080515Z",
       "comment_type": "default"
+    },
+    {
+      "id": "edc1c54c-8dff-4513-9db7-f68e96605377",
+      "author": "ryan",
+      "text": "Generator with ignore rules and pronounce/break markup implemented. BDD tests pass.",
+      "created_at": "2026-09-12T00:53:12.005567Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:47:06.039181Z",
-  "updated_at": "2026-09-11T22:13:48.080533Z",
-  "closed_at": null,
-  "right_now_summary": "Generator code and tests pass; real AWS verification is still pending.",
-  "right_now_updated_at": "2026-09-11T22:13:49.090944Z",
+  "updated_at": "2026-09-12T00:53:16.760847Z",
+  "closed_at": "2026-09-12T00:53:16.760816Z",
+  "right_now_summary": "The generator is implemented and tests pass; real-AWS verification is still pending.",
+  "right_now_updated_at": "2026-09-12T00:53:18.374563Z",
   "custom": {}
 }

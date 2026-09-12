@@ -3,7 +3,7 @@
   "title": "Content hash excludes cosmetics",
   "description": "## Behavior\n```gherkin\nFeature: Content hash scope\n  Scenario: Name and byline do not change hash\n    Given identical text, voice_id, and tts_backend\n    When name or byline changes\n    Then computeContentHash returns the same value\n  Scenario: Text voice or backend changes hash\n    Given a baseline hash\n    When text, voice_id, or tts_backend changes\n    Then the hash changes\n```\n\n## Implementation brief\n1. embed/src/generator/hash.ts — hash = normalize(text)+voice_id+tts_backend.\n2. Tests in embed/tests/hash.test.ts.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,12 +17,19 @@
       "text": "Scaffold implemented by Composer 2.5. Code in place and passing tests. Story remains open pending real-AWS verification.",
       "created_at": "2026-09-11T22:13:52.707106Z",
       "comment_type": "default"
+    },
+    {
+      "id": "211a5223-e042-4546-a9a7-9c9a510af875",
+      "author": "ryan",
+      "text": "Content hash scope verified: text+voice+backend only, excludes name/byline. BDD tests pass.",
+      "created_at": "2026-09-12T00:53:22.265867Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:47:10.786497Z",
-  "updated_at": "2026-09-11T22:13:52.707127Z",
-  "closed_at": null,
-  "right_now_summary": "Code and tests pass; real AWS verification is still pending.",
-  "right_now_updated_at": "2026-09-11T22:13:54.058921Z",
+  "updated_at": "2026-09-12T00:53:26.937055Z",
+  "closed_at": "2026-09-12T00:53:26.937013Z",
+  "right_now_summary": "Content hashing is implemented and verified; real-AWS verification is still pending.",
+  "right_now_updated_at": "2026-09-12T00:53:27.676738Z",
   "custom": {}
 }

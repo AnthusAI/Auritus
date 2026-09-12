@@ -24,12 +24,19 @@
       "text": "semantic-release created GitHub release v0.1.0 and v0.1.1. PyPI trusted publisher not yet configured - package may not be on PyPI yet. Need to set up OIDC trusted publisher on PyPI.",
       "created_at": "2026-09-11T23:37:21.425397Z",
       "comment_type": "default"
+    },
+    {
+      "id": "93986fac-bf60-4a82-973e-4c6a46e5d696",
+      "author": "ryan",
+      "text": "semantic-release created GitHub releases v0.1.0-v0.1.5. PyPI trusted publisher not yet configured.",
+      "created_at": "2026-09-12T00:53:41.383773Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:47:49.015523Z",
-  "updated_at": "2026-09-11T23:37:21.425667Z",
+  "updated_at": "2026-09-12T00:53:41.383796Z",
   "closed_at": null,
-  "right_now_summary": "GitHub releases exist, but PyPI publishing awaits OIDC setup and real-AWS verification.",
-  "right_now_updated_at": "2026-09-11T23:37:23.574788Z",
+  "right_now_summary": "PyPI trusted publishing still needs configuration and real-AWS verification.",
+  "right_now_updated_at": "2026-09-12T00:53:42.261805Z",
   "custom": {}
 }
