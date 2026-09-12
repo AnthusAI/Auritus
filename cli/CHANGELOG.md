@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.4.7 (2026-09-12)
+
+### Bug Fixes
+
+- Install only Kokoro in worker image (MVP); other backends deferred due to dependency conflicts
+  ([`25de41f`](https://github.com/AnthusAI/Auritus/commit/25de41fc121388c8fda1cee7155993a0fa2f51b8))
+
+
 ## v0.4.6 (2026-09-12)
 
 ### Bug Fixes
