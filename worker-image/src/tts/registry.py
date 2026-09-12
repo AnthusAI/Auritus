@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from tts.base import TTSBackend
 from tts.higgs import HiggsBackend
+from tts.kokoro import KokoroBackend
 from tts.qwen import QwenBackend
 
 _BACKENDS: dict[str, type[TTSBackend]] = {
     "higgs": HiggsBackend,
     "qwen": QwenBackend,
+    "kokoro": KokoroBackend,
 }
 
 

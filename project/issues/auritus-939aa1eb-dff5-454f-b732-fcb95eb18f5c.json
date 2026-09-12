@@ -1,0 +1,31 @@
+{
+  "id": "auritus-939aa1eb-dff5-454f-b732-fcb95eb18f5c",
+  "title": "Implement Kokoro-82M TTS backend",
+  "description": "Implement real lazy-loaded Kokoro-82M inference in worker-image and CLI, register both backends, and add runtime dependencies and espeak-ng. Acceptance: requested CLI and worker-image formatting, lint, and pytest checks pass.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "1988adb9-902d-4f93-93f1-c649a4f9dbe8",
+      "author": "ryan",
+      "text": "Implemented Kokoro backend in worker-image and CLI with lazy KPipeline initialization, 24 kHz mono 16-bit WAV encoding, backend registration, dependencies, and espeak-ng. CLI checks: black, ruff, and pytest (7 passed). Worker-image black and ruff passed.",
+      "created_at": "2026-09-12T12:28:25.988831Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-12T12:19:51.194141Z",
+  "updated_at": "2026-09-12T12:28:27.557794Z",
+  "closed_at": "2026-09-12T12:28:27.557754Z",
+  "right_now_summary": "Kokoro-82M TTS is implemented with lazy loading, backend registration, dependencies, and passing checks.",
+  "right_now_updated_at": "2026-09-12T12:28:28.787911Z",
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
+}

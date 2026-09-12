@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from auritus.tts.base import TTSBackend
 from auritus.tts.higgs import HiggsBackend
+from auritus.tts.kokoro import KokoroBackend
 from auritus.tts.qwen import QwenBackend
 
 
@@ -17,6 +18,7 @@ def get_backend(name: str) -> TTSBackend:
     backends: dict[str, type[TTSBackend]] = {
         "higgs": HiggsBackend,
         "qwen": QwenBackend,
+        "kokoro": KokoroBackend,
     }
     key = (name or "").strip().lower()
     if key not in backends:
@@ -24,4 +26,10 @@ def get_backend(name: str) -> TTSBackend:
     return backends[key]()
 
 
-__all__ = ["HiggsBackend", "QwenBackend", "TTSBackend", "get_backend"]
+__all__ = [
+    "HiggsBackend",
+    "KokoroBackend",
+    "QwenBackend",
+    "TTSBackend",
+    "get_backend",
+]
