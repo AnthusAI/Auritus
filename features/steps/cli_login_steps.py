@@ -76,9 +76,10 @@ def step_refresh(context) -> None:
         "cognito_domain": "auritus-test",
         "region": "us-east-1",
     }
-    with patch("auritus.auth.httpx.post", side_effect=fake_post):
-        with patch("auritus.auth.load_config", return_value=mock_config):
-            token = get_access_token()
+    with patch("auritus.auth.httpx.post", side_effect=fake_post), patch(
+        "auritus.auth.load_config", return_value=mock_config
+    ):
+        token = get_access_token()
     context.refreshed_access = token
 
 
