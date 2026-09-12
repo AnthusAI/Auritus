@@ -171,7 +171,9 @@ def _create_job(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]
         raise ValueError("text_required")
 
     normalized = _normalize_text(text)
-    content_hash = _content_hash(normalized, voice_id, tts_backend)
+    content_hash = body.get("content_hash") or _content_hash(
+        normalized, voice_id, tts_backend
+    )
     now = _utc_now_iso()
     job_token = secrets.token_urlsafe(32)
 
