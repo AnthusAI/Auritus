@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.3.0 (2026-09-12)
+
+### Features
+
+- Wire embed to live API with data-auritus-api attribute
+  ([`2f70678`](https://github.com/AnthusAI/Auritus/commit/2f706781f720b3fcab01429157a42fe1a14ab6ba))
+
+
 ## v0.2.5 (2026-09-12)
 
 ### Bug Fixes
