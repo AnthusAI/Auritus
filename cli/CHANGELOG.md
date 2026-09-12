@@ -2,6 +2,36 @@
 
 <!-- version list -->
 
+## v0.5.0 (2026-09-12)
+
+### Bug Fixes
+
+- Check Bearer token in _check_job_token for Batch worker auth
+  ([`da27382`](https://github.com/AnthusAI/Auritus/commit/da2738242efa0371d703ce59c86013238888c0a8))
+
+- Move done and presign-upload to public routes for worker auth
+  ([`d6773dd`](https://github.com/AnthusAI/Auritus/commit/d6773dd15a6785408eb1a6bb247dbf081f591b0e))
+
+- Move worker routes (claim, done, presign) to public group; keep claimable behind auth
+  ([`6767a5f`](https://github.com/AnthusAI/Auritus/commit/6767a5fc5f21366b15c65c2d8bf320f3eaf430f2))
+
+- Remove Content-Type header from S3 upload to avoid signature mismatch
+  ([`7c8db8b`](https://github.com/AnthusAI/Auritus/commit/7c8db8b4a54e586260fd4947d4a55aa769bb3fdf))
+
+- Remove debug print, fix black formatting on claim route
+  ([`f0a6107`](https://github.com/AnthusAI/Auritus/commit/f0a6107ecc3333ac7068560e4e8d232db5f55130))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`8b1c7c2`](https://github.com/AnthusAI/Auritus/commit/8b1c7c2a4ed4eda87de76566136abb29a698463d))
+
+### Features
+
+- Add redeem route and job token auth for presign-upload
+  ([`0177ff7`](https://github.com/AnthusAI/Auritus/commit/0177ff7b270928d6ef7a797b9fbcc055cf0f8d1e))
+
+
 ## v0.4.7 (2026-09-12)
 
 ### Bug Fixes
