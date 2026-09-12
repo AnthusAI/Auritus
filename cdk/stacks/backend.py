@@ -310,8 +310,15 @@ class BackendStack(Stack):
 
         for method, path in [
             (apigwv2.HttpMethod.GET, "/jobs/claimable"),
-            (apigwv2.HttpMethod.PUT, "/jobs/{hash}/done"),
-            (apigwv2.HttpMethod.POST, "/jobs/{hash}/presign-upload"),
+        ]:
+            http_api.add_routes(
+                path=path,
+                methods=[method],
+                integration=router_integration,
+                authorizer=lambda_authorizer,
+            )
+
+        for method, path in [
             (apigwv2.HttpMethod.POST, "/sites"),
             (apigwv2.HttpMethod.GET, "/sites"),
             (apigwv2.HttpMethod.DELETE, "/sites/{id}"),
