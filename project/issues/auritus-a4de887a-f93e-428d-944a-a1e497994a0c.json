@@ -14,7 +14,7 @@
   "created_at": "2026-09-12T12:31:18.123624Z",
   "updated_at": "2026-09-12T12:31:18.123671Z",
   "closed_at": null,
-  "right_now_summary": "The team is integrating real TTS models, fixing token refresh, and testing speech generation locally.",
-  "right_now_updated_at": "2026-09-12T21:08:51.623809Z",
+  "right_now_summary": "Real TTS backends are being added, token refresh is being fixed, and end-to-end speech tests are underway.",
+  "right_now_updated_at": "2026-09-12T21:28:11.719625Z",
   "custom": {}
 }
