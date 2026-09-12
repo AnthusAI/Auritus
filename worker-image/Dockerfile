@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 COPY requirements.txt /app/requirements.txt
-RUN pip3 install --no-cache-dir numpy
+RUN pip3 install --no-cache-dir numpy typing_extensions setuptools wheel
 RUN pip3 install --no-cache-dir -r /app/requirements.txt
 
 COPY src/ /app/src/
