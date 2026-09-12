@@ -38,6 +38,11 @@ where = ["src"]
 
 [tool.ruff]
 line-length = 88
+# B008: typer.Option() in defaults is the standard Typer pattern, not a bug
+
+[tool.ruff.lint]
+# B008: typer.Option() in defaults is the standard Typer pattern, not a bug
+ignore = ["B008"]
 
 [tool.black]
 line-length = 88
