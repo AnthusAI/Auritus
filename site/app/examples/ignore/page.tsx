@@ -16,6 +16,7 @@ export default function IgnoreExamplePage() {
       </article>
       <AuritusEmbed
         siteKey="demo-site-key"
+        apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
         name="Ignore markup example"
         byline="Auritus docs"
       />

@@ -4,6 +4,7 @@ import Script from "next/script";
 
 type AuritusEmbedProps = {
   siteKey: string;
+  apiUrl?: string;
   name?: string;
   byline?: string;
   origin?: string;
@@ -11,6 +12,7 @@ type AuritusEmbedProps = {
 
 export function AuritusEmbed({
   siteKey,
+  apiUrl,
   name,
   byline,
   origin,
@@ -19,6 +21,7 @@ export function AuritusEmbed({
     <>
       <div
         data-auritus-site-key={siteKey}
+        data-auritus-api={apiUrl}
         data-auritus-name={name}
         data-auritus-byline={byline}
         data-auritus-origin={origin}
