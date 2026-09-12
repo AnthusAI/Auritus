@@ -96,8 +96,8 @@ var Auritus = (() => {
     }
     return (hash >>> 0).toString(16).padStart(8, "0");
   }
-  function computeContentHash(text, voiceId, ttsBackend) {
-    const payload = `${normalizeText(text)}\0${voiceId}\0${ttsBackend}`;
+  function computeContentHash(text, voiceId) {
+    const payload = `${normalizeText(text)}\0${voiceId}`;
     return fnv1a32(payload);
   }
 
@@ -443,8 +443,7 @@ var Auritus = (() => {
     });
     const contentHash = computeContentHash(
       text,
-      config.voiceId,
-      config.ttsBackend
+      config.voiceId
     );
     const api = new AuritusApiClient({
       baseUrl: config.apiBaseUrl,

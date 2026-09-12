@@ -104,13 +104,11 @@ def _normalize_text(text: str) -> str:
     return " ".join(text.split())
 
 
-def _content_hash(normalized_text: str, voice_id: str, tts_backend: str) -> str:
+def _content_hash(normalized_text: str, voice_id: str) -> str:
     digest = hashlib.sha256()
     digest.update(normalized_text.encode("utf-8"))
     digest.update(b"\0")
     digest.update(voice_id.encode("utf-8"))
-    digest.update(b"\0")
-    digest.update(tts_backend.encode("utf-8"))
     return digest.hexdigest()
 
 
@@ -193,9 +191,7 @@ def _create_job(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]
         raise ValueError("text_required")
 
     normalized = _normalize_text(text)
-    content_hash = body.get("content_hash") or _content_hash(
-        normalized, voice_id, tts_backend
-    )
+    content_hash = body.get("content_hash") or _content_hash(normalized, voice_id)
     now = _utc_now_iso()
     job_token = secrets.token_urlsafe(32)
 
@@ -224,6 +220,17 @@ def _create_job(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]
             raise
         existing = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
         if existing:
+            if existing.get("tts_backend") != tts_backend:
+                print(
+                    f"UPDATING {content_hash} from {existing.get('tts_backend')} to {tts_backend}",
+                    flush=True,
+                )
+                _jobs.update_item(
+                    Key={"content_hash": content_hash},
+                    UpdateExpression="SET tts_backend = :backend",
+                    ExpressionAttributeValues={":backend": tts_backend},
+                )
+                existing["tts_backend"] = tts_backend
             return _response(
                 200,
                 {

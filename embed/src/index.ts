@@ -102,7 +102,6 @@ export async function boot(options: BootOptions = {}): Promise<HTMLElement> {
   const contentHash = computeContentHash(
     text,
     config.voiceId,
-    config.ttsBackend,
   );
 
   const api = new AuritusApiClient({
