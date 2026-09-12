@@ -42,7 +42,8 @@ line-length = 88
 
 [tool.ruff.lint]
 # B008: typer.Option() in defaults is the standard Typer pattern, not a bug
-ignore = ["B008"]
+# F401: behave step files use cross-step imports that ruff sees as unused
+ignore = ["B008", "F401"]
 
 [tool.black]
 line-length = 88
