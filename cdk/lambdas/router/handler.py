@@ -122,8 +122,16 @@ def _require_operator(_headers: dict[str, str]) -> None:
 
 
 def _check_job_token(headers: dict[str, str], content_hash: str) -> bool:
-    """Return whether the request has the token belonging to a job."""
+    """Return whether the request has the token belonging to a job.
+
+    Checks both the ``X-Auritus-Job-Token`` header and the ``Authorization:
+    Bearer <token>`` header for the job token.
+    """
     token = headers.get("x-auritus-job-token", "")
+    if not token:
+        auth = headers.get("authorization", "")
+        if auth.lower().startswith("bearer "):
+            token = auth.split(" ", 1)[1].strip()
     if not token:
         return False
     item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
