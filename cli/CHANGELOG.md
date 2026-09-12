@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.2.4 (2026-09-12)
+
+### Bug Fixes
+
+- Remove shebang from app.py and fix import sorting
+  ([`58fd0ef`](https://github.com/AnthusAI/Auritus/commit/58fd0ef9818f7ce9d8d90d61cae62034664b97e4))
+
+
 ## v0.2.3 (2026-09-12)
 
 ### Bug Fixes
