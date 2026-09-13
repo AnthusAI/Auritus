@@ -3,7 +3,7 @@
   "title": "Home page narrates its own thirty-second pitch",
   "description": "Put the product on the home page doing its own elevator pitch, so a\nvisitor can hear what Auritus does instead of only reading about it.\n\n## Behaviour\n\nA \"Hear it for yourself\" section sits directly after the hero. The panel is\nshaped like a publisher article with the embed above it — which is what a\npage carrying Auritus actually looks like. The copy in the panel is both\nwhat you read and what the player speaks: 76 spoken words, about thirty\nseconds at a normal narration pace, opening with \"Press play. What you\nhear is this page reading itself.\" The credit line carries\n`data-auritus-ignore` so it is not read aloud.\n\nThe player's CSS variables point at the site tokens rather than a second\nset of colours, so the embed follows the newsprint palette in both schemes\nwith nothing to keep in sync.\n\n## Hero copy\n\nCut the headline to make room for it. \"Let every article speak. Keep the\nchoices that matter.\" was two headlines: the second sentence restates the\nsection below it, which already carries that framing as \"Control is the\nproduct\", and at five wrapped lines the type could not do its job. Cut to\nthe first sentence and raised the size. The hero intro had the same\nduplication — its last sentence repeated the three choice cards verbatim —\nso it is one sentence now.\n\n## Proven\n\nContent hash `2caf28aa` returns `done` with a signed `audio_url`; the\nplayer reports \"Ready\" and renders a single card. Verified in a real\nbrowser, not the in-app preview pane, which blocks the cross-origin job\ncall and is not a valid environment for this.\n\n## Gherkin\n\n```gherkin\nFeature: The home page demonstrates narration on itself\n  Scenario: A visitor hears what Auritus does\n    Given the home page carries the Auritus embed over its demo article\n    When the visitor presses play\n    Then the page narrates its own description\n    And the narration runs about thirty seconds\n    And the credit line is not read aloud\n```\n\n## Files\n\n- `site/components/ElevatorPitch.tsx` (new)\n- `site/app/page.tsx` — demo section after the hero, hero copy\n- `site/app/globals.css` — `.demo-section`, `.demo-panel`, `.demo-article`\n\nBranch `feat/newsprint-brand-lockup`, not yet merged.",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,12 +17,19 @@
       "text": "Merging the newsprint home-page demo (`ElevatorPitch`, Hear it for yourself) onto develop, keeping the boot-race fix from PR #33 so overlapping Strict Mode boots cannot wipe the player. Spoken copy stays the Kokoro hash `2caf28aa`. After merge: PR vs develop, then promote to main so aurit.us visitors can press Play.",
       "created_at": "2026-09-13T17:49:27.393086Z",
       "comment_type": "default"
+    },
+    {
+      "id": "02250542-1449-489f-b1c7-942f4e529039",
+      "author": "ryan",
+      "text": "Merged on develop via PR #34. Home page Hear it for yourself panel posts Kokoro hash `2caf28aa`; credit line is ignored. Playwright landing tests passed locally. aurit.us still needs a promote-to-main PR.",
+      "created_at": "2026-09-13T18:08:41.856840Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T17:28:47.378387Z",
-  "updated_at": "2026-09-13T17:49:27.393109Z",
-  "closed_at": null,
-  "right_now_summary": "The newsprint home-page demo is being merged, then promoted so visitors can press Play.",
-  "right_now_updated_at": "2026-09-13T17:49:28.684405Z",
+  "updated_at": "2026-09-13T18:08:41.856860Z",
+  "closed_at": "2026-09-13T18:08:35.107033Z",
+  "right_now_summary": "The home page demo is merged on develop and awaits promotion to main.",
+  "right_now_updated_at": "2026-09-13T18:08:43.085141Z",
   "custom": {}
 }
