@@ -35,12 +35,13 @@ jobs:
         run: python -m semantic_release version
 
       - name: Publish to PyPI (trusted publishing)
-        if: success()
+        if: ${{ vars.AURITUS_PUBLISH_PYPI == 'true' }}
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: cli/dist/
 
-# PyPI setup (one-time, outside this workflow):
+# PyPI stays last (Kanbus a01473). Set repository variable AURITUS_PUBLISH_PYPI
+# to the string true only after the trusted publisher exists on pypi.org.
 # 1. Create the `auritus` project on PyPI.
 # 2. Configure a trusted publisher (OIDC) for this GitHub repo/workflow.
 # 3. Ensure `python-semantic-release` builds into cli/dist/ before the publish step.

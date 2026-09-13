@@ -229,30 +229,24 @@ test("Play after the clip ends starts Kokoro speech from the beginning", async (
 
   await page.getByRole("button", { name: "Play", disabled: false }).click();
 
-  const afterRestart = await page.locator(".auritus-root").evaluate(
-    async (host) => {
-      const audio = host.shadowRoot?.querySelector("audio");
-      const playBtn = host.shadowRoot?.querySelector(
+  await page.waitForFunction(
+    () => {
+      const host = document.querySelector(".auritus-root");
+      const audio = host?.shadowRoot?.querySelector("audio");
+      const playBtn = host?.shadowRoot?.querySelector(
         ".auritus-play",
       ) as HTMLButtonElement | null;
-      if (!audio || !playBtn) {
-        throw new Error("player audio or Play control missing");
-      }
-      await new Promise((resolve) => {
-        window.setTimeout(resolve, 1200);
-      });
-      return {
-        currentTime: audio.currentTime,
-        paused: audio.paused,
-        label: playBtn.getAttribute("aria-label"),
-      };
+      return Boolean(
+        audio &&
+          playBtn &&
+          !audio.paused &&
+          audio.currentTime > 0 &&
+          audio.currentTime < 8 &&
+          playBtn.getAttribute("aria-label") === "Pause",
+      );
     },
+    { timeout: 15_000 },
   );
-
-  expect(afterRestart.paused).toBe(false);
-  expect(afterRestart.currentTime).toBeGreaterThan(0);
-  expect(afterRestart.currentTime).toBeLessThan(8);
-  expect(afterRestart.label).toBe("Pause");
 });
 
 test("themed example posts the same Gettysburg excerpt with Kokoro", async ({
