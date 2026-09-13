@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from behave import given, then, when
 
@@ -11,29 +11,40 @@ from auritus.auth import (
     credentials_path,
     get_access_token,
     load_tokens,
+    login_with_password,
     save_tokens,
 )
 
 
-@given("a mock Cognito token endpoint")
-def step_mock_endpoint(context) -> None:
-    context.mock_tokens = {
-        "access_token": "mock-access",
-        "refresh_token": "mock-refresh",
-        "expires_in": 3600,
-        "token_type": "Bearer",
+@given("a mock Cognito USER_PASSWORD_AUTH endpoint")
+def step_mock_initiate_auth(context) -> None:
+    context.mock_username = "operator@example.com"
+    context.mock_password = "placeholder-password"
+    context.mock_auth_result = {
+        "AuthenticationResult": {
+            "AccessToken": "mock-access",
+            "RefreshToken": "mock-refresh",
+            "ExpiresIn": 3600,
+            "TokenType": "Bearer",
+        }
     }
     clear_tokens()
 
 
-@given("the operator completes the OAuth loopback flow")
-def step_complete_oauth(context) -> None:
-    save_tokens(
-        {
-            **context.mock_tokens,
-            "expires_at": 9_999_999_999,
-        }
-    )
+@when("the operator logs in with email and password")
+def step_password_login(context) -> None:
+    mock_client = MagicMock()
+    mock_client.initiate_auth.return_value = context.mock_auth_result
+
+    mock_config = {
+        "cognito_client_id": "test-client",
+        "region": "us-east-1",
+    }
+
+    with patch("auritus.auth.boto3.client", return_value=mock_client), patch(
+        "auritus.auth.load_config", return_value=mock_config
+    ):
+        login_with_password(context.mock_username, context.mock_password)
 
 
 @then("Cognito tokens are cached for the CLI")
@@ -45,6 +56,7 @@ def step_tokens_cached(context) -> None:
     assert cached is not None
     assert cached.get("access_token") == "mock-access"
     assert cached.get("refresh_token") == "mock-refresh"
+    assert cached.get("obtained_at") is not None
 
 
 @given("cached Cognito tokens that are near expiry")
@@ -109,8 +121,17 @@ def step_live_pool(context) -> None:
     )
 
 
-@when("the operator runs auritus login")
-def step_run_login(context) -> None:
+@given("the operator completes the OAuth loopback flow")
+def step_complete_oauth(context) -> None:
+    if not context.integration:
+        return
+    raise NotImplementedError(
+        "Live OAuth is exercised manually with AURITUS_INTEGRATION=1"
+    )
+
+
+@when("the operator runs auritus login via Google OAuth")
+def step_run_login_google(context) -> None:
     if not context.integration:
         return
     raise NotImplementedError(

@@ -218,9 +218,13 @@ class BackendStack(Stack):
                 ],
             ),
             supported_identity_providers=[
+                cognito.UserPoolClientIdentityProvider.COGNITO,
                 cognito.UserPoolClientIdentityProvider.GOOGLE,
             ],
-            auth_flows=cognito.AuthFlow(user_srp=True),
+            auth_flows=cognito.AuthFlow(
+                user_password=True,
+                user_srp=True,
+            ),
         )
         user_pool_client.node.add_dependency(google_idp)
 
