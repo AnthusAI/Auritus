@@ -1,0 +1,20 @@
+{
+  "id": "auritus-a67ffec0-8e90-4653-b60d-75bab608609d",
+  "title": "Example pages have unique long excerpts and distinct TTS backends",
+  "description": "Live examples currently replay the ignore-example WAV. Causes: short similar fixtures, Next.js client navigation not re-booting the embed, and 8-character FNV hashes.\n\n## Behavior\nEach example has at least two public-domain paragraphs of unique spoken text. Basic and themed use Kokoro. A Qwen example requests tts_backend qwen. Ignore still demonstrates ignore/pronounce on a longer article. Navigating between examples boots a new player for that page's hash. Higgs remains off the examples (tone stub).\n\nSee features/example_pages.feature.",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-f3fac494-0495-4d18-a1e6-4a9755e1fe1a",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T04:00:09.578243Z",
+  "updated_at": "2026-09-13T04:04:35.973758Z",
+  "closed_at": null,
+  "right_now_summary": "Example pages use unique long excerpts, select their TTS backends, and reboot players when navigation changes.",
+  "right_now_updated_at": "2026-09-13T04:04:39.749617Z",
+  "custom": {}
+}
