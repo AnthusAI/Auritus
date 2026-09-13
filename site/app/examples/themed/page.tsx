@@ -20,6 +20,7 @@ export default function ThemedExamplePage() {
         <Link href="/docs">Docs</Link>
         <Link href="/examples/ignore">Ignore example</Link>
       </nav>
+      <div className="auritus-player-host" />
       <article className="example-article">
         <h1>Themed player example</h1>
         <p>
@@ -45,6 +46,7 @@ export default function ThemedExamplePage() {
         ttsBackend="kokoro"
         voiceId="af_heart"
         root=".example-article"
+        playerHost=".auritus-player-host"
       />
     </main>
   );

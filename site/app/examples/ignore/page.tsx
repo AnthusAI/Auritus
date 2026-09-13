@@ -9,6 +9,7 @@ export default function IgnoreExamplePage() {
         <Link href="/examples/basic">Basic example</Link>
         <Link href="/docs/ignore-rules">Ignore rules</Link>
       </nav>
+      <div className="auritus-player-host" />
       <article className="example-article">
         <h1>Ignore markup example</h1>
         <p>
@@ -40,6 +41,7 @@ export default function IgnoreExamplePage() {
         ttsBackend="kokoro"
         voiceId="af_heart"
         root=".example-article"
+        playerHost=".auritus-player-host"
       />
     </main>
   );
