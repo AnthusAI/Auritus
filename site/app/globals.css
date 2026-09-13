@@ -208,7 +208,7 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
 .auritus-placeholder-controls { align-items: center; display: flex; gap: 12px; margin-top: 10px; }
 .auritus-placeholder-controls button { appearance: none; background: var(--auritus-accent, #2d5f3f); border: none; border-radius: 50%; color: var(--auritus-play-fg, #ffffff); cursor: not-allowed; flex-shrink: 0; font-size: 0.75rem; font-weight: 700; height: 40px; opacity: 0.45; width: 40px; }
 .auritus-placeholder-track { background: var(--auritus-track, color-mix(in srgb, currentColor 25%, transparent)); border-radius: 999px; flex: 1; height: 4px; }
-.auritus-player-host:has(.auritus-root:not(:empty)) .auritus-player-placeholder { display: none; }
+.auritus-player-host:has(.auritus-root) .auritus-player-placeholder { display: none; }
 
 @media (max-width: 800px) {
   .marketing-header, .docs-nav { align-items: flex-start; flex-direction: column; gap: 1rem; }
