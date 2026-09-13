@@ -1,0 +1,20 @@
+{
+  "id": "auritus-d49109f5-deae-4517-b9db-da349e5c631d",
+  "title": "Docs match Cognito password login",
+  "description": "Operator docs still tell people auritus login is Google OAuth/PKCE. Update README, docs/SELF_HOSTING.md, docs/ARCHITECTURE.md, docs/ACCEPTANCE.md, and site self-hosting page to USER_PASSWORD_AUTH: auritus login --username.",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-f08aeaf4-3cec-484d-9557-2835c15c2fdb",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T03:49:53.105954Z",
+  "updated_at": "2026-09-13T03:49:53.106014Z",
+  "closed_at": null,
+  "right_now_summary": "The docs still describe Google OAuth/PKCE instead of Cognito password login.",
+  "right_now_updated_at": "2026-09-13T03:49:54.968636Z",
+  "custom": {}
+}
