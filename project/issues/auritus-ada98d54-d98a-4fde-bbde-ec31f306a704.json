@@ -1,0 +1,28 @@
+{
+  "id": "auritus-ada98d54-d98a-4fde-bbde-ec31f306a704",
+  "title": "Build D2 documentation diagram pipeline and educational landing page",
+  "description": "Define a documented D2-based diagram generation pipeline, publish conceptual and AWS deployment diagrams in the README and website documentation, and redesign the landing page around data control, open-model choice, cost control, local GPU generation, and AWS fallback. Do not represent secure-by-design controls as final; add a clear placeholder structure for that evolving material.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-9d56431e-f108-450f-9605-5637012aad30",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "e8f231b1-519d-456d-a363-d939282ac201",
+      "author": "ryan",
+      "text": "Milestone update: D2 diagram pipeline, visual documentation, system light/dark design, and mobile overflow regression coverage are in the product PR. The task remains in progress until the product change lands on develop.",
+      "created_at": "2026-09-13T15:26:49.451539Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-13T15:26:32.879099Z",
+  "updated_at": "2026-09-13T15:26:49.451561Z",
+  "closed_at": null,
+  "right_now_summary": "The product PR adds the D2 pipeline, documentation, landing page, theme support, and mobile regression tests.",
+  "right_now_updated_at": "2026-09-13T15:26:51.733714Z",
+  "custom": {}
+}

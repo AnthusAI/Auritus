@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-13T14:22:07.809264Z",
   "closed_at": null,
-  "right_now_summary": "The team is finishing CI, player fixes, README updates, and live AWS checks for Qwen and fallback paths.",
-  "right_now_updated_at": "2026-09-13T15:09:19.501086Z",
+  "right_now_summary": "Auritus runs in production while the team adds CI, polishes the player, and verifies Qwen and publishing.",
+  "right_now_updated_at": "2026-09-13T15:26:55.003999Z",
   "custom": {}
 }
