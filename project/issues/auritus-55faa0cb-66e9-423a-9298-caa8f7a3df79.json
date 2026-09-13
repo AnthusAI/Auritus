@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-11T21:38:21.475254Z",
   "closed_at": null,
-  "right_now_summary": "Auritus works locally and on the site, while the team adds CI and completes real-AWS checks.",
-  "right_now_updated_at": "2026-09-13T05:13:18.792170Z",
+  "right_now_summary": "The core system works, while the team adds CI checks and verifies AWS and PyPI releases.",
+  "right_now_updated_at": "2026-09-13T11:47:13.396607Z",
   "custom": {}
 }
