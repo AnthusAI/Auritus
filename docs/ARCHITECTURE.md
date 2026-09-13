@@ -13,7 +13,7 @@ work, and AWS Batch runs only when nobody claims in time.
 | DynamoDB | Job mutex state, site registry |
 | Local worker (`auritus worker`) | Claim, synthesize, upload audio |
 | Step Functions + Batch | Wait for local claim window, then GPU fallback |
-| Cognito + Google | Operator CLI authentication |
+| Cognito | Operator CLI authentication (password auth; optional Google IdP) |
 | S3 + CloudFront | Private audio objects, short-lived signed playback URLs |
 
 ## Request flow
@@ -67,12 +67,13 @@ sequenceDiagram
   quotas). Site keys are not Cognito JWTs; they are deployer-issued capabilities
   scoped to a hostname.
 
-## Operator auth (Cognito + Google)
+## Operator auth (Cognito)
 
-- CDK provisions a Cognito user pool with Google as an external IdP (client
-  id/secret in Secrets Manager).
-- `auritus login` runs OAuth authorization code + PKCE on loopback and stores
-  short-lived tokens in the OS keyring (file fallback).
+- CDK provisions a Cognito user pool and app client. Google may be attached as
+  an optional external IdP (client id/secret in Secrets Manager); the CLI does
+  not use that path today.
+- `auritus login --username <email>` calls Cognito `USER_PASSWORD_AUTH` and
+  stores short-lived JWTs in `~/.auritus/credentials` (mode 0600).
 - Operator routes (`/sites`, claimable listing, kill switch) require
   `Authorization: Bearer` JWT validated by a Lambda authorizer.
 

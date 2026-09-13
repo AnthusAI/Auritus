@@ -1,23 +1,29 @@
 # Self-hosting Auritus
 
-Run the CDK backend in your AWS account, authenticate operators with your own
-Google OAuth client, and serve audio from your stack while using the open-source
+Run the CDK backend in your AWS account, authenticate operators with Cognito
+email and password, and serve audio from your stack while using the open-source
 CLI and embed.
 
 ## Prerequisites
 
 - AWS account with permissions for CDK bootstrap and deploy
 - Python 3.10+, Node.js 20+ (for site/embed builds)
-- A Google Cloud OAuth 2.0 client (Web application) for Cognito federation
+- A Cognito user in the deployed user pool (create in the Cognito console or
+  your own provisioning flow)
 
-## 1. Google OAuth client (bring your own)
+Optional: a Google Cloud OAuth 2.0 client if you want Google as a Cognito
+external IdP for hosted UI or future flows. It is not required for
+`auritus login`.
+
+## 1. Google OAuth client (optional Cognito IdP)
+
+Skip this section if operators only use native pool users and
+`auritus login --username`.
 
 1. In [Google Cloud Console](https://console.cloud.google.com/), create an OAuth
    client of type **Web application**.
 2. Authorized redirect URIs must include the Cognito hosted UI callback for
-   your user pool (after deploy, Cognito shows the exact URL). The CLI uses
-   loopback callbacks on `http://127.0.0.1:<port>/callback` for the app client
-   configured in CDK.
+   your user pool (after deploy, Cognito shows the exact URL).
 3. Store `client_id` and `client_secret` in the stack's Secrets Manager secret
    (`GoogleOAuthSecret`) as JSON keys `client_id` and `client_secret`, or pass
    `google_oauth_secret_arn` CDK context if you manage the secret separately.
@@ -41,13 +47,16 @@ Context knobs (optional):
 
 ## 3. Operator login
 
+Create a user in the Cognito user pool if you have not already, then:
+
 ```bash
-auritus login
+auritus login --username you@example.com
 ```
 
-This opens Google sign-in via Cognito, exchanges the authorization code for
-tokens, and caches them for subsequent `auritus site`, `auritus worker`, and
-`auritus killswitch` commands.
+Enter the pool password when prompted (or pass `--password`). The CLI uses
+Cognito `USER_PASSWORD_AUTH`, caches short-lived JWTs under
+`~/.auritus/credentials`, and uses them for subsequent `auritus site`,
+`auritus worker`, and `auritus killswitch` commands.
 
 ## 4. Register a site and embed
 
@@ -86,7 +95,7 @@ embed assets from your CDN.
 
 | Symptom | Check |
 | --- | --- |
-| `auritus login` fails immediately | Cognito domain, client id, Google secret JSON |
+| `auritus login` fails (wrong password, user missing) | User exists in the pool, password is correct, app client allows `USER_PASSWORD_AUTH`, local config has pool id and client id from deploy |
 | Embed 403 on job create | Site key, allowed origin, quota |
 | Audio never ready | Worker logs, Batch queue state, Step Functions execution |
 | Batch never runs | Queue disabled by budget or kill switch |
