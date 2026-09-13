@@ -92,6 +92,7 @@ test("landing page posts the Kokoro product pitch", async ({ page }) => {
   expect(body.content_hash).toBe("2caf28aa");
   expect(body.text).toContain("Press play");
   expect(body.text).toContain("What you hear is this page reading itself");
+  expect(body.text).not.toContain("Narrated by Auritus with Kokoro");
   await expect(page.locator(".auritus-root")).toBeVisible({ timeout: 15_000 });
   await page.waitForFunction(
     () => {
@@ -110,7 +111,7 @@ test("landing page explains the local-first cloud fallback", async ({
 
   await expect(
     page.getByRole("heading", {
-      name: "Let every article speak. Keep the choices that matter.",
+      name: "Let every article speak.",
     }),
   ).toBeVisible();
   await expect(

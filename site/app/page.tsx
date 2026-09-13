@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AuritusEmbed } from "@/components/AuritusEmbed";
 import { AuritusPlayerHost } from "@/components/AuritusPlayerHost";
-import { HOME_SPOKEN_PITCH } from "@/components/homeSpokenPitch";
+import { ElevatorPitch } from "@/components/ElevatorPitch";
 
 const choices = [
   {
@@ -26,8 +26,25 @@ export default function HomePage() {
   return (
     <main>
       <header className="marketing-header">
-        <Link className="wordmark" href="/" aria-label="Auritus home">
-          Auritus<span>.</span>
+        <Link
+          className="brand-lockup"
+          href="/"
+          aria-label="Auritus home: Be heard"
+        >
+          <Image
+            className="brand-announcer"
+            src="/auritus-announcer.png"
+            alt=""
+            width={512}
+            height={504}
+            priority
+          />
+          <span className="brand-lockup-copy">
+            <span className="wordmark">
+              Auritus<span>.</span>
+            </span>
+            <span className="brand-tagline">Be heard</span>
+          </span>
         </Link>
         <nav aria-label="Main navigation">
           <Link href="/docs/architecture">Architecture</Link>
@@ -43,22 +60,12 @@ export default function HomePage() {
       <section className="marketing-hero" aria-labelledby="hero-title">
         <div className="hero-copy">
           <p className="kicker">Open source narration infrastructure</p>
-          <h1 id="hero-title">
-            Let every article speak. Keep the choices that matter.
-          </h1>
+          <h1 id="hero-title">Let every article speak.</h1>
           <p className="hero-intro">
-            Auritus turns the useful text on a page into on-demand audio with a
-            small web embed, open-model workers, and an AWS safety net. You
-            control the model, the data path, and the balance of quality and
-            cost.
+            Auritus turns the readable text on any page into on-demand audio —
+            with a small embed, open-model workers you run, and an AWS safety
+            net behind them.
           </p>
-          <AuritusPlayerHost
-            name="What Auritus does"
-            byline="A 30-second introduction, narrated by Auritus"
-          />
-          <article className="home-spoken">
-            <p>{HOME_SPOKEN_PITCH}</p>
-          </article>
           <div className="hero-actions">
             <Link className="button button-primary" href="/docs/usage">
               Start with the embed
@@ -93,6 +100,32 @@ export default function HomePage() {
             priority
           />
         </div>
+      </section>
+
+      <section className="demo-section" aria-labelledby="demo-title">
+        <div className="section-heading compact">
+          <p className="kicker">Hear it for yourself</p>
+          <h2 id="demo-title">Thirty seconds, in its own voice.</h2>
+        </div>
+        <div className="demo-panel">
+          <AuritusPlayerHost
+            name="What Auritus does"
+            byline="A 30-second introduction, narrated by Auritus"
+          />
+          <article className="demo-article">
+            <ElevatorPitch />
+          </article>
+        </div>
+        <AuritusEmbed
+          siteKey="demo-site-key"
+          apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
+          name="What Auritus does"
+          byline="A 30-second introduction, narrated by Auritus"
+          ttsBackend="kokoro"
+          voiceId="af_heart"
+          root=".demo-article"
+          playerHost=".demo-panel .auritus-player-host"
+        />
       </section>
 
       <section className="choice-section" aria-labelledby="control-title">
@@ -221,16 +254,6 @@ export default function HomePage() {
           <a href="https://github.com/AnthusAI/Auritus">GitHub</a>
         </div>
       </footer>
-      <AuritusEmbed
-        siteKey="demo-site-key"
-        apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
-        name="What Auritus does"
-        byline="A 30-second introduction, narrated by Auritus"
-        ttsBackend="kokoro"
-        voiceId="af_heart"
-        root=".home-spoken"
-        playerHost=".auritus-player-host"
-      />
     </main>
   );
 }

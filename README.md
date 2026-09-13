@@ -39,8 +39,8 @@ and run `make diagrams`.
 
 ## Status
 
-The public site is live at [aurit.us](https://aurit.us). Example pages play
-Kokoro and Qwen speech. Local GPU workers generate that audio when they claim
+The public site is live at [aurit.us](https://aurit.us). The home page and
+example pages play Kokoro and Qwen speech. Local GPU workers generate that audio when they claim
 jobs; the AWS Batch GPU image (Kokoro and Qwen) is the fallback after the
 claim timeout. Operator CLI
 login is Cognito email and password. The CLI is not yet published to PyPI;
