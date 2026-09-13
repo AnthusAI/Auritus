@@ -2,6 +2,24 @@
 
 <!-- version list -->
 
+## v0.8.0 (2026-09-13)
+
+### Bug Fixes
+
+- Use Qwen3TTSModel on Linux Batch and pin torchaudio
+  ([`5665f99`](https://github.com/AnthusAI/Auritus/commit/5665f9958397e0830d27cec3e616c12faeefaa3a))
+
+### Documentation
+
+- Name Kokoro and Qwen as speech backends in the README
+  ([`22c2296`](https://github.com/AnthusAI/Auritus/commit/22c2296db690d22e64f36daf4c88ee57a4ca834b))
+
+### Features
+
+- Bake Qwen into the Batch worker image
+  ([`97b81a0`](https://github.com/AnthusAI/Auritus/commit/97b81a027331116e4fff9eb5c4c2d642de046bb7))
+
+
 ## v0.7.0 (2026-09-13)
 
 ### Features
