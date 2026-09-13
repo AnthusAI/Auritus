@@ -3,18 +3,26 @@
   "title": "Playwright proves Qwen and example pages speak",
   "description": "## Behavior\n\nKokoro basic and the home pitch already require a playable clip of real duration. Qwen, themed, and ignore only assert the POST body, so a tone stub or a hung player would still pass CI.\n\n```gherkin\nFeature: Example pages demonstrate distinct speech\n  Scenario: Qwen example audio is spoken-length\n    Given the Qwen example page\n    When the player has a playable clip\n    Then audio duration is at least twenty seconds\n\n  Scenario: Themed and ignore examples also speak\n    Given those example pages\n    When each player has a playable clip\n    Then audio duration is at least eight seconds\n```\n\n## Implementation brief\n\n1. `site/tests/acceptance.spec.ts` — after the existing POST asserts, `waitForPlayableClip` + `clipDurationSeconds` on `/examples/qwen` (>= 20), `/examples/themed` (>= 8), and `/examples/ignore` (>= 8).\n2. Do not enable PyPI.",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "a5ece000-133b-478e-b30c-40250ae945db",
+      "author": "ryan",
+      "text": "Merged PR #41. Qwen (>=20s), themed, and ignore (>=8s) now require a playable clip. Also unblocked develop CI by catching Batch describe errors as BotoCoreError/ClientError.",
+      "created_at": "2026-09-13T22:03:44.557574Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T21:51:17.388317Z",
-  "updated_at": "2026-09-13T21:52:12.575363Z",
-  "closed_at": null,
-  "right_now_summary": "Playwright now verifies that Qwen, themed, and ignore examples play audio of the required length.",
-  "right_now_updated_at": "2026-09-13T21:52:14.121591Z",
+  "updated_at": "2026-09-13T22:03:44.557596Z",
+  "closed_at": "2026-09-13T22:03:38.849584Z",
+  "right_now_summary": "Playwright now checks that Qwen, themed, and ignore examples produce spoken-length audio.",
+  "right_now_updated_at": "2026-09-13T22:03:46.553548Z",
   "custom": {}
 }
