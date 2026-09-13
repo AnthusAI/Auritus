@@ -10,11 +10,19 @@
   "parent": "auritus-f3fac494-0495-4d18-a1e6-4a9755e1fe1a",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "7b98e32b-85e7-4df2-9196-b5e5786ed27f",
+      "author": "ryan",
+      "text": "Product branch `feat/example-unique-speech` is up. Root cause was Next.js `Script` keeping the first page's attrs and never re-booting. Examples now have unique long public-domain copy; Qwen has its own page. Higgs stays off the demos.",
+      "created_at": "2026-09-13T04:13:04.320527Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T04:00:09.578243Z",
-  "updated_at": "2026-09-13T04:04:35.973758Z",
+  "updated_at": "2026-09-13T04:13:04.320722Z",
   "closed_at": null,
-  "right_now_summary": "Example pages use unique long excerpts, select their TTS backends, and reboot players when navigation changes.",
-  "right_now_updated_at": "2026-09-13T04:04:39.749617Z",
+  "right_now_summary": "Example pages now use unique long excerpts, reboot players correctly, and route the Qwen demo to Qwen; Higgs stays off.",
+  "right_now_updated_at": "2026-09-13T04:13:09.659394Z",
   "custom": {}
 }
