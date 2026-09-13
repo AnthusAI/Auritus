@@ -31,6 +31,10 @@ cdk/cdk-outputs.json
 AGENTS.local.md
 .auritus/
 
+# Playwright
+site/test-results/
+site/playwright-report/
+
 # OS / editor
 .DS_Store
 .idea/
