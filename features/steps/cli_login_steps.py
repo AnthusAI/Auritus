@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
+from behave import given, then, when
+
 from auritus.auth import (
     clear_tokens,
     credentials_path,
@@ -11,7 +13,6 @@ from auritus.auth import (
     load_tokens,
     save_tokens,
 )
-from behave import given, then, when
 
 
 @given("a mock Cognito token endpoint")
