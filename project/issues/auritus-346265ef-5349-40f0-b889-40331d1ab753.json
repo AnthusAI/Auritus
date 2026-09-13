@@ -38,12 +38,19 @@
       "text": "Triggered worker-image workflow on develop (run 34730272382) so ECR gets baked Kokoro. Local Docker was down. Kanbus JSON restored from 2847742 after stash-pop conflict markers broke kbs.",
       "created_at": "2026-09-13T01:21:45.387142Z",
       "comment_type": "default"
+    },
+    {
+      "id": "6dafba09-3ac1-45ff-b2ec-e093a8156db1",
+      "author": "ryan",
+      "text": "PR #4 merged: Batch job definition AURITUS_TTS_BACKEND=kokoro. Still need ECR image (workflow) + live Batch job with local worker off.",
+      "created_at": "2026-09-13T01:28:05.363109Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T00:13:13.183742Z",
-  "updated_at": "2026-09-13T01:21:45.387162Z",
+  "updated_at": "2026-09-13T01:28:05.363378Z",
   "closed_at": null,
-  "right_now_summary": "The worker image build was triggered; live Batch validation still awaits the ECR image and an authorized job.",
-  "right_now_updated_at": "2026-09-13T01:21:47.502078Z",
+  "right_now_summary": "The Kokoro worker is merged, but the ECR image rebuild and live Batch proof are still needed.",
+  "right_now_updated_at": "2026-09-13T01:28:07.314322Z",
   "custom": {}
 }
