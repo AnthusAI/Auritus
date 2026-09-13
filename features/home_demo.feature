@@ -1,5 +1,7 @@
 Feature: The home page demonstrates narration on itself
   A visitor can hear what Auritus does instead of only reading about it.
+  Playwright requires the ready Kokoro clip to last at least twenty seconds
+  so a tone stub cannot pass as the demo.
 
   Scenario: A visitor hears what Auritus does
     Given the home page spoken article
