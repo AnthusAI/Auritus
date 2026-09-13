@@ -2,6 +2,11 @@ import Link from "next/link";
 
 const sections = [
   {
+    href: "/docs/architecture",
+    title: "Architecture",
+    summary: "Visual guide to the local-first worker, AWS fallback, identity choices, and secure-design status.",
+  },
+  {
     href: "/docs/usage",
     title: "Usage",
     summary: "Embed script, site keys, and how jobs flow from browser to audio.",

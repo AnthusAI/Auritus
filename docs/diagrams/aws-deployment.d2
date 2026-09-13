@@ -1,0 +1,57 @@
+direction: right
+
+vars: {
+  d2-config: {
+    pad: 32
+  }
+}
+
+site: {
+  label: "Publisher origin"
+}
+
+aws: {
+  label: "Customer AWS account"
+
+  api: {
+    label: "HTTP API + router"
+  }
+  jobs: {
+    label: "Job and site tables\nconditional claim mutex"
+  }
+  workflow: {
+    label: "Fallback workflow"
+  }
+  batch: {
+    label: "GPU fallback\nopen-model worker"
+  }
+  audio: {
+    label: "Private audio"
+  }
+  edge: {
+    label: "Short-lived playback URL"
+  }
+  controls: {
+    label: "Quota, budget,\nand kill switch"
+    shape: hexagon
+  }
+}
+
+local: {
+  label: "Optional local GPU"
+  worker: "Claims first,\nsynthesizes locally"
+}
+
+site -> aws.api: "site key + origin"
+aws.api -> aws.jobs: "create / claim / status"
+aws.api -> aws.workflow: "start fallback timer"
+local.worker -> aws.api: "claim job"
+local.worker -> aws.audio: "upload audio"
+aws.workflow -> aws.jobs: "still pending?"
+aws.workflow -> aws.batch: "only if unclaimed"
+aws.batch -> aws.api: "claim, upload, complete"
+aws.batch -> aws.audio
+aws.api -> aws.edge
+aws.edge -> site: "signed URL"
+aws.controls -> aws.batch: "can disable"
+aws.controls -> aws.api: "enforces limits"

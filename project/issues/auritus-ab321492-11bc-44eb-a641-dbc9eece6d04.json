@@ -1,0 +1,20 @@
+{
+  "id": "auritus-ab321492-11bc-44eb-a641-dbc9eece6d04",
+  "title": "Example first paint shows a Play control and Play restarts speech",
+  "description": "## Behavior\n```gherkin\nFeature: Example player chrome and playback\n  Scenario: The player sits above the spoken article\n    Given the basic example page layout\n    Then the player host is above the example article\n    And the player host shows a Play control before the embed boots\n\n  Scenario: Play after the clip ends starts from the beginning\n    Given generated audio is ready\n    And playback is at the end of the clip\n    When the listener activates Play\n    Then playback starts from the beginning\n```\n\n## Implementation brief\n1. Change `features/example_pages.feature` so first paint is a Play control, not the text Loading player. Update `features/steps/example_pages_steps.py` layout HTML.\n2. `site/components/AuritusEmbed.tsx` `AuritusPlayerHost` renders disabled Play plus title/byline matching player chrome. Pass name/byline from example pages. Style in `site/app/globals.css`.\n3. Playwright: no-JS test expects a Play button, not Loading player. Add a test that clicks Play and asserts audio currentTime advances, including from the end of the clip.\n4. `embed/src/player/index.ts`: Play toggles pause; if ended or currentTime at duration, rewind to 0 then play. Export `rewindIfEnded` and unit-test in `embed/tests/player.test.ts`.",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T15:08:11.779541Z",
+  "updated_at": "2026-09-13T15:09:09.409222Z",
+  "closed_at": null,
+  "right_now_summary": "The example player is being updated to show Play first and restart playback after clips end.",
+  "right_now_updated_at": "2026-09-13T15:09:11.874345Z",
+  "custom": {}
+}

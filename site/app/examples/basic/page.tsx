@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { AuritusEmbed, AuritusPlayerHost } from "@/components/AuritusEmbed";
+import { AuritusEmbed } from "@/components/AuritusEmbed";
+import { AuritusPlayerHost } from "@/components/AuritusPlayerHost";
 import { GettysburgExcerpt } from "@/components/GettysburgExcerpt";
 
 export default function BasicExamplePage() {
@@ -10,7 +11,10 @@ export default function BasicExamplePage() {
         <Link href="/examples/qwen">Same excerpt in Qwen</Link>
         <Link href="/docs/usage">Usage</Link>
       </nav>
-      <AuritusPlayerHost />
+      <AuritusPlayerHost
+        name="Gettysburg Address"
+        byline="Abraham Lincoln, 1863 — Kokoro"
+      />
       <article className="example-article">
         <GettysburgExcerpt backendLabel="Kokoro (af_heart)" />
       </article>

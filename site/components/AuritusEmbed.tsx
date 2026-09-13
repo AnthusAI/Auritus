@@ -61,15 +61,6 @@ function waitForBoot(timeoutMs = 15_000): Promise<AuritusBoot> {
   });
 }
 
-/** First-paint player slot so example pages show chrome before embed.js boots. */
-export function AuritusPlayerHost() {
-  return (
-    <div className="auritus-player-host">
-      <p className="auritus-player-placeholder">Loading player</p>
-    </div>
-  );
-}
-
 export function AuritusEmbed({
   siteKey,
   apiUrl,

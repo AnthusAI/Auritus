@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:50.679842Z",
   "updated_at": "2026-09-13T14:22:04.188943Z",
   "closed_at": null,
-  "right_now_summary": "GitHub releases work, but PyPI publishing awaits trusted publisher setup.",
-  "right_now_updated_at": "2026-09-13T14:22:05.384686Z",
+  "right_now_summary": "The README is being updated, while PyPI publishing awaits proof of live examples and fallback paths.",
+  "right_now_updated_at": "2026-09-13T14:49:02.544273Z",
   "custom": {}
 }

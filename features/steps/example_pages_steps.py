@@ -58,7 +58,13 @@ def step_basic_layout(context) -> None:
     context.page_html = """
 <main class="page">
   <div class="auritus-player-host">
-    <p class="auritus-player-placeholder">Loading player</p>
+    <div class="auritus-player-placeholder">
+      <p class="auritus-placeholder-name">Gettysburg Address</p>
+      <p class="auritus-placeholder-byline">Abraham Lincoln, 1863 — Kokoro</p>
+      <div class="auritus-placeholder-controls">
+        <button type="button" disabled aria-label="Play">Play</button>
+      </div>
+    </div>
   </div>
   <article class="example-article"><h1>Gettysburg Address</h1></article>
 </main>
@@ -74,10 +80,11 @@ def step_player_above_article(context) -> None:
     assert host_at < article_at
 
 
-@then('the player host shows "{label}" before the embed boots')
-def step_player_placeholder(context, label: str) -> None:
+@then("the player host shows a Play control before the embed boots")
+def step_player_placeholder(context) -> None:
     html = context.page_html
-    assert label in html
+    assert 'aria-label="Play"' in html
+    assert "Play" in html
     placeholder_at = html.find("auritus-player-placeholder")
     article_at = html.find('class="example-article"')
     assert placeholder_at != -1 and placeholder_at < article_at
