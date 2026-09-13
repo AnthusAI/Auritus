@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.7.0 (2026-09-13)
+
+### Features
+
+- Speak the same Gettysburg excerpt through Kokoro and Qwen
+  ([`52f61de`](https://github.com/AnthusAI/Auritus/commit/52f61de2b1d3b9b73c51edab7adaffe5f58efb6d))
+
+
 ## v0.6.6 (2026-09-13)
 
 ### Bug Fixes
