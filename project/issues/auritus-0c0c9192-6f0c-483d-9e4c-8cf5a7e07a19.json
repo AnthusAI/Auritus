@@ -3,7 +3,7 @@
   "title": "M-TTS-2: Qwen3-TTS integration",
   "description": "Implement Qwen3-TTS-0.6B (Apache-2.0) as second real TTS backend on GPU.",
   "type": "epic",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -24,12 +24,19 @@
       "text": "Local + live Qwen CustomVoice speech is proven (Gettysburg job 19897b03, ~48s). Worker image still bakes Kokoro only, so Batch/GPU Qwen is not proven. Leave M-TTS-2 open for GPU/Batch Qwen.\n",
       "created_at": "2026-09-13T14:15:12.342513Z",
       "comment_type": "default"
+    },
+    {
+      "id": "fc5ae3fd-6f64-4eae-a4eb-0436426e62cf",
+      "author": "ryan",
+      "text": "Batch GPU Qwen is proven. Job 3044f229 SUCCEEDED with AURITUS_TTS_BACKEND=qwen after the baked qwen-tts image. DynamoDB status done, backend qwen, WAV 24 kHz 8.96s (430 KB). Local worker was paused so it did not steal the job.\n",
+      "created_at": "2026-09-13T14:58:52.477670Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-12T12:31:26.166888Z",
-  "updated_at": "2026-09-13T14:25:00.995104Z",
-  "closed_at": null,
-  "right_now_summary": "Local Qwen speech works, but GPU batch support still needs proof.",
-  "right_now_updated_at": "2026-09-13T14:25:02.276406Z",
+  "updated_at": "2026-09-13T14:58:57.498136Z",
+  "closed_at": "2026-09-13T14:58:57.498082Z",
+  "right_now_summary": "Qwen3-TTS now works in Batch GPU, producing a valid 24 kHz WAV with the baked image.",
+  "right_now_updated_at": "2026-09-13T14:58:59.305701Z",
   "custom": {}
 }
