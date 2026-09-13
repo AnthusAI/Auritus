@@ -1,5 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AuritusEmbed } from "@/components/AuritusEmbed";
+import { AuritusPlayerHost } from "@/components/AuritusPlayerHost";
+import { ElevatorPitch } from "@/components/ElevatorPitch";
 
 const choices = [
   {
@@ -90,6 +93,32 @@ export default function HomePage() {
             priority
           />
         </div>
+      </section>
+
+      <section className="demo-section" aria-labelledby="demo-title">
+        <div className="section-heading compact">
+          <p className="kicker">Hear it for yourself</p>
+          <h2 id="demo-title">Thirty seconds, in its own voice.</h2>
+        </div>
+        <div className="demo-panel">
+          <AuritusPlayerHost
+            name="What Auritus does"
+            byline="A 30-second introduction, narrated by Auritus"
+          />
+          <article className="demo-article">
+            <ElevatorPitch />
+          </article>
+        </div>
+        <AuritusEmbed
+          siteKey="demo-site-key"
+          apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
+          name="What Auritus does"
+          byline="A 30-second introduction, narrated by Auritus"
+          ttsBackend="kokoro"
+          voiceId="af_heart"
+          root=".demo-article"
+          playerHost=".demo-panel .auritus-player-host"
+        />
       </section>
 
       <section className="choice-section" aria-labelledby="control-title">
