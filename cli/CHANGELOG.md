@@ -2,6 +2,28 @@
 
 <!-- version list -->
 
+## v0.14.0 (2026-09-13)
+
+### Bug Fixes
+
+- Unbreak Ruff on the operator console telemetry path
+  ([`3f7f06c`](https://github.com/AnthusAI/Auritus/commit/3f7f06c125b5b2cb3dcf3aac8a59356bce1fae24))
+
+### Features
+
+- **console**: Operator web console and tts job observability
+  ([#40](https://github.com/AnthusAI/Auritus/pull/40),
+  [`a082e06`](https://github.com/AnthusAI/Auritus/commit/a082e06e1a971867a36f3299c599439ab0818308))
+
+- **player**: Start speech when Play is pressed while waiting
+  ([`cead922`](https://github.com/AnthusAI/Auritus/commit/cead922dd77aeb6378a4f29c1077c4a3cfe493a8))
+
+### Testing
+
+- **site**: Require spoken-length audio on Qwen and example pages
+  ([`81fefa2`](https://github.com/AnthusAI/Auritus/commit/81fefa246a455868e97bf4afc4844ed758d66edb))
+
+
 ## v0.13.0 (2026-09-13)
 
 ### Features
