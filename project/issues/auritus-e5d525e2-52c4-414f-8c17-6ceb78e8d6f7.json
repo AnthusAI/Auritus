@@ -3,7 +3,7 @@
   "title": "M5 - Cloud fallback + spend guardrails",
   "description": "Step Functions fallback with lease/heartbeat/reclaim; GPU Batch image; single-job token; AWS Budgets disables Batch queue; per-site-key quotas; CLI kill-switch.",
   "type": "epic",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -24,12 +24,19 @@
       "text": "Still blocked on operator AWS login (default profile login_session expired). papyrus-agent can see BudgetGuardFn but is denied batch:ListJobs, budgets:ViewBudget, DynamoDB, and CloudWatch Logs. Leave M5 open until a fresh Batch Kokoro job and AuritusDailyGpuBudget path are confirmed after unset AWS_PROFILE && aws login.\n",
       "created_at": "2026-09-13T12:23:23.409122Z",
       "comment_type": "default"
+    },
+    {
+      "id": "3fd43c3f-853c-48ef-a6f5-a1885c34e44c",
+      "author": "ryan",
+      "text": "Fresh proof after AWS login:\n\n- Batch job 3bc8546d (auritus-login-reproof) SUCCEEDED; Kokoro WAV 24 kHz, 6.2s, job status done.\n- Queue auritus-gpu ENABLED. Budget AuritusDailyGpuBudget exists ($50/day, actual ~$10, HEALTHY). BudgetGuardFn, SNS topic, EventBridge BudgetAlarmRule present. CLI kill-switch is implemented; not live-fired against production.\n",
+      "created_at": "2026-09-13T14:15:05.753726Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:38:43.348323Z",
-  "updated_at": "2026-09-13T12:23:23.409157Z",
-  "closed_at": null,
-  "right_now_summary": "AWS login has expired, so fresh Batch and budget checks await a new authenticated session.",
-  "right_now_updated_at": "2026-09-13T12:23:25.172193Z",
+  "updated_at": "2026-09-13T14:15:09.608680Z",
+  "closed_at": "2026-09-13T14:15:09.608641Z",
+  "right_now_summary": "A fresh AWS Batch Kokoro job passed, but spend controls still need live production testing.",
+  "right_now_updated_at": "2026-09-13T14:15:10.683096Z",
   "custom": {}
 }

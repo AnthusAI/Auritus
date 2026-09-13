@@ -12,9 +12,9 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-09-11T21:38:21.475165Z",
-  "updated_at": "2026-09-11T21:38:21.475254Z",
+  "updated_at": "2026-09-13T14:22:07.809264Z",
   "closed_at": null,
-  "right_now_summary": "Auritus runs in production; AWS Batch checks, CI work, and PyPI publishing still await final setup.",
-  "right_now_updated_at": "2026-09-13T14:11:20.389729Z",
+  "right_now_summary": "Auritus works in production, while CI, PyPI publishing, and live AWS checks are still being finished.",
+  "right_now_updated_at": "2026-09-13T14:22:10.330048Z",
   "custom": {}
 }
