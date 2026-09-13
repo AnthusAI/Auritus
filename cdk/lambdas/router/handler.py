@@ -28,6 +28,8 @@ FALLBACK_SECONDS = int(os.environ.get("FALLBACK_SECONDS", "900"))
 DAILY_SITE_QUOTA = int(os.environ.get("DAILY_SITE_QUOTA", "100"))
 BATCH_JOB_QUEUE_NAME = os.environ.get("BATCH_JOB_QUEUE_NAME", "")
 
+KOKORO_DEFAULT_VOICE_ID = "af_heart"
+
 _jobs = _dynamodb.Table(JOBS_TABLE)
 _sites = _dynamodb.Table(SITES_TABLE)
 
@@ -102,6 +104,12 @@ def _json_default(value: Any) -> Any:
 
 def _normalize_text(text: str) -> str:
     return " ".join(text.split())
+
+
+def _resolve_voice_id(raw: str | None) -> str:
+    if not raw or raw == "default":
+        return KOKORO_DEFAULT_VOICE_ID
+    return raw
 
 
 def _content_hash(normalized_text: str, voice_id: str) -> str:
@@ -183,7 +191,7 @@ def _create_job(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]
     _check_daily_quota(site)
 
     text = body.get("text") or ""
-    voice_id = body.get("voice_id") or "default"
+    voice_id = _resolve_voice_id(body.get("voice_id"))
     tts_backend = body.get("tts_backend") or "kokoro"
     name = body.get("name") or ""
     byline = body.get("byline") or ""
@@ -426,7 +434,7 @@ def _redeem_token(
         {
             "content_hash": content_hash,
             "text": item.get("text", ""),
-            "voice_id": item.get("voice_id", "default"),
+            "voice_id": _resolve_voice_id(item.get("voice_id")),
             "tts_backend": item.get("tts_backend", "kokoro"),
             "name": item.get("name", ""),
             "byline": item.get("byline", ""),

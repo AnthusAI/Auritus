@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from auritus.tts import get_backend
+from auritus.tts.kokoro import resolve_kokoro_voice
 
 
 def test_higgs_backend_name_and_stub_generate() -> None:
@@ -19,6 +20,12 @@ def test_qwen_backend_resolves_without_generate() -> None:
 def test_kokoro_backend_resolves_without_generate() -> None:
     kokoro = get_backend("kokoro")
     assert kokoro.name == "kokoro"
+
+
+def test_kokoro_resolve_voice_defaults_to_af_heart() -> None:
+    assert resolve_kokoro_voice({}) == "af_heart"
+    assert resolve_kokoro_voice({"voice_id": "default"}) == "af_heart"
+    assert resolve_kokoro_voice({"voice_id": "am_adam"}) == "am_adam"
 
 
 def test_unknown_backend_raises() -> None:

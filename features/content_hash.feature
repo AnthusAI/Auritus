@@ -4,7 +4,7 @@ Feature: Content hash scope
 
   Scenario: Whitespace normalization is stable
     Given the TTS text "Hello   world."
-    And voice_id "default"
+    And voice_id "af_heart"
     And tts_backend "higgs"
     When the content hash is computed
     And the TTS text becomes "Hello world."
@@ -13,7 +13,7 @@ Feature: Content hash scope
 
   Scenario: Cosmetic metadata does not affect the hash
     Given the TTS text "Article body"
-    And voice_id "default"
+    And voice_id "af_heart"
     And tts_backend "higgs"
     When the content hash is computed
     And the name and byline are changed
@@ -21,7 +21,7 @@ Feature: Content hash scope
 
   Scenario: Backend change does not affect the hash
     Given the TTS text "Article body"
-    And voice_id "default"
+    And voice_id "af_heart"
     And tts_backend "higgs"
     When the content hash is computed
     And tts_backend becomes "qwen"

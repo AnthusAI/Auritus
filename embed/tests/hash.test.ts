@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { computeContentHash, normalizeText } from "../src/generator/hash.js";
 
 const SAMPLE_TEXT = "Hello   world.\nNew line.";
-const VOICE = "default";
+const VOICE = "af_heart";
 
 describe("normalizeText", () => {
   it("collapses whitespace and trims", () => {

@@ -25,6 +25,25 @@ def test_create_job_success(router_resources: dict[str, object]) -> None:
     )["Item"]
     assert response["statusCode"] == 201
     assert item["status"] == "pending"
+    assert item["voice_id"] == "af_heart"
+
+
+def test_create_job_legacy_default_voice_maps_to_af_heart(
+    router_resources: dict[str, object],
+) -> None:
+    """Map legacy default voice_id to Kokoro af_heart."""
+    event = router_resources["event"](
+        "POST",
+        "/jobs",
+        body={"text": "Hello", "voice_id": "default"},
+        headers=_site_headers(),
+    )
+    response = router_resources["handler"].handler(event, None)
+    body = router_resources["response_body"](response)
+    item = router_resources["jobs"].get_item(
+        Key={"content_hash": body["content_hash"]}
+    )["Item"]
+    assert item["voice_id"] == "af_heart"
 
 
 def test_create_job_bad_origin(router_resources: dict[str, object]) -> None:

@@ -39,8 +39,10 @@ test("basic example plays Kokoro speech scoped to article", async ({
   const body = jobRequest.postDataJSON() as {
     text?: string;
     tts_backend?: string;
+    voice_id?: string;
   };
   expect(body.tts_backend).toBe("kokoro");
+  expect(body.voice_id).toBe("af_heart");
   expect(body.text).toContain("Basic narration example");
   expect(body.text).not.toContain("Examples");
   expect(body.text).not.toContain("__next_f");
@@ -106,4 +108,29 @@ test("basic example plays Kokoro speech scoped to article", async ({
     );
 
   expect(durationSeconds).toBeGreaterThanOrEqual(4);
+});
+
+test("ignore example posts Kokoro job without ignored paragraph", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+
+  const createJobRequest = page.waitForRequest(
+    (req) =>
+      req.method() === "POST" && new URL(req.url()).pathname.endsWith("/jobs"),
+    { timeout: 120_000 },
+  );
+
+  await page.goto("/examples/ignore");
+
+  const jobRequest = await createJobRequest;
+  const body = jobRequest.postDataJSON() as {
+    text?: string;
+    tts_backend?: string;
+    voice_id?: string;
+  };
+  expect(body.tts_backend).toBe("kokoro");
+  expect(body.voice_id).toBe("af_heart");
+  expect(body.text).toContain("Spoken body text stays in the narration.");
+  expect(body.text).not.toContain("This paragraph is ignored.");
 });

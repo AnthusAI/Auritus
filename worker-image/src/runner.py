@@ -20,6 +20,12 @@ def _require_env(primary: str, *aliases: str) -> str:
     raise KeyError(f"Missing required environment variable (one of): {names}")
 
 
+def _resolve_voice_id(raw: str | None) -> str:
+    if not raw or raw == "default":
+        return "af_heart"
+    return raw
+
+
 def _auth_headers(bearer: str) -> dict[str, str]:
     return {
         "Authorization": f"Bearer {bearer}",
@@ -139,7 +145,7 @@ def main() -> int:
         audio = backend.generate(
             job_body.get("text") or "",
             {
-                "voice_id": job_body.get("voice_id") or "default",
+                "voice_id": _resolve_voice_id(job_body.get("voice_id")),
                 "name": job_body.get("name") or "",
                 "byline": job_body.get("byline") or "",
             },
