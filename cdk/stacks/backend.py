@@ -397,13 +397,19 @@ class BackendStack(Stack):
             platform_capabilities=["EC2"],
             container_properties=batch.CfnJobDefinition.ContainerPropertiesProperty(
                 image=worker_image_uri,
-                vcpus=2,
-                memory=8192,
                 resource_requirements=[
+                    batch.CfnJobDefinition.ResourceRequirementProperty(
+                        type="VCPU",
+                        value="2",
+                    ),
+                    batch.CfnJobDefinition.ResourceRequirementProperty(
+                        type="MEMORY",
+                        value="8192",
+                    ),
                     batch.CfnJobDefinition.ResourceRequirementProperty(
                         type="GPU",
                         value="1",
-                    )
+                    ),
                 ],
                 job_role_arn=job_role.role_arn,
                 environment=[
