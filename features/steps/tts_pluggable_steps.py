@@ -15,9 +15,23 @@ sys.path.insert(0, str(ROOT / "worker-image" / "src"))
 def step_load_registry(context) -> None:
     from tts import get_backend
 
-    context.registered_backends = [get_backend(name).name for name in ("higgs", "qwen")]
+    context.registered_backends = [
+        get_backend(name).name for name in ("higgs", "qwen", "kokoro")
+    ]
 
 
 @then('registered backends include "{name}"')
 def step_backend_registered(context, name: str) -> None:
     assert name in context.registered_backends
+
+
+@when("the TTS backend is resolved from the registry")
+def step_resolve_backend(context) -> None:
+    from tts import get_backend
+
+    context.resolved_backend = get_backend(context.tts_backend)
+
+
+@then('the resolved backend name is "{name}"')
+def step_resolved_backend_name(context, name: str) -> None:
+    assert context.resolved_backend.name == name
