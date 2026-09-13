@@ -9,11 +9,33 @@ from typing import Any
 
 from auritus.tts.base import TTSBackend
 
+QWEN_DEFAULT_VOICE = "Ryan"
+QWEN_MLX_MODEL = "mlx-community/Qwen3-TTS-12Hz-0.6B-CustomVoice-8bit"
+QWEN_TORCH_MODEL = "Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice"
+LEGACY_QWEN_VOICES = frozenset({"default", "Chelsie"})
+
+
+def resolve_qwen_voice(meta: dict[str, Any]) -> str:
+    """Return a CustomVoice speaker name for Qwen synthesis.
+
+    The Base Qwen checkpoint has no preset voices. Missing, empty, ``default``,
+    and the invalid ``Chelsie`` id map to Ryan, an English CustomVoice speaker.
+
+    :param meta: Job metadata containing an optional ``voice_id``.
+    :returns: CustomVoice speaker name.
+    """
+    raw = meta.get("voice_id")
+    if raw is None:
+        return QWEN_DEFAULT_VOICE
+    if not isinstance(raw, str) or not raw.strip() or raw in LEGACY_QWEN_VOICES:
+        return QWEN_DEFAULT_VOICE
+    return raw
+
 
 class QwenBackend(TTSBackend):
     """Qwen 3 TTS backend using mlx-audio on Apple Silicon.
 
-    Loads mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit at runtime.
+    Loads mlx-community/Qwen3-TTS-12Hz-0.6B-CustomVoice-8bit at runtime.
     Falls back to PyTorch qwen_tts on non-Apple platforms.
     """
 
@@ -57,13 +79,13 @@ class QwenBackend(TTSBackend):
 
         if QwenBackend._model is None:
             QwenBackend._model = load_model(
-                "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+                QWEN_MLX_MODEL,
                 lazy=False,
             )
-        voice = meta.get("voice_id", "Chelsie")
+        voice = resolve_qwen_voice(meta)
         gen = QwenBackend._model.generate(text, voice=voice)
         result = next(iter(gen))
-        audio_np = np.array(result.audio)
+        audio_np = np.array(result.audio).reshape(-1)
         return _to_wav(audio_np, sample_rate=24000)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
@@ -72,9 +94,9 @@ class QwenBackend(TTSBackend):
 
         if QwenBackend._model is None:
             QwenBackend._model = QwenTTS(
-                "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+                QWEN_TORCH_MODEL,
             )
-        voice = meta.get("voice_id", "default")
+        voice = resolve_qwen_voice(meta)
         audio_tensor = QwenBackend._model.generate(text, voice=voice)
         if isinstance(audio_tensor, tuple):
             audio_tensor = audio_tensor[0]
@@ -90,16 +112,14 @@ class QwenBackend(TTSBackend):
 def _to_wav(samples: list, sample_rate: int = 24000) -> bytes:
     """Convert normalized audio samples to mono 16-bit WAV bytes."""
     buffer = io.BytesIO()
+    flat = list(samples)
     with wave.open(buffer, "wb") as handle:
         handle.setnchannels(1)
         handle.setsampwidth(2)
         handle.setframerate(sample_rate)
         frames = struct.pack(
-            "<" + "h" * len(samples),
-            *[
-                max(-32768, min(32767, int(float(sample) * 32767)))
-                for sample in samples
-            ],
+            "<" + "h" * len(flat),
+            *[max(-32768, min(32767, int(float(sample) * 32767))) for sample in flat],
         )
         handle.writeframes(frames)
     return buffer.getvalue()

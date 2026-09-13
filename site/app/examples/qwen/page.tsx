@@ -38,7 +38,7 @@ export default function QwenExamplePage() {
         name="Qwen narration example"
         byline="Charles Darwin, 1859"
         ttsBackend="qwen"
-        voiceId="Chelsie"
+        voiceId="Ryan"
         root=".example-article"
       />
     </main>
