@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:35.242Z",
   "updated_at": "2026-09-11T21:38:35.242040Z",
   "closed_at": null,
-  "right_now_summary": "The local worker runs TTS jobs end to end on AWS, but the docs still need Cognito login updates.",
-  "right_now_updated_at": "2026-09-13T03:49:56.908360Z",
+  "right_now_summary": "The local worker now claims jobs, runs TTS, uploads audio, and completes them on live AWS.",
+  "right_now_updated_at": "2026-09-13T03:56:08.687035Z",
   "custom": {}
 }

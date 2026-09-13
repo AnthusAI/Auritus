@@ -10,11 +10,19 @@
   "parent": "auritus-f08aeaf4-3cec-484d-9557-2835c15c2fdb",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "f9a76a7d-97c9-45bb-8c2d-3c04915efcef",
+      "author": "ryan",
+      "text": "PR #12 opened: operator docs and README use auritus login --username; Google is optional IdP only.",
+      "created_at": "2026-09-13T03:56:03.509117Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T03:49:53.105954Z",
-  "updated_at": "2026-09-13T03:49:53.106014Z",
+  "updated_at": "2026-09-13T03:56:03.509387Z",
   "closed_at": null,
-  "right_now_summary": "The docs still describe Google OAuth/PKCE instead of Cognito password login.",
-  "right_now_updated_at": "2026-09-13T03:49:54.968636Z",
+  "right_now_summary": "A PR updates operator docs to use username/password login, with Google noted as an optional provider.",
+  "right_now_updated_at": "2026-09-13T03:56:06.897821Z",
   "custom": {}
 }
