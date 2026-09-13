@@ -155,9 +155,6 @@ def main() -> int:
         upload = presign.json()
         put = httpx.put(
             upload["upload_url"],
-            headers={
-                "Content-Type": upload.get("content_type", "audio/wav"),
-            },
             content=audio,
             timeout=300.0,
         )
