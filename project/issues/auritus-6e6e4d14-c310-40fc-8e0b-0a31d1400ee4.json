@@ -3,18 +3,26 @@
   "title": "Make D2 renders reproducible and keep verification builds off the dev server",
   "description": "Two build-tooling defects found while re-rendering the diagrams for the\nnewsprint palette.\n\n## D2 renders were not reproducible, so the CI drift check could not pass\n\n`.github/workflows/ci.yml` installs the pinned d2 v0.7.1, runs\n`make diagrams`, then `git diff --exit-code` against the committed SVGs.\nThat check can never have passed: d2 picks a **random CSS scope id** per\nrun (`.d2-4009697037` -> `.d2-1836642998`) and embeds it in every rule, so\ntwo renders of unchanged sources differed by roughly 900 lines.\n\nFix: pass `--salt \"${name}\"` in `scripts/render-diagrams.sh`. That pins the\nid, and salting per diagram also keeps ids distinct when several diagrams\nare embedded in one page — which is the case on the architecture page.\nVerified by rendering twice and diffing: byte-identical.\n\nOn the version pin itself — it is load-bearing, not paranoia. The pin in\nthe script mirrors the one in CI, and that is what makes the drift check\nmeaningful. Homebrew only ships 0.9.0, which would produce SVGs that fail\nCI. To move versions, bump `D2_VERSION` and the `ci.yml` install together\nand re-render in the same commit.\n\n## A verification build silently breaks a running dev server\n\n`next build` and `next dev` share `.next`, so a build run against a live\ndev server replaces the dev manifests and leaves it serving Next's\nfallback shell — every route answering 200 with none of the site's content\nin it, which looks like a broken page rather than a stopped server. I did\nthis to my own dev server twice during this work.\n\nPartial mitigation: `distDir: process.env.NEXT_DIST_DIR || '.next'` in\n`site/next.config.js` allows building aside.\n\n**Caveat, and the reason this card exists:** the build that broke the\nserver the second time was itself run with `NEXT_DIST_DIR` set, so that\nguard demonstrably does not fully protect `.next`. I did not chase the\ncause, since confirming it means deliberately breaking a dev server the\nuser is working in. Until someone does, treat the operational rule as the\nreal protection: **do not run `next build` in a worktree while its dev\nserver is up.** Stop it, build, restart.\n\n## Files\n\n- `scripts/render-diagrams.sh` — `--salt`\n- `site/next.config.js` — `distDir`\n\nBranch `feat/newsprint-brand-lockup`, not yet merged.",
   "type": "chore",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "5ab36a11-2f7b-4a54-9fea-ca91f6296a49",
+      "author": "ryan",
+      "text": "Landing `--salt` in `scripts/render-diagrams.sh` and `NEXT_DIST_DIR` on the same product PR as the newsprint lockup so diagram CI drift checks can pass.",
+      "created_at": "2026-09-13T17:49:30.950573Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T17:28:48.493980Z",
-  "updated_at": "2026-09-13T17:28:48.494020Z",
+  "updated_at": "2026-09-13T17:49:30.950587Z",
   "closed_at": null,
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "The branch adds fixed D2 salts and a build-dir guard; the server conflict still needs investigation.",
+  "right_now_updated_at": "2026-09-13T17:49:33.253826Z",
   "custom": {}
 }

@@ -31,12 +31,19 @@
       "text": "Extending the newsprint palette to the D2 diagram sources while preserving their existing white light-mode and black dark-mode canvases.\n\n(Restored: this comment was written in the newsprint worktree on 2026-09-13T16:00:31Z and never committed. I discarded it locally while cleaning up a stale working copy, and am re-filing it here so the record is intact. Original comment id 60561a12.)",
       "created_at": "2026-09-13T17:29:58.383474Z",
       "comment_type": "default"
+    },
+    {
+      "id": "f94b774e-d733-4831-9788-a9d8e57c2a46",
+      "author": "ryan",
+      "text": "Merging `feat/newsprint-brand-lockup` onto current develop (which already has the home-page pitch from PR #33). Closing this chore after that PR is in develop.",
+      "created_at": "2026-09-13T17:49:35.169066Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T15:44:34.748244Z",
-  "updated_at": "2026-09-13T17:29:58.383486Z",
+  "updated_at": "2026-09-13T17:49:35.169088Z",
   "closed_at": null,
-  "right_now_summary": "The Auritus logo and newsprint lockup are still being refined, with light and dark modes retained.",
-  "right_now_updated_at": "2026-09-13T16:06:57.488533Z",
+  "right_now_summary": "The newsprint logo lockup is being merged into develop, with closure planned after the PR lands.",
+  "right_now_updated_at": "2026-09-13T17:49:37.146850Z",
   "custom": {}
 }
