@@ -13,7 +13,7 @@ from decimal import Decimal
 from typing import Any
 
 import boto3
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 
 _dynamodb = boto3.resource("dynamodb")
 _s3 = boto3.client("s3")
@@ -743,7 +743,7 @@ def _get_admin_overview(headers: dict[str, str]) -> dict[str, Any]:
             queues = q_res.get("jobQueues") or []
             if queues:
                 queue_state = queues[0].get("state", "UNKNOWN")
-        except Exception:
+        except (BotoCoreError, ClientError):
             queue_state = "UNKNOWN"
 
     return _response(
