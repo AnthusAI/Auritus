@@ -9,6 +9,22 @@ from typing import Any
 
 from auritus.tts.base import TTSBackend
 
+KOKORO_DEFAULT_VOICE = "af_heart"
+
+
+def resolve_kokoro_voice(meta: dict[str, Any]) -> str:
+    """Return the Kokoro voice id, mapping missing or legacy values to the default.
+
+    :param meta: Job metadata containing an optional ``voice_id``.
+    :returns: Kokoro voice id suitable for synthesis.
+    """
+    raw = meta.get("voice_id")
+    if raw is None:
+        return KOKORO_DEFAULT_VOICE
+    if isinstance(raw, str) and (not raw.strip() or raw == "default"):
+        return KOKORO_DEFAULT_VOICE
+    return str(raw)
+
 
 class KokoroBackend(TTSBackend):
     """Kokoro TTS backend using mlx-audio on Apple Silicon.
@@ -60,7 +76,7 @@ class KokoroBackend(TTSBackend):
                 "mlx-community/Kokoro-82M-bf16",
                 lazy=False,
             )
-        voice = meta.get("voice_id", "af_heart")
+        voice = resolve_kokoro_voice(meta)
         gen = KokoroBackend._model.generate(text, voice=voice)
         result = next(iter(gen))
         audio_np = np.array(result.audio)
@@ -72,7 +88,7 @@ class KokoroBackend(TTSBackend):
 
         if KokoroBackend._model is None:
             KokoroBackend._model = KPipeline(lang_code="a")
-        voice = meta.get("voice_id", "af_heart")
+        voice = resolve_kokoro_voice(meta)
         results = list(KokoroBackend._model(text, voice=voice))
         audio_tensor = results[0].audio
         audio_list = (

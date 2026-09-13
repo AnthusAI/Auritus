@@ -65,7 +65,7 @@ export function readEmbedConfig(script: HTMLScriptElement): EmbedScriptConfig {
   return {
     siteKey,
     apiBaseUrl: apiBaseFromScript(script),
-    voiceId: script.getAttribute("data-auritus-voice")?.trim() || "default",
+    voiceId: script.getAttribute("data-auritus-voice")?.trim() || "af_heart",
     ttsBackend:
       script.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro",
     root: script.getAttribute("data-auritus-root")?.trim() || undefined,

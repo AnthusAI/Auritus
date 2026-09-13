@@ -139,7 +139,7 @@ def main() -> int:
         audio = backend.generate(
             job_body.get("text") or "",
             {
-                "voice_id": job_body.get("voice_id") or "default",
+                "voice_id": job_body.get("voice_id"),
                 "name": job_body.get("name") or "",
                 "byline": job_body.get("byline") or "",
             },

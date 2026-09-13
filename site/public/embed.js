@@ -423,7 +423,7 @@ var Auritus = (() => {
     return {
       siteKey,
       apiBaseUrl: apiBaseFromScript(script),
-      voiceId: script.getAttribute("data-auritus-voice")?.trim() || "default",
+      voiceId: script.getAttribute("data-auritus-voice")?.trim() || "af_heart",
       ttsBackend: script.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro",
       root: script.getAttribute("data-auritus-root")?.trim() || void 0,
       ignoreSelectors: parseListAttribute(

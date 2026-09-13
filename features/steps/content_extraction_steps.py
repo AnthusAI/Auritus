@@ -15,18 +15,22 @@ class _TextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
         self.parts: list[str] = []
-        self._skip_depth = 0
+        self._suppress_stack: list[bool] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if tag.lower() in SKIP_TAGS:
-            self._skip_depth += 1
+        parent_suppressed = bool(self._suppress_stack and self._suppress_stack[-1])
+        ignored = any(key == "data-auritus-ignore" for key, _ in attrs)
+        suppressed = parent_suppressed or tag.lower() in SKIP_TAGS or ignored
+        self._suppress_stack.append(suppressed)
 
     def handle_endtag(self, tag: str) -> None:
-        if tag.lower() in SKIP_TAGS and self._skip_depth > 0:
-            self._skip_depth -= 1
+        if self._suppress_stack:
+            self._suppress_stack.pop()
 
     def handle_data(self, data: str) -> None:
-        if self._skip_depth == 0 and data.strip():
+        if self._suppress_stack and self._suppress_stack[-1]:
+            return
+        if data.strip():
             self.parts.append(data)
 
 
@@ -69,9 +73,27 @@ def step_root_selector(context, selector: str) -> None:
         context.root_html = context.full_html
 
 
+@given('an article with spoken text "{spoken}"')
+def step_article_spoken(context, spoken: str) -> None:
+    context.article_html = f"<article><p>{spoken}</p></article>"
+
+
+@given('the article also contains ignored text "{ignored}"')
+def step_article_ignored(context, ignored: str) -> None:
+    context.article_html = context.article_html.replace(
+        "</article>",
+        f"<p data-auritus-ignore>{ignored}</p></article>",
+    )
+
+
 @when("the generator extracts TTS text from that root")
 def step_extract(context) -> None:
     context.tts_text = _extract(context.root_html)
+
+
+@when("the generator extracts TTS text from that article")
+def step_extract_article(context) -> None:
+    context.tts_text = _extract(context.article_html)
 
 
 @then('the TTS text includes "{snippet}"')

@@ -14,3 +14,10 @@ Feature: Content extraction for TTS
     When the generator extracts TTS text from that root
     Then the TTS text includes "Basic narration example"
     And the TTS text does not include "Examples"
+
+  Scenario: Ignored paragraphs are not narrated
+    Given an article with spoken text "Spoken body text stays in the narration."
+    And the article also contains ignored text "This paragraph is ignored."
+    When the generator extracts TTS text from that article
+    Then the TTS text includes "Spoken body text stays in the narration."
+    And the TTS text does not include "This paragraph is ignored."

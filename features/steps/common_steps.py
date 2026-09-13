@@ -24,7 +24,7 @@ def _hash(text: str, voice_id: str) -> str:
 @given('the TTS text "{text}"')
 def step_text(context, text: str) -> None:
     context.tts_text = text
-    context.voice_id = "default"
+    context.voice_id = "af_heart"
     context.tts_backend = "higgs"
 
 
@@ -71,7 +71,7 @@ def step_job(context, backend: str) -> None:
     context.job = {
         "text": "Hello from Auritus",
         "tts_backend": backend,
-        "voice_id": "default",
+        "voice_id": "af_heart",
     }
 
 
