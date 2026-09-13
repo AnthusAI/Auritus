@@ -3,18 +3,26 @@
   "title": "Align login Gherkin with file-based token cache",
   "description": "Make behave login scenario pass with ~/.auritus/credentials file storage",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-f08aeaf4-3cec-484d-9557-2835c15c2fdb",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "511c1264-5fc5-4399-bc1f-deb87dbdaa6b",
+      "author": "ryan",
+      "text": "Merged PR #7: login tokens are file-only (~/.auritus/credentials). CI quality passed; Gherkin aligned. Keyring save path removed so load and save use the same store.",
+      "created_at": "2026-09-13T01:51:44.843986Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T01:37:44.207935Z",
-  "updated_at": "2026-09-13T01:37:44.208266Z",
-  "closed_at": null,
-  "right_now_summary": "The login Gherkin scenario is being aligned with file-based token storage.",
-  "right_now_updated_at": "2026-09-13T01:37:46.158368Z",
+  "updated_at": "2026-09-13T01:51:44.844011Z",
+  "closed_at": "2026-09-13T01:51:38.806359Z",
+  "right_now_summary": "Login now saves and loads tokens from the ~/.auritus/credentials file, with aligned Gherkin tests.",
+  "right_now_updated_at": "2026-09-13T01:51:46.387914Z",
   "custom": {}
 }
