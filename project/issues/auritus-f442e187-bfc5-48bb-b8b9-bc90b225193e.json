@@ -1,0 +1,20 @@
+{
+  "id": "auritus-f442e187-bfc5-48bb-b8b9-bc90b225193e",
+  "title": "Playwright proves Play while waiting starts speech",
+  "description": "## Behavior\n\nVitest covers Play-while-waiting. CI Playwright must too: click Play before `audio.src` exists, then the clip must start when the job is done.\n\n```gherkin\nFeature: Player playback\n  Scenario: Play while waiting starts when audio is ready\n    Given the player is waiting for audio\n    When the listener activates Play\n    And the clip becomes ready\n    Then playback starts\n```\n\n## Implementation brief\n\n1. `site/tests/acceptance.spec.ts` — hold GET `/jobs/:hash` until Play is clicked on `/examples/basic`, then continue and assert Pause + playing audio.\n2. Align `example_pages_steps.py` placeholder fixture with clickable Play (no `disabled`).\n3. Do not enable PyPI.",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T22:30:11.876629Z",
+  "updated_at": "2026-09-13T22:31:13.866718Z",
+  "closed_at": null,
+  "right_now_summary": "Playwright coverage is being added to verify Play starts audio after the job finishes.",
+  "right_now_updated_at": "2026-09-13T22:31:15.836571Z",
+  "custom": {}
+}
