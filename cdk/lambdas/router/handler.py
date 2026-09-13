@@ -29,11 +29,13 @@ DAILY_SITE_QUOTA = int(os.environ.get("DAILY_SITE_QUOTA", "100"))
 BATCH_JOB_QUEUE_NAME = os.environ.get("BATCH_JOB_QUEUE_NAME", "")
 USER_POOL_ID = os.environ.get("USER_POOL_ID", "")
 SES_FROM_ADDRESS = os.environ.get("SES_FROM_ADDRESS", "")
+ALERTS_TABLE = os.environ.get("ALERTS_TABLE", "")
 
 KOKORO_DEFAULT_VOICE_ID = "af_heart"
 
 _jobs = _dynamodb.Table(JOBS_TABLE)
 _sites = _dynamodb.Table(SITES_TABLE)
+_alerts = _dynamodb.Table(ALERTS_TABLE) if ALERTS_TABLE else None
 _cognito = boto3.client("cognito-idp")
 _ses = boto3.client("ses")
 
@@ -570,13 +572,15 @@ def _alert_session(body: dict[str, Any]) -> dict[str, Any]:
 
     rate_key = f"alert:{operator_email}:{kind}"
     now = int(time.time())
+    if _alerts is None:
+        return _response(503, {"error": "alerts_not_configured"})
     try:
-        _jobs.put_item(
+        _alerts.put_item(
             Item={
-                "content_hash": rate_key,
+                "alert_key": rate_key,
                 "ttl": now + ALERT_MIN_INTERVAL_SECONDS,
             },
-            ConditionExpression="attribute_not_exists(content_hash)",
+            ConditionExpression="attribute_not_exists(alert_key)",
         )
     except ClientError as exc:
         if (

@@ -514,7 +514,7 @@ def step_alert_endpoint(context) -> None:
             self.items = {}
 
         def put_item(self, Item, ConditionExpression=None):
-            key = Item["content_hash"]
+            key = Item["alert_key"]
             if key in self.items:
                 raise ClientError(
                     {
@@ -532,9 +532,10 @@ def step_alert_endpoint(context) -> None:
     context._patches = [
         patch.object(context.handler, "USER_POOL_ID", "pool-id"),
         patch.object(context.handler, "SES_FROM_ADDRESS", "auritus@aurit.us"),
+        patch.object(context.handler, "ALERTS_TABLE", "test-alerts"),
         patch.object(context.handler, "_cognito"),
         patch.object(context.handler, "_ses"),
-        patch.object(context.handler, "_jobs", context.fake_table),
+        patch.object(context.handler, "_alerts", context.fake_table),
     ]
     for p in context._patches:
         p.start()

@@ -290,7 +290,7 @@ def _warning_due(tokens: dict[str, Any]) -> bool:
     return time.time() >= last + 24 * 60 * 60
 
 
-def notify_session_state(kind: str, machine: str) -> None:
+def notify_session_state(kind: str, machine: str) -> bool:
     """Best-effort POST to the backend alert endpoint so the operator is emailed.
 
     The route is unauthenticated on purpose: a worker whose refresh token is
@@ -299,19 +299,21 @@ def notify_session_state(kind: str, machine: str) -> None:
 
     :param kind: ``"warning"`` (near expiry) or ``"expired"`` (refresh dead).
     :param machine: Worker owner string identifying the local machine.
+    :returns: True if the backend was reached (any HTTP response), False on a
+        transport error so the caller can retry without throttling.
     """
     if kind not in ("warning", "expired"):
         raise ValueError(f"unknown alert kind: {kind}")
     tokens = load_tokens() or {}
     operator_email = _decode_id_token_email(tokens)
     if not operator_email:
-        return
+        return True
     cfg = load_config()
     base_url = str(cfg.get("api_endpoint") or "").rstrip("/")
     if not base_url:
-        return
+        return True
     try:
-        httpx.post(
+        response = httpx.post(
             f"{base_url}/alerts/session",
             json={
                 "operator_email": operator_email,
@@ -321,7 +323,8 @@ def notify_session_state(kind: str, machine: str) -> None:
             timeout=10.0,
         )
     except httpx.HTTPError:
-        pass
+        return False
+    return response.status_code < 500
 
 
 def maybe_warn_near_expiry(machine: str) -> bool:
@@ -335,6 +338,7 @@ def maybe_warn_near_expiry(machine: str) -> bool:
         return False
     if not refresh_near_expiry(tokens) or not _warning_due(tokens):
         return False
-    notify_session_state("warning", machine)
-    _record_warning_sent(tokens)
-    return True
+    delivered = notify_session_state("warning", machine)
+    if delivered:
+        _record_warning_sent(tokens)
+    return delivered

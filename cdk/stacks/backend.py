@@ -155,6 +155,18 @@ class BackendStack(Stack):
             projection_type=dynamodb.ProjectionType.ALL,
         )
 
+        alerts = dynamodb.Table(
+            self,
+            "AuritusAlerts",
+            partition_key=dynamodb.Attribute(
+                name="alert_key",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=RemovalPolicy.RETAIN,
+            time_to_live_attribute="ttl",
+        )
+
         audio_bucket = s3.Bucket(
             self,
             "AuritusAudio",
@@ -255,10 +267,12 @@ class BackendStack(Stack):
                     self.node.try_get_context("alert_from_address")
                     or "auritus@example.com"
                 ),
+                "ALERTS_TABLE": alerts.table_name,
             },
         )
         jobs.grant_read_write_data(router_fn)
         sites.grant_read_write_data(router_fn)
+        alerts.grant_read_write_data(router_fn)
         audio_bucket.grant_read_write(router_fn)
         user_pool.grant(
             router_fn,
