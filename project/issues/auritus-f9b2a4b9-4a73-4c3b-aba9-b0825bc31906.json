@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:31.134704Z",
   "updated_at": "2026-09-11T21:38:31.134725Z",
   "closed_at": null,
-  "right_now_summary": "The embed generator and player work with verified hashing, live audio, metadata, themes, and tested text extraction.",
-  "right_now_updated_at": "2026-09-12T05:24:24.399088Z",
+  "right_now_summary": "The generator and player now work with scoped text, verified hashes, clip metadata, live audio, and themes.",
+  "right_now_updated_at": "2026-09-13T00:14:05.483860Z",
   "custom": {}
 }
