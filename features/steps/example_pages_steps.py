@@ -72,7 +72,9 @@ def step_ignore_article(context) -> None:
 def step_basic_layout(context) -> None:
     context.page_html = """
 <main class="page">
-  <div class="auritus-player-host"></div>
+  <div class="auritus-player-host">
+    <p class="auritus-player-placeholder">Loading player</p>
+  </div>
   <article class="example-article"><h1>Basic narration example</h1></article>
 </main>
 """
@@ -85,6 +87,15 @@ def step_player_above_article(context) -> None:
     article_at = html.find('class="example-article"')
     assert host_at != -1 and article_at != -1
     assert host_at < article_at
+
+
+@then('the player host shows "{label}" before the embed boots')
+def step_player_placeholder(context, label: str) -> None:
+    html = context.page_html
+    assert label in html
+    placeholder_at = html.find("auritus-player-placeholder")
+    article_at = html.find('class="example-article"')
+    assert placeholder_at != -1 and placeholder_at < article_at
 
 
 @then('the example embed requests tts_backend "{backend}"')

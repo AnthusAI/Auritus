@@ -31,4 +31,5 @@ Feature: Example pages demonstrate distinct speech
   Scenario: The player sits above the spoken article
     Given the basic example page layout
     Then the player host is above the example article
+    And the player host shows "Loading player" before the embed boots
 

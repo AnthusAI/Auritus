@@ -31,12 +31,19 @@
       "text": "semantic-release created GitHub releases v0.1.0-v0.1.5. PyPI trusted publisher not yet configured.",
       "created_at": "2026-09-12T00:53:41.383773Z",
       "comment_type": "default"
+    },
+    {
+      "id": "db997765-ec2f-46a2-9432-d424fae41c97",
+      "author": "ryan",
+      "text": "pypi.org/pypi/auritus is not published. GitHub releases exist (0.6.5). Trusted publisher still required.",
+      "created_at": "2026-09-13T12:13:31.407257Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:47:49.015523Z",
-  "updated_at": "2026-09-12T00:53:41.383796Z",
+  "updated_at": "2026-09-13T12:13:31.407282Z",
   "closed_at": null,
-  "right_now_summary": "PyPI trusted publishing still needs configuration and real-AWS verification.",
-  "right_now_updated_at": "2026-09-12T00:53:42.261805Z",
+  "right_now_summary": "GitHub releases are created, but PyPI publishing still awaits trusted publisher setup.",
+  "right_now_updated_at": "2026-09-13T12:13:33.821542Z",
   "custom": {}
 }

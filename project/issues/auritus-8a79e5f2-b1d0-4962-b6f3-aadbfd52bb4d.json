@@ -3,18 +3,26 @@
   "title": "M0 - Foundations",
   "description": "Repo, AGENTS.md (Chatticus-style Git Flow), .kanbus.yml (port 4257), GitHub AnthusAI/Auritus, CI skeleton, semantic-release config, DNS delegation (Route 53 owns aurit.us; GoDaddy NS; Amplify attaches). Parallel long pole: DNS.",
   "type": "epic",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "d0527ed5-ceae-4288-8244-37e0a20775e6",
+      "author": "ryan",
+      "text": "Proven: repo, AGENTS.md, .kanbus.yml port 4257, GitHub AnthusAI/Auritus, make check CI, semantic-release on main, aurit.us on Amplify/Route 53.",
+      "created_at": "2026-09-13T12:13:05.796632Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:38:24.323158Z",
-  "updated_at": "2026-09-11T21:38:24.323616Z",
-  "closed_at": null,
-  "right_now_summary": "The foundations are in place while the CI check gate is being added on develop.",
-  "right_now_updated_at": "2026-09-11T23:25:03.896454Z",
+  "updated_at": "2026-09-13T12:13:09.535728Z",
+  "closed_at": "2026-09-13T12:13:09.535683Z",
+  "right_now_summary": "Repository foundations and DNS are set; the CI skeleton and make check gate are being added on develop.",
+  "right_now_updated_at": "2026-09-13T12:13:11.578543Z",
   "custom": {}
 }

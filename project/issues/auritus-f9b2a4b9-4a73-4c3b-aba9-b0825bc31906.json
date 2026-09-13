@@ -3,18 +3,26 @@
   "title": "M2 - Embed (generator + player)",
   "description": "Generator DOM extraction + ignore rules; content hash (text+voice+backend, excludes name/byline); clip metadata; player UI with name/byline; CSS custom property theming; drop-in @anthusai/auritus.",
   "type": "epic",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "cafcefe4-3122-4ebd-a75c-78d57efafd0c",
+      "author": "ryan",
+      "text": "Proven on aurit.us: generator scoped to article, ignore/pronounce, player above article with name/byline, themed CSS vars, Playwright 9/9 against production.",
+      "created_at": "2026-09-13T12:13:20.892264Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:38:31.134704Z",
-  "updated_at": "2026-09-11T21:38:31.134725Z",
-  "closed_at": null,
-  "right_now_summary": "The generator and player work with scoped content, verified hashes, metadata, themes, and live audio.",
-  "right_now_updated_at": "2026-09-13T11:47:11.376257Z",
+  "updated_at": "2026-09-13T12:13:23.856939Z",
+  "closed_at": "2026-09-13T12:13:23.856901Z",
+  "right_now_summary": "The embed works on production, with scoped extraction, themed player UI, and passing tests.",
+  "right_now_updated_at": "2026-09-13T12:13:24.887818Z",
   "custom": {}
 }

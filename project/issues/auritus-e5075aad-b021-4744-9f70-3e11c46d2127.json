@@ -1,0 +1,28 @@
+{
+  "id": "auritus-e5075aad-b021-4744-9f70-3e11c46d2127",
+  "title": "Example player chrome is missing until POST /jobs succeeds",
+  "description": "",
+  "type": "bug",
+  "status": "in_progress",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "9804b761-0bf5-4438-9b4c-ba09b5be80fa",
+      "author": "ryan",
+      "text": "Live aurit.us/examples/basic: after boot, Play exists in shadow DOM (Ready, ~23s audio). First paint has no chrome because boot awaits POST /jobs before mountPlayer. Empty .auritus-player-host looks like sage page background. Accessibility snapshot also omits the shadow Play button.\n\nFix: first-paint placeholder plus mount chrome before createJob; 404 while creating is waiting, not failure.\n",
+      "created_at": "2026-09-13T12:38:23.310590Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-13T12:37:46.877410Z",
+  "updated_at": "2026-09-13T12:38:23.310610Z",
+  "closed_at": null,
+  "right_now_summary": "A placeholder now shows player controls before job creation, avoiding a blank first paint while POST /jobs loads.",
+  "right_now_updated_at": "2026-09-13T12:38:24.451759Z",
+  "custom": {}
+}

@@ -10,11 +10,26 @@
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "55b064f3-2f82-4724-a19b-5b75898bfc5b",
+      "author": "ryan",
+      "text": "Batch Kokoro SUCCEEDED earlier; current AWS CLI session expired so spend/queue re-check is blocked. Leave M5 open until a fresh Batch job and budget path are confirmed.",
+      "created_at": "2026-09-13T12:13:26.487724Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "b41ced1d-0a5e-4206-a508-99a238a18c4b",
+      "author": "ryan",
+      "text": "Still blocked on operator AWS login (default profile login_session expired). papyrus-agent can see BudgetGuardFn but is denied batch:ListJobs, budgets:ViewBudget, DynamoDB, and CloudWatch Logs. Leave M5 open until a fresh Batch Kokoro job and AuritusDailyGpuBudget path are confirmed after unset AWS_PROFILE && aws login.\n",
+      "created_at": "2026-09-13T12:23:23.409122Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:38:43.348323Z",
-  "updated_at": "2026-09-11T21:38:43.348346Z",
+  "updated_at": "2026-09-13T12:23:23.409157Z",
   "closed_at": null,
-  "right_now_summary": "The fallback works end to end, while the team verifies spend controls and deployment in real AWS.",
-  "right_now_updated_at": "2026-09-13T02:46:43.830314Z",
+  "right_now_summary": "AWS login has expired, so fresh Batch and budget checks await a new authenticated session.",
+  "right_now_updated_at": "2026-09-13T12:23:25.172193Z",
   "custom": {}
 }

@@ -115,6 +115,11 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
       applyJob(job);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
+      if (/\b404\b/.test(message)) {
+        statusEl.hidden = false;
+        statusEl.textContent = "Waiting for audio…";
+        return;
+      }
       setError(message);
       stopPolling();
     }
