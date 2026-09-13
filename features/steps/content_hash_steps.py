@@ -13,9 +13,7 @@ def step_text_becomes(context, text: str) -> None:
 
 @when("the content hash is computed again")
 def step_compute_again(context) -> None:
-    context.hash_other = _hash(
-        context.tts_text, context.voice_id
-    )
+    context.hash_other = _hash(context.tts_text, context.voice_id)
 
 
 @then("the two content hashes match")
