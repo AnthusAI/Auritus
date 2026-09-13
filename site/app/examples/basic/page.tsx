@@ -8,6 +8,7 @@ export default function BasicExamplePage() {
         <Link href="/examples">Examples</Link>
         <Link href="/docs/usage">Usage</Link>
       </nav>
+      <div className="auritus-player-host" />
       <article className="example-article">
         <h1>Basic narration example</h1>
         <p>
@@ -36,6 +37,7 @@ export default function BasicExamplePage() {
         ttsBackend="kokoro"
         voiceId="af_heart"
         root=".example-article"
+        playerHost=".auritus-player-host"
       />
     </main>
   );

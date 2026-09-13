@@ -20,6 +20,7 @@ type AuritusEmbedProps = {
   ttsBackend?: string;
   voiceId?: string;
   root?: string;
+  playerHost?: string;
 };
 
 function resolveBoot(): AuritusBoot | undefined {
@@ -69,6 +70,7 @@ export function AuritusEmbed({
   ttsBackend = "kokoro",
   voiceId,
   root,
+  playerHost,
 }: AuritusEmbedProps) {
   const configRef = useRef<HTMLDivElement>(null);
 
@@ -105,7 +107,17 @@ export function AuritusEmbed({
       }
       resolveDispose()?.();
     };
-  }, [siteKey, apiUrl, name, byline, origin, ttsBackend, voiceId, root]);
+  }, [
+    siteKey,
+    apiUrl,
+    name,
+    byline,
+    origin,
+    ttsBackend,
+    voiceId,
+    root,
+    playerHost,
+  ]);
 
   return (
     <>
@@ -119,6 +131,7 @@ export function AuritusEmbed({
         data-auritus-tts-backend={ttsBackend}
         data-auritus-voice={voiceId}
         data-auritus-root={root}
+        data-auritus-player-host={playerHost}
       />
       <Script src="/embed.js" strategy="afterInteractive" />
     </>

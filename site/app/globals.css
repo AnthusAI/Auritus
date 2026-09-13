@@ -134,6 +134,11 @@ h2 {
   border-radius: 10px;
 }
 
+.auritus-player-host {
+  margin: 0 0 1.25rem;
+  min-height: 5.5rem;
+}
+
 @keyframes rise {
   from {
     opacity: 0;

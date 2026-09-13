@@ -185,9 +185,11 @@ var Auritus = (() => {
 :host {
   display: block;
   font-family: var(--auritus-font, inherit);
-  color: var(--auritus-fg, inherit);
-  background: var(--auritus-bg, transparent);
-  border-radius: var(--auritus-radius, 8px);
+  color: var(--auritus-fg, #14201a);
+  background: var(--auritus-bg, #ffffff);
+  border: 1px solid var(--auritus-border, rgba(20, 32, 26, 0.14));
+  border-radius: var(--auritus-radius, 10px);
+  box-shadow: var(--auritus-shadow, 0 8px 24px rgba(20, 32, 26, 0.08));
   box-sizing: border-box;
 }
 
@@ -231,7 +233,7 @@ var Auritus = (() => {
   height: 40px;
   border-radius: 50%;
   background: var(--auritus-accent, #2d5f3f);
-  color: var(--auritus-bg, #ffffff);
+  color: var(--auritus-play-fg, #ffffff);
   font-size: 0.75rem;
   font-weight: 700;
   flex-shrink: 0;

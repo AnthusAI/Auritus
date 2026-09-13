@@ -68,6 +68,25 @@ def step_ignore_article(context) -> None:
     context.example_tts_backend = "kokoro"
 
 
+@given("the basic example page layout")
+def step_basic_layout(context) -> None:
+    context.page_html = """
+<main class="page">
+  <div class="auritus-player-host"></div>
+  <article class="example-article"><h1>Basic narration example</h1></article>
+</main>
+"""
+
+
+@then("the player host is above the example article")
+def step_player_above_article(context) -> None:
+    html = context.page_html
+    host_at = html.find('class="auritus-player-host"')
+    article_at = html.find('class="example-article"')
+    assert host_at != -1 and article_at != -1
+    assert host_at < article_at
+
+
 @then('the example embed requests tts_backend "{backend}"')
 def step_example_backend(context, backend: str) -> None:
     assert context.example_tts_backend == backend

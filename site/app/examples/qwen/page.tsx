@@ -8,6 +8,7 @@ export default function QwenExamplePage() {
         <Link href="/examples">Examples</Link>
         <Link href="/docs/usage">Usage</Link>
       </nav>
+      <div className="auritus-player-host" />
       <article className="example-article">
         <h1>Qwen narration example</h1>
         <p>
@@ -40,6 +41,7 @@ export default function QwenExamplePage() {
         ttsBackend="qwen"
         voiceId="Ryan"
         root=".example-article"
+        playerHost=".auritus-player-host"
       />
     </main>
   );
