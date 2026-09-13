@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.6.6 (2026-09-13)
+
+### Bug Fixes
+
+- Show example player chrome before POST /jobs returns
+  ([`d1c4d2d`](https://github.com/AnthusAI/Auritus/commit/d1c4d2d24a21750fc9c21a2f84aa726e44a9bb6a))
+
+
 ## v0.6.5 (2026-09-13)
 
 ### Bug Fixes
