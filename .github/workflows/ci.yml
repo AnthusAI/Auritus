@@ -49,6 +49,10 @@ jobs:
         working-directory: cli
         run: python -m pytest -q
 
+      - name: Behave
+        working-directory: cli
+        run: python -m behave ../features
+
       - name: Embed — npm ci
         working-directory: embed
         run: npm ci
@@ -75,7 +79,17 @@ jobs:
 
       - name: Site — build
         working-directory: site
+        env:
+          NEXT_DIST_DIR: .next-ci
         run: npm run build
+
+      - name: Site — Playwright
+        working-directory: site
+        env:
+          CI: true
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test
 
       - name: CDK — install dependencies
         working-directory: cdk
