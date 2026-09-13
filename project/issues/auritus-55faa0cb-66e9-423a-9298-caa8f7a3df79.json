@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-11T21:38:21.475254Z",
   "closed_at": null,
-  "right_now_summary": "Auritus is live and core features work; the team is adding CI and finishing real-AWS and release checks.",
-  "right_now_updated_at": "2026-09-13T01:37:50.511386Z",
+  "right_now_summary": "Core features are built, while AWS checks, CI gates, and release hardening continue.",
+  "right_now_updated_at": "2026-09-13T01:49:00.291805Z",
   "custom": {}
 }

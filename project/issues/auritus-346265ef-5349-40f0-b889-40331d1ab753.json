@@ -45,12 +45,19 @@
       "text": "PR #4 merged: Batch job definition AURITUS_TTS_BACKEND=kokoro. Still need ECR image (workflow) + live Batch job with local worker off.",
       "created_at": "2026-09-13T01:28:05.363109Z",
       "comment_type": "default"
+    },
+    {
+      "id": "e13796cd-0b2d-4639-8439-30d4eccae9d1",
+      "author": "ryan",
+      "text": "Live Batch proof job 4e807453 stayed RUNNABLE for the full poll (~5 minutes) with no attempts and no CloudWatch logs. Compute environment GpuComputeEnv-103T34rYMA14WnAp is VALID/ENABLED; the ASG desired capacity stayed 0.\n\nRoot cause: AuritusGpuJobDef asks for 4 vCPU, 15360 MiB, and 1 GPU. The only instance type is g4dn.xlarge (4 vCPU, 16 GiB). AWS Batch will not place a 4-vCPU job on a 4-vCPU instance because the ECS agent and AMI need leftover CPU/memory, so the scheduler never scales.\n\nNext: change the job definition to 2 vCPU and 8192 MiB, set allocationStrategy BEST_FIT_PROGRESSIVE, deploy CDK, then submit a new proof job. The existing RUNNABLE job cannot be reused because its container overrides already bake in 4 vCPU.",
+      "created_at": "2026-09-13T01:48:54.467245Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T00:13:13.183742Z",
-  "updated_at": "2026-09-13T01:28:05.363378Z",
+  "updated_at": "2026-09-13T01:48:54.467972Z",
   "closed_at": null,
-  "right_now_summary": "The Kokoro worker is merged, but the ECR image rebuild and live Batch proof are still needed.",
-  "right_now_updated_at": "2026-09-13T01:28:07.314322Z",
+  "right_now_summary": "The Batch job cannot start because it requests too many resources; the team will lower them and retry.",
+  "right_now_updated_at": "2026-09-13T01:48:56.625804Z",
   "custom": {}
 }

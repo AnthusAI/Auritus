@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:43.348323Z",
   "updated_at": "2026-09-11T21:38:43.348346Z",
   "closed_at": null,
-  "right_now_summary": "The fallback and guardrails are deployed, but live AWS checks and Batch image proof remain.",
-  "right_now_updated_at": "2026-09-13T01:28:09.188861Z",
+  "right_now_summary": "The fallback and spend guards are deployed and under AWS checks; Batch needs lower resource requests before retrying.",
+  "right_now_updated_at": "2026-09-13T01:48:58.173980Z",
   "custom": {}
 }
