@@ -89,7 +89,12 @@ export default function ArchitecturePage() {
           <h2 id="identity-heading">Choose the login experience your team needs.</h2>
           <p>
             The product standardizes operator access through Cognito while making
-            the status of each upstream identity choice explicit.
+            the status of each upstream identity choice explicit. Whichever
+            option you pick, the worker ends up holding a one-hour token that
+            renews itself and cannot call AWS APIs &mdash; never an IAM access
+            key. The{" "}
+            <Link href="/docs/security">security page</Link> walks through all
+            three options and the token lifecycle in detail.
           </p>
         </div>
         <Image
@@ -120,8 +125,8 @@ export default function ArchitecturePage() {
           publish controls with their implementation and review evidence, rather
           than treating a diagram as proof.
         </p>
-        <Link className="button button-outline" href="/docs/self-hosting">
-          Configure your own stack
+        <Link className="button button-outline" href="/docs/security">
+          Read the security model
         </Link>
       </section>
     </main>

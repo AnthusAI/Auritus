@@ -1,25 +1,62 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const guarantees = [
   {
-    title: "One login, then it runs itself",
+    title: "The worker holds no AWS credential",
     description:
-      "Operators sign in once with a Cognito email and password. A local GPU worker then refreshes its own short-lived credentials silently, so it can backstop rendering jobs all week without asking anyone to log in again.",
+      "There is no IAM user for the worker, no access key pair, and no static API key. The stack mints none, so there is nothing on the machine that could be copied and replayed against your AWS account.",
   },
   {
-    title: "Short-lived access, never IAM",
+    title: "Scope is structural, not a policy",
     description:
-      "Every API call carries a one-hour Cognito JWT scoped only to operator routes. The worker never holds IAM credentials, long-lived access keys, or static API keys, and the stack mints none.",
+      "The operator token is a Cognito JWT accepted only by the Auritus operator routes. It cannot call AWS APIs at all. There is no policy document to get wrong, and no scope that can quietly widen over time.",
   },
   {
-    title: "Refresh-token rotation",
+    title: "Rotation happens on its own",
     description:
-      "Each silent refresh issues a new refresh token with a fresh 30-day clock, so a running worker stays authenticated indefinitely. The 30-day limit only bites when a worker has been down or unreachable for more than 30 days.",
+      "Each silent refresh issues a new refresh token with a fresh 30-day clock. A running worker stays authenticated indefinitely without a human, and without anyone remembering a rotation date.",
   },
   {
-    title: "Revocation is the control",
+    title: "Revocation is one command",
     description:
-      "Because a rotating token no longer self-expires while in use, auritus logout revokes it at Cognito. That is the primary stolen-token control, alongside the existing spend guardrails and kill switch.",
+      "Token revocation is enabled on the user pool, so auritus logout invalidates the refresh token at Cognito rather than waiting for it to age out. That is the primary stolen-token control.",
+  },
+];
+
+const options = [
+  {
+    id: "cognito",
+    kicker: "Option one",
+    status: "Available today",
+    title: "Native Cognito users.",
+    body: "The user pool holds the operator accounts directly. Self sign-up is disabled, so accounts exist only because someone with access to your AWS account created them. This is the path auritus login implements today, and it needs no identity provider of your own.",
+    src: "/diagrams/auth-cognito-native.svg",
+    width: 2533,
+    height: 403,
+    alt: "Native Cognito option: the operator runs auritus login, the CLI authenticates against a Cognito user pool with self sign-up disabled, the pool issues a one-hour access token and a rotating thirty-day refresh token, and those tokens reach operator-only routes through API Gateway and a Lambda authorizer. No IAM user, access key, or static secret is ever issued.",
+  },
+  {
+    id: "google",
+    kicker: "Option two",
+    status: "Federation configured, CLI flow not built",
+    title: "Google Workspace.",
+    body: "The stack already wires a Google identity provider into the user pool, so operator identity can come from your Google directory, with your SSO and MFA policy and your offboarding process in front of it. What is missing is the browser sign-in flow in the CLI: auritus login currently supports only Cognito email and password. Configuring this also requires supplying a real Google OAuth client id and secret; the stack deploys a placeholder otherwise.",
+    src: "/diagrams/auth-google-workspace.svg",
+    width: 2675,
+    height: 403,
+    alt: "Google Workspace option: the operator signs in once with a Google account, Google returns an OIDC authorization code to a Cognito user pool configured for Google federation, and the pool issues the same short-lived rotating tokens. The CLI browser sign-in flow is drawn dashed because it is not yet implemented.",
+  },
+  {
+    id: "identity-center",
+    kicker: "Option three",
+    status: "Planned, not implemented",
+    title: "AWS IAM Identity Center or any SAML provider.",
+    body: "For organizations that already run workforce identity centrally, the same Cognito pool can accept a SAML assertion from IAM Identity Center, Okta, Entra ID, or Ping, which puts operator access under the joiner and leaver process you already audit. This is a design intent rather than a shipped feature: no SAML provider is configured in the stack today, and the diagram is drawn dashed throughout to say so.",
+    src: "/diagrams/auth-identity-center.svg",
+    width: 2862,
+    height: 403,
+    alt: "Planned Identity Center option, drawn entirely dashed: a workforce user signs in through AWS IAM Identity Center or another SAML provider backed by the corporate directory, which would federate into the Cognito user pool and issue the same short-lived rotating tokens. No SAML federation is configured in the stack today.",
   },
 ];
 
@@ -32,65 +69,162 @@ export default function SecurityPage() {
         </Link>
         <div>
           <Link href="/docs">All docs</Link>
+          <Link href="/docs/architecture">Architecture</Link>
           <Link href="/docs/self-hosting">Self-hosting</Link>
         </div>
       </nav>
 
       <header className="docs-hero">
         <p className="kicker">Security</p>
-        <h1>Authentication that stays out of your way and out of your AWS account.</h1>
+        <h1>The worker never holds a key worth stealing.</h1>
         <p>
-          Auritus is built to run a local worker unattended for days while
-          keeping credentials short-lived and narrowly scoped. The design
-          avoids long-lived IAM access keys entirely and lets an operator
-          revoke a compromised session in one command.
+          Most breaches that begin with a machine credential begin the same way:
+          a long-lived IAM access key, scoped more broadly than anyone intended,
+          sitting on a host that nobody has rotated in two years. Auritus is
+          built so that credential does not exist. A worker authenticates as a
+          person once, then carries a one-hour token that renews itself and
+          cannot reach AWS at all.
         </p>
       </header>
 
-      <section className="docs-prose-grid" aria-labelledby="how-it-works-heading">
-        <div>
-          <p className="kicker">How it works</p>
-          <h2 id="how-it-works-heading">One interactive login, then silent renewal.</h2>
+      <section className="docs-diagram" aria-labelledby="why-heading">
+        <div className="docs-section-title">
+          <p className="kicker">The problem being solved</p>
+          <h2 id="why-heading">Two ways to let a machine call your service.</h2>
           <p>
-            An operator runs <code>auritus login</code> once and authenticates
-            with a Cognito email and password. The CLI receives a one-hour
-            access token and a refresh token, cached locally in a mode-0600
-            file. The access token is the only credential that touches
-            operator API routes, and it is scoped to those routes alone.
+            The difference is not that one is managed more carefully. It is that
+            the risks people manage carefully in the first case are absent in
+            the second.
+          </p>
+        </div>
+        <Image
+          src="/diagrams/iam-keys-vs-rotating-jwt.svg"
+          alt="Comparison of two approaches. A conventional IAM access key is static with no expiry, scoped by a policy that is often broader than intended and drifts over time, rotated as a manual chore that gets skipped, and if leaked grants AWS API access until a human notices. An Auritus operator token expires in one hour, cannot call AWS APIs at all and is limited to operator routes, rotates automatically on every refresh, and if leaked is valid for at most an hour and revocable with auritus logout."
+          width={1826}
+          height={492}
+        />
+      </section>
+
+      <section className="docs-prose-single" aria-labelledby="threat-heading">
+        <div>
+          <p className="kicker">Risk moved into the architecture</p>
+          <h2 id="threat-heading">Fewer things an operator can get wrong.</h2>
+          <p>
+            An IAM access key is dangerous less because it is weak than because
+            keeping it safe is an ongoing human obligation. Someone has to write
+            a tight policy, resist widening it when something breaks at 2am,
+            rotate the key on schedule, and remember every host it was copied
+            to. Each of those is a place an organization can quietly fall
+            behind, and none of them announce failure.
           </p>
           <p>
-            The local worker refreshes its access token on its own, roughly
-            every hour, with no browser and no MFA prompt. Refresh-token
-            rotation issues a new refresh token on each renewal, so a worker
-            that keeps running stays authenticated indefinitely. The 30-day
-            refresh lifetime is the maximum gap between successful refreshes:
-            only a worker that has been down or unable to reach Cognito for
-            more than 30 days needs a human to log in again.
+            Auritus removes the obligations rather than documenting them. The
+            long-lived artifact on the machine is a Cognito refresh token, which
+            is not an AWS credential and cannot be presented to any AWS API. The
+            credential that does reach the service expires in an hour. Rotation
+            is a property of the refresh exchange, so it cannot be skipped under
+            load. What remains is a single decision, made once, about who is
+            allowed to be an operator.
           </p>
         </div>
       </section>
 
-      <section className="docs-prose-grid" aria-labelledby="notifications-heading">
-        <div>
-          <p className="kicker">Notifications</p>
-          <h2 id="notifications-heading">The worker asks for help before it stops.</h2>
+      <section className="docs-diagram" aria-labelledby="lifecycle-heading">
+        <div className="docs-section-title">
+          <p className="kicker">How the worker stays authenticated</p>
+          <h2 id="lifecycle-heading">
+            One login, then indefinitely, if it keeps trying.
+          </h2>
           <p>
-            When a worker&apos;s refresh token is within 48 hours of expiry,
-            it emails the operator through a backend alert endpoint so there is
-            time to re-authenticate before jobs fall through to AWS Batch. If
-            the refresh token is already dead, the worker emails again and
-            exits with a distinct status code so a service supervisor can
-            surface it.
+            The thirty-day number is not a deadline for the operator. It is the
+            longest the worker may stay silent.
+          </p>
+        </div>
+        <Image
+          src="/diagrams/worker-token-lifecycle.svg"
+          alt="Token lifecycle in three stages. Once, with a human present: auritus login authenticates against Cognito, which issues a one-hour access token and a thirty-day refresh token. Steady state with no human, indefinitely: the worker calls the API with the bearer access token, silently refreshes before the hour is up, and rotation issues a new refresh token that resets the thirty-day clock, repeating forever. Only if the worker goes quiet: forty-eight hours before expiry it emails the operator, and past thirty days idle the refresh is rejected, the worker stops, and re-login is required."
+          width={3221}
+          height={411}
+        />
+      </section>
+
+      <section
+        className="docs-prose-single"
+        aria-labelledby="mechanics-heading"
+      >
+        <div>
+          <p className="kicker">The mechanics</p>
+          <h2 id="mechanics-heading">Why a thirty-day token lasts forever.</h2>
+          <p>
+            An operator runs <code>auritus login</code> once. Cognito returns an
+            access token valid for one hour and a refresh token valid for thirty
+            days, cached in a mode-0600 file. Before the access token expires
+            the CLI exchanges the refresh token for a new pair, with no browser
+            and no prompt.
+          </p>
+          <p>
+            The part that matters is rotation. The user pool is configured to
+            return a <em>new</em> refresh token on every exchange, so each
+            successful renewal resets the thirty-day clock. A worker refreshing
+            hourly is never within twenty-nine days of expiry. The thirty-day
+            limit only applies to a worker that has been powered off, offline,
+            or otherwise unable to reach Cognito for a month.
+          </p>
+          <p>
+            That boundary is signposted rather than sprung. Starting forty-eight
+            hours before expiry, the worker emails the operator, at most once a
+            day. If the refresh token is already dead it emails again and exits
+            with a distinct status code so a supervisor can surface it. That
+            alert route is deliberately unauthenticated: a worker whose token
+            has expired cannot present one, which is exactly when it needs to
+            ask for help. Abuse is bounded by confirming the address belongs to
+            a real Cognito user and by a per-recipient rate limit.
           </p>
         </div>
       </section>
 
-      <section className="identity-grid" aria-labelledby="guarantees-heading">
+      <section className="identity-section" aria-labelledby="options-heading">
+        <div className="docs-section-title">
+          <p className="kicker">Operator identity</p>
+          <h2 id="options-heading">
+            Three ways to decide who may be an operator.
+          </h2>
+          <p>
+            All three converge on the same Cognito pool and therefore the same
+            short-lived, rotating, API-scoped token. Only the question of who
+            gets in changes. Their implementation status differs, and is stated
+            with each.
+          </p>
+        </div>
+        {options.map((option) => (
+          <section
+            className="identity-option"
+            key={option.id}
+            aria-labelledby={`${option.id}-heading`}
+          >
+            <div className="docs-section-title">
+              <p className="kicker">
+                {option.kicker} &mdash; {option.status}
+              </p>
+              <h3 id={`${option.id}-heading`}>{option.title}</h3>
+              <p>{option.body}</p>
+            </div>
+            <Image
+              src={option.src}
+              alt={option.alt}
+              width={option.width}
+              height={option.height}
+            />
+          </section>
+        ))}
+      </section>
+
+      <section className="guarantee-section" aria-labelledby="guarantees-heading">
         <div className="docs-section-title">
           <p className="kicker">Guarantees</p>
           <h2 id="guarantees-heading">What the design promises.</h2>
         </div>
-        <div className="identity-grid">
+        <div className="guarantee-grid">
           {guarantees.map((item) => (
             <article key={item.title}>
               <h3>{item.title}</h3>
@@ -102,14 +236,37 @@ export default function SecurityPage() {
 
       <section className="docs-security" aria-labelledby="boundaries-heading">
         <p className="kicker">Boundaries</p>
-        <h2 id="boundaries-heading">What this does not do.</h2>
+        <h2 id="boundaries-heading">What is not true yet.</h2>
         <p>
-          The refresh token is API-scoped, not an AWS account credential.
-          Auritus does not grant the worker broader IAM access, does not mint
-          long-lived access keys, and does not expose static API keys. A
-          leaked refresh token has the same blast radius as a leaked access
-          token, only longer-lived, and is revocable through{" "}
-          <code>auritus logout</code>.
+          Everything above describes the architecture. Two parts of it are not
+          fully enforced in the current implementation, and we would rather say
+          so here than have you discover it in the source.
+        </p>
+        <p>
+          <strong>
+            The API authorizer does not verify token signatures yet.
+          </strong>{" "}
+          It checks that a bearer token is present, that it is shaped like a
+          JWT, and that the issuer and audience claims match this deployment.
+          Those claims are not secret, so a forged token carrying the right
+          values would currently be accepted. Full RS256 verification against
+          the Cognito JWKS needs a Lambda layer with the signing libraries, and
+          it is the next piece of this work. Until it lands, treat the operator
+          API as protected by obscurity of the endpoint rather than by the
+          token.
+        </p>
+        <p>
+          <strong>Two of the three identity options are not shipped.</strong>{" "}
+          Native Cognito login works end to end. Google federation is configured
+          in the user pool but the CLI has no browser sign-in flow. SAML and IAM
+          Identity Center are design intent with no implementation in the stack.
+        </p>
+        <p>
+          The claims that do hold today are the ones about what is absent: the
+          worker is issued no IAM user, no access key pair, and no static API
+          key, and the token it does carry cannot call AWS APIs. A leaked
+          refresh token has the blast radius of a leaked access token, longer
+          lived, and is revocable with <code>auritus logout</code>.
         </p>
         <Link className="button button-outline" href="/docs/self-hosting">
           Configure your own stack

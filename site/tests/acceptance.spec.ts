@@ -191,11 +191,28 @@ test("security page documents unattended worker auth and is reachable from the h
   await page.goto("/docs/security");
   await expect(
     page.getByRole("heading", {
-      name: /Authentication that stays out of your way/i,
+      name: /The worker never holds a key worth stealing/i,
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: /Refresh-token rotation/i }),
+    page.getByRole("heading", { name: /Rotation happens on its own/i }),
+  ).toBeVisible();
+
+  // All three identity options are presented, each with its real status.
+  for (const name of [
+    /Native Cognito users/i,
+    /Google Workspace/i,
+    /AWS IAM Identity Center or any SAML provider/i,
+  ]) {
+    await expect(page.getByRole("heading", { name })).toBeVisible();
+  }
+
+  // The page must keep stating what is not enforced yet, not just the promises.
+  await expect(
+    page.getByRole("heading", { name: /What is not true yet/i }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/does not verify token signatures yet/i),
   ).toBeVisible();
 
   await expect(

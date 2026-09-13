@@ -1,0 +1,96 @@
+direction: right
+
+vars: {
+  d2-config: {
+    pad: 32
+    theme-overrides: {
+      N1: "#21180f"
+      N2: "#665846"
+      N3: "#9a8668"
+      N4: "#cdbfa8"
+      N5: "#e6dcc9"
+      N6: "#f5eedf"
+      N7: "#fbf5e8"
+      B1: "#482015"
+      B2: "#943c2e"
+      B3: "#b8614e"
+      B4: "#d99a80"
+      B5: "#efcbbb"
+      B6: "#fae8de"
+      AA2: "#6e4f2b"
+      AA4: "#b88e4c"
+      AA5: "#e5c88f"
+      AB4: "#b87925"
+      AB5: "#f2d8a4"
+    }
+    dark-theme-overrides: {
+      N1: "#f3e6cf"
+      N2: "#cfbea4"
+      N3: "#a99273"
+      N4: "#705c44"
+      N5: "#4a3928"
+      N6: "#2d231b"
+      N7: "#1a1410"
+      B1: "#f3d3c1"
+      B2: "#e19a78"
+      B3: "#bd7258"
+      B4: "#704132"
+      B5: "#482c22"
+      B6: "#301e18"
+      AA2: "#d7b57a"
+      AA4: "#926e39"
+      AA5: "#4f3920"
+      AB4: "#efb85d"
+      AB5: "#5c401f"
+    }
+  }
+}
+
+operator: {
+  label: "Operator"
+  shape: person
+}
+
+google: {
+  label: "Google Workspace\nyour identity provider\nSSO, MFA, offboarding"
+}
+
+cli: {
+  label: "Auritus CLI\nbrowser sign-in flow\nnot yet implemented"
+  shape: hexagon
+  style.stroke-dash: 4
+}
+
+aws: {
+  label: "Your AWS account"
+
+  pool: {
+    label: "Cognito user pool\nGoogle federation\nconfigured in the stack"
+  }
+  tokens: {
+    label: "Short-lived JWTs\naccess 1h\nrefresh 30d, rotating"
+    shape: page
+  }
+  api: {
+    label: "API Gateway\n+ Lambda authorizer"
+    shape: hexagon
+  }
+  routes: {
+    label: "Operator routes only\njobs, sites, kill switch"
+  }
+}
+
+iam: {
+  label: "No IAM user\nNo access keys\nNo static secrets"
+  shape: rectangle
+  style.stroke-dash: 4
+}
+
+operator -> google: "sign in once\nwith your Google account" {style.bold: true}
+google -> aws.pool: "OIDC authorization code"
+operator -> cli: "auritus login" {style.stroke-dash: 4}
+cli -> aws.pool: "browser flow, planned" {style.stroke-dash: 4}
+aws.pool -> aws.tokens: "issues"
+aws.tokens -> aws.api: "Authorization: Bearer" {style.bold: true}
+aws.api -> aws.routes: "allow"
+cli -> iam: "never issued" {style.stroke-dash: 4}
