@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.12.0 (2026-09-13)
+
+### Features
+
+- **site**: Scale the masthead 1.5x on wide viewports
+  ([`6b0ecbf`](https://github.com/AnthusAI/Auritus/commit/6b0ecbf84031ca3abcc819c1596371ce76773ff7))
+
+
 ## v0.11.5 (2026-09-13)
 
 ### Bug Fixes
