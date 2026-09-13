@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { AuritusEmbed, AuritusPlayerHost } from "@/components/AuritusEmbed";
+import { AuritusEmbed } from "@/components/AuritusEmbed";
+import { AuritusPlayerHost } from "@/components/AuritusPlayerHost";
 import { GettysburgExcerpt } from "@/components/GettysburgExcerpt";
 
 export default function ThemedExamplePage() {
@@ -21,7 +22,10 @@ export default function ThemedExamplePage() {
         <Link href="/examples/basic">Kokoro</Link>
         <Link href="/examples/qwen">Qwen</Link>
       </nav>
-      <AuritusPlayerHost />
+      <AuritusPlayerHost
+        name="Gettysburg Address"
+        byline="Abraham Lincoln, 1863 — themed Kokoro"
+      />
       <article className="example-article">
         <GettysburgExcerpt backendLabel="Kokoro (af_heart) and a custom player theme" />
       </article>

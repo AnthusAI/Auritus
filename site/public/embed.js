@@ -31,7 +31,8 @@ var Auritus = (() => {
     mountPlayer: () => mountPlayer,
     normalizeText: () => normalizeText,
     readEmbedConfig: () => readEmbedConfig,
-    readEmbedMetadata: () => readEmbedMetadata
+    readEmbedMetadata: () => readEmbedMetadata,
+    rewindIfEnded: () => rewindIfEnded
   });
 
   // src/api.ts
@@ -273,6 +274,13 @@ var Auritus = (() => {
 
   // src/player/index.ts
   var DEFAULT_POLL_MS = 2e3;
+  function rewindIfEnded(media) {
+    const durationKnown = Number.isFinite(media.duration) && media.duration > 0;
+    const atEnd = media.ended || durationKnown && media.currentTime >= media.duration;
+    if (atEnd) {
+      media.currentTime = 0;
+    }
+  }
   function statusLabel(job) {
     switch (job.status) {
       case "done":
@@ -377,9 +385,22 @@ var Auritus = (() => {
         void refresh();
       }, pollIntervalMs);
     }
+    function syncPlayLabel() {
+      const playing = !audio.paused && !audio.ended;
+      playBtn.textContent = playing ? "Pause" : "Play";
+      playBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
+    }
     playBtn.addEventListener("click", () => {
+      if (!audio.paused) {
+        audio.pause();
+        return;
+      }
+      rewindIfEnded(audio);
       void audio.play();
     });
+    audio.addEventListener("play", syncPlayLabel);
+    audio.addEventListener("pause", syncPlayLabel);
+    audio.addEventListener("ended", syncPlayLabel);
     audio.addEventListener("timeupdate", () => {
       if (!audio.duration || !Number.isFinite(audio.duration)) {
         trackFill.style.width = "0%";

@@ -21,7 +21,8 @@ test("basic example shows player chrome without JavaScript", async ({
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto("/examples/basic");
-  await expect(page.getByText("Loading player")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Play" })).toBeVisible();
+  await expect(page.getByText("Loading player")).toHaveCount(0);
   const hostBox = await page.locator(".auritus-player-host").boundingBox();
   const articleBox = await page.locator(".example-article").boundingBox();
   expect(hostBox).toBeTruthy();
@@ -185,6 +186,73 @@ test("basic example plays Kokoro speech scoped to article", async ({
   );
 
   expect(durationSeconds).toBeGreaterThanOrEqual(8);
+});
+
+test("Play after the clip ends starts Kokoro speech from the beginning", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  await page.goto("/examples/basic");
+  await page.waitForFunction(
+    () => {
+      const host = document.querySelector(".auritus-root");
+      const playBtn = host?.shadowRoot?.querySelector(
+        ".auritus-play",
+      ) as HTMLButtonElement | null;
+      const audio = host?.shadowRoot?.querySelector("audio");
+      return Boolean(playBtn && !playBtn.disabled && audio?.src);
+    },
+    { timeout: 120_000 },
+  );
+
+  await page.locator(".auritus-root").evaluate(async (host) => {
+    const audio = host.shadowRoot?.querySelector("audio");
+    if (!audio) {
+      throw new Error("player audio missing");
+    }
+    if (!Number.isFinite(audio.duration) || audio.duration <= 0) {
+      await new Promise<void>((resolve, reject) => {
+        audio.addEventListener("loadedmetadata", () => resolve(), {
+          once: true,
+        });
+        audio.addEventListener(
+          "error",
+          () => reject(new Error("audio metadata load failed")),
+          { once: true },
+        );
+        audio.load();
+      });
+    }
+    audio.pause();
+    audio.currentTime = audio.duration;
+  });
+
+  await page.getByRole("button", { name: "Play", disabled: false }).click();
+
+  const afterRestart = await page.locator(".auritus-root").evaluate(
+    async (host) => {
+      const audio = host.shadowRoot?.querySelector("audio");
+      const playBtn = host.shadowRoot?.querySelector(
+        ".auritus-play",
+      ) as HTMLButtonElement | null;
+      if (!audio || !playBtn) {
+        throw new Error("player audio or Play control missing");
+      }
+      await new Promise((resolve) => {
+        window.setTimeout(resolve, 1200);
+      });
+      return {
+        currentTime: audio.currentTime,
+        paused: audio.paused,
+        label: playBtn.getAttribute("aria-label"),
+      };
+    },
+  );
+
+  expect(afterRestart.paused).toBe(false);
+  expect(afterRestart.currentTime).toBeGreaterThan(0);
+  expect(afterRestart.currentTime).toBeLessThan(8);
+  expect(afterRestart.label).toBe("Pause");
 });
 
 test("themed example posts the same Gettysburg excerpt with Kokoro", async ({

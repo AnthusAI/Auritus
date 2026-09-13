@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { AuritusEmbed, AuritusPlayerHost } from "@/components/AuritusEmbed";
+import { AuritusEmbed } from "@/components/AuritusEmbed";
+import { AuritusPlayerHost } from "@/components/AuritusPlayerHost";
 
 export default function IgnoreExamplePage() {
   return (
@@ -9,7 +10,10 @@ export default function IgnoreExamplePage() {
         <Link href="/examples/basic">Basic example</Link>
         <Link href="/docs/ignore-rules">Ignore rules</Link>
       </nav>
-      <AuritusPlayerHost />
+      <AuritusPlayerHost
+        name="Ignore markup example"
+        byline="John Stuart Mill, 1859"
+      />
       <article className="example-article">
         <h1>Ignore markup example</h1>
         <p>

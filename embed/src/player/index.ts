@@ -12,6 +12,22 @@ export interface MountPlayerOptions {
 
 const DEFAULT_POLL_MS = 2000;
 
+/**
+ * Move playback to the start when the clip has already finished.
+ */
+export function rewindIfEnded(media: {
+  currentTime: number;
+  duration: number;
+  ended: boolean;
+}): void {
+  const durationKnown = Number.isFinite(media.duration) && media.duration > 0;
+  const atEnd =
+    media.ended || (durationKnown && media.currentTime >= media.duration);
+  if (atEnd) {
+    media.currentTime = 0;
+  }
+}
+
 function statusLabel(job: JobRecord): string {
   switch (job.status) {
     case "done":
@@ -132,9 +148,24 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
     }, pollIntervalMs);
   }
 
+  function syncPlayLabel(): void {
+    const playing = !audio.paused && !audio.ended;
+    playBtn.textContent = playing ? "Pause" : "Play";
+    playBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
+  }
+
   playBtn.addEventListener("click", () => {
+    if (!audio.paused) {
+      audio.pause();
+      return;
+    }
+    rewindIfEnded(audio);
     void audio.play();
   });
+
+  audio.addEventListener("play", syncPlayLabel);
+  audio.addEventListener("pause", syncPlayLabel);
+  audio.addEventListener("ended", syncPlayLabel);
 
   audio.addEventListener("timeupdate", () => {
     if (!audio.duration || !Number.isFinite(audio.duration)) {

@@ -15,7 +15,7 @@ export {
   readEmbedMetadata,
   AURITUS_BREAK_MARKER,
 } from "./generator/index.js";
-export { mountPlayer } from "./player/index.js";
+export { mountPlayer, rewindIfEnded } from "./player/index.js";
 
 export interface EmbedScriptConfig {
   siteKey: string;
