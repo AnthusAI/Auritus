@@ -108,7 +108,19 @@ export async function boot(options: BootOptions = {}): Promise<HTMLElement> {
     throw new Error("Auritus embed: [data-auritus-site-key] not found");
   }
 
+  if (generation !== bootGeneration) {
+    const skipped = document.createElement("div");
+    skipped.setAttribute("data-auritus-boot-skipped", "true");
+    return skipped;
+  }
+
   disposePlayers();
+
+  if (generation !== bootGeneration) {
+    const skipped = document.createElement("div");
+    skipped.setAttribute("data-auritus-boot-skipped", "true");
+    return skipped;
+  }
 
   const config = readEmbedConfig(element);
   const { name, byline } = readEmbedMetadata(element);
