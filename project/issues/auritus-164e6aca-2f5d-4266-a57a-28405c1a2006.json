@@ -10,11 +10,19 @@
   "parent": "auritus-f3fac494-0495-4d18-a1e6-4a9755e1fe1a",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "9c23f52d-d947-4eee-ad46-07fdefb97306",
+      "author": "ryan",
+      "text": "Ignore job daea0e6a was pending then claimed. Batch FAILED because embed default voice_id is default and Kokoro tried voices/default.pt (404). Resetting job to pending with voice_id af_heart and resubmitting Batch. Product fix: default Kokoro voice af_heart in embed, router, and runner.",
+      "created_at": "2026-09-13T03:15:48.992819Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T03:04:53.189552Z",
-  "updated_at": "2026-09-13T03:04:53.189603Z",
+  "updated_at": "2026-09-13T03:15:48.993016Z",
   "closed_at": null,
-  "right_now_summary": "The example is stuck waiting for audio because the local worker is not running.",
-  "right_now_updated_at": "2026-09-13T03:04:55.039543Z",
+  "right_now_summary": "The job is being resubmitted with Kokoro voice af_heart after the default voice caused a 404.",
+  "right_now_updated_at": "2026-09-13T03:15:51.071986Z",
   "custom": {}
 }
