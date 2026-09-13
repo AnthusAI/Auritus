@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-11T21:38:21.475254Z",
   "closed_at": null,
-  "right_now_summary": "The core system works while the team adds CI checks and verifies deployments and releases in real AWS.",
-  "right_now_updated_at": "2026-09-13T03:25:54.419568Z",
+  "right_now_summary": "The core system works, while CI, trusted publishing, and real-AWS checks are still being added.",
+  "right_now_updated_at": "2026-09-13T03:28:33.859318Z",
   "custom": {}
 }

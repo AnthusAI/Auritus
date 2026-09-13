@@ -24,12 +24,19 @@
       "text": "Live ignore job daea0e6a is done with af_heart WAV (~5.3s). Player status Ready, Play enabled. Root cause remains: embed still defaults voice_id to default, which 404s on Kokoro. Product fix in progress (af_heart default).",
       "created_at": "2026-09-13T03:17:47.727816Z",
       "comment_type": "default"
+    },
+    {
+      "id": "d6f86dc7-b981-42f0-8a8b-ffd070881dcb",
+      "author": "ryan",
+      "text": "PR #10 (1fe0011) defaults Kokoro voice to af_heart in embed, router, runner, and backends, and maps legacy default. Live ignore page already plays via an af_heart regenerate; this PR stops new jobs from posting default.pt.",
+      "created_at": "2026-09-13T03:28:28.080495Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T03:04:53.189552Z",
-  "updated_at": "2026-09-13T03:17:47.728228Z",
+  "updated_at": "2026-09-13T03:28:28.080764Z",
   "closed_at": null,
-  "right_now_summary": "The job now has audio and is playable, but the default voice still needs fixing.",
-  "right_now_updated_at": "2026-09-13T03:17:49.561600Z",
+  "right_now_summary": "The page now plays audio, and PR #10 fixes the faulty default voice for new jobs.",
+  "right_now_updated_at": "2026-09-13T03:28:30.204487Z",
   "custom": {}
 }
