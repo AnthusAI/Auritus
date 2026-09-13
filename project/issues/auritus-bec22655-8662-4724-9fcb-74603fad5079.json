@@ -3,7 +3,7 @@
   "title": "Production router is missing worker_type telemetry",
   "description": "## Behaviour\n\nM8 closed with claim/complete writing `worker_type` (`local` / `batch`). Live DynamoDB has **no** items with `worker_type`. The production router Lambda `AuritusBackend-RouterFnDA4EF4F3-jclSBvAjL2tV` was last modified **2026-09-13T03:37:47Z**, before PR #40.\n\nThe operator console race split cannot be true on AWS until that Lambda is redeployed from current `develop`.\n\n## Fix\n\n`cdk deploy AuritusBackend` (or `auritus deploy`) from current develop so the live API matches git. Then a newly claimed job must store `worker_type`.",
   "type": "bug",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -17,12 +17,19 @@
       "text": "Production AuritusBackend redeployed after rollback. The first changeset failed because Cognito rejects ALLOW_REFRESH_TOKEN_AUTH when refresh-token rotation is enabled. That override is gone.\n\nRouter Lambda LastModified is 2026-09-13T23:04:31Z. A new job 325b9a6bf2554c20 claimed as local:telemetry-proof returned worker_type=local. API URL unchanged.\n\nPR: https://github.com/AnthusAI/Auritus/pull/45",
       "created_at": "2026-09-13T23:08:22.321289Z",
       "comment_type": "default"
+    },
+    {
+      "id": "f41c3101-411d-4f7c-a68b-45d1bd59565e",
+      "author": "ryan",
+      "text": "Closed: live router writes worker_type. Deployed AuritusBackend; job 325b9a6bf2554c20 claimed as local. CDK CLI pin landed in https://github.com/AnthusAI/Auritus/pull/45",
+      "created_at": "2026-09-13T23:12:43.383504Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T22:42:11.372797Z",
-  "updated_at": "2026-09-13T23:08:22.321761Z",
-  "closed_at": null,
-  "right_now_summary": "Production was redeployed, and a new job now records `worker_type=local` as expected.",
-  "right_now_updated_at": "2026-09-13T23:08:26.540679Z",
+  "updated_at": "2026-09-13T23:12:43.383562Z",
+  "closed_at": "2026-09-13T23:12:35.977456Z",
+  "right_now_summary": "The production router now writes worker_type, confirmed by a live job claiming as local.",
+  "right_now_updated_at": "2026-09-13T23:12:44.826287Z",
   "custom": {}
 }
