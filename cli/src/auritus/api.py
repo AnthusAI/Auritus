@@ -6,12 +6,21 @@ from typing import Any
 
 import httpx
 
-from auritus.auth import AuthError, get_access_token
+from auritus.auth import (
+    AuthError,
+    RefreshExpiredError,
+    get_access_token,
+    refresh_tokens,
+)
 from auritus.config import load_config
 
 
 class AuritusApiError(RuntimeError):
     """Raised when the Auritus API returns an error."""
+
+
+class AuritusSessionExpiredError(AuritusApiError):
+    """Raised when the operator refresh token is dead and re-login is required."""
 
 
 class AuritusClient:
@@ -38,10 +47,30 @@ class AuritusClient:
         else:
             try:
                 token = self._token or get_access_token()
+            except RefreshExpiredError as exc:
+                raise AuritusSessionExpiredError(
+                    "Session expired. Run `auritus login`."
+                ) from exc
             except AuthError as exc:
                 raise AuritusApiError(str(exc)) from exc
             headers["Authorization"] = f"Bearer {token}"
         return headers
+
+    def _send(
+        self,
+        method: str,
+        url: str,
+        *,
+        headers: dict[str, str],
+        json_body: dict[str, Any] | None,
+    ) -> httpx.Response:
+        return httpx.request(
+            method,
+            url,
+            headers=headers,
+            json=json_body,
+            timeout=60.0,
+        )
 
     def _request(
         self,
@@ -52,13 +81,24 @@ class AuritusClient:
         site_key: str | None = None,
     ) -> dict[str, Any]:
         url = f"{self.base_url}{path}"
-        response = httpx.request(
-            method,
-            url,
-            headers=self._headers(site_key=site_key),
-            json=json_body,
-            timeout=60.0,
+        response = self._send(
+            method, url, headers=self._headers(site_key=site_key), json_body=json_body
         )
+        if response.status_code == 401 and not site_key:
+            try:
+                refresh_tokens()
+            except RefreshExpiredError as exc:
+                raise AuritusSessionExpiredError(
+                    "Session expired. Run `auritus login`."
+                ) from exc
+            except AuthError as exc:
+                raise AuritusApiError(str(exc)) from exc
+            response = self._send(
+                method,
+                url,
+                headers=self._headers(site_key=site_key),
+                json_body=json_body,
+            )
         if response.status_code >= 400:
             raise AuritusApiError(
                 f"{method} {path} failed: {response.status_code} {response.text}"

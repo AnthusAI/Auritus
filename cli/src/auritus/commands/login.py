@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import typer
 
-from auritus.auth import AuthError, login_with_password
+from auritus.auth import AuthError, login_with_password, revoke_tokens
 
 app = typer.Typer(
     help="Authenticate with Cognito using email and password (not Google)."
@@ -37,3 +37,12 @@ def login(
     expires = tokens.get("expires_in")
     if expires:
         typer.echo(f"Access token expires in {expires} seconds.")
+
+
+def logout_cmd() -> None:
+    """Revoke the cached Cognito refresh token and clear local credentials."""
+    try:
+        revoke_tokens()
+    except AuthError as exc:
+        typer.secho(str(exc), fg=typer.colors.YELLOW, err=True)
+    typer.secho("Logged out.", fg=typer.colors.GREEN)

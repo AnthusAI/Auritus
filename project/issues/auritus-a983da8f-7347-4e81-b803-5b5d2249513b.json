@@ -10,11 +10,33 @@
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "b423986a-3061-4f4e-a46c-79695774259b",
+      "author": "ryan",
+      "text": "aurit.us examples now show Play chrome on first paint and speak Kokoro (~23s) and Qwen (~48s) after promoting develop to main (PR #29). Local worker and Batch (Kokoro + Qwen) were already proven. Remaining on this epic: CLI PyPI via trusted publishing (a01473), kept last.",
+      "created_at": "2026-09-13T15:51:07.978490Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "35e61b4f-504d-4090-aebb-6461473a4511",
+      "author": "ryan",
+      "text": "Model-license record now cites shipped Kokoro and Qwen Apache-2.0 cards (PR #30). Release workflow skips PyPI unless AURITUS_PUBLISH_PYPI is true. Remaining on this epic: a01473 trusted publisher, still last.",
+      "created_at": "2026-09-13T16:03:52.102163Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "dfbdff03-91e0-4ecb-bde3-99cbcd20aa31",
+      "author": "ryan",
+      "text": "Stopping point: license record and PyPI skip gate landed (PR #30). Live examples, local worker, and Batch (Kokoro + Qwen) are proven. Remaining specified work is a01473 (trusted publisher / first PyPI upload), still last.",
+      "created_at": "2026-09-13T16:06:40.652693Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:38:50.679842Z",
-  "updated_at": "2026-09-13T14:22:04.188943Z",
+  "updated_at": "2026-09-13T16:06:40.652729Z",
   "closed_at": null,
-  "right_now_summary": "The README is being updated, while PyPI publishing awaits proof of live examples and fallback paths.",
-  "right_now_updated_at": "2026-09-13T14:49:02.544273Z",
+  "right_now_summary": "Live examples and license docs are ready; trusted PyPI publishing is the remaining work.",
+  "right_now_updated_at": "2026-09-13T16:06:49.374109Z",
   "custom": {}
 }

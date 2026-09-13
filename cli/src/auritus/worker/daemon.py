@@ -10,7 +10,12 @@ import uuid
 import httpx
 import typer
 
-from auritus.api import AuritusApiError, AuritusClient
+from auritus.api import (
+    AuritusApiError,
+    AuritusClient,
+    AuritusSessionExpiredError,
+)
+from auritus.auth import maybe_warn_near_expiry, notify_session_state
 from auritus.config import load_config
 from auritus.tts import get_backend
 
@@ -55,9 +60,18 @@ def run_worker(*, once: bool = False) -> None:
     backend = get_backend(tts_backend_name)
 
     while True:
+        maybe_warn_near_expiry(owner)
         try:
             jobs = client.list_claimable()
             typer.echo(f"Found {len(jobs)} claimable jobs")
+        except AuritusSessionExpiredError as exc:
+            typer.secho(
+                f"Session expired: {exc}",
+                fg=typer.colors.RED,
+                err=True,
+            )
+            notify_session_state("expired", owner)
+            raise SystemExit(2) from exc
         except AuritusApiError as exc:
             typer.secho(
                 f"list_claimable failed: {exc}",

@@ -7,6 +7,11 @@ const sections = [
     summary: "Visual guide to the local-first worker, AWS fallback, identity choices, and secure-design status.",
   },
   {
+    href: "/docs/security",
+    title: "Security",
+    summary: "Operator authentication, refresh-token rotation, unattended workers, revocation, and notification.",
+  },
+  {
     href: "/docs/usage",
     title: "Usage",
     summary: "Embed script, site keys, and how jobs flow from browser to audio.",

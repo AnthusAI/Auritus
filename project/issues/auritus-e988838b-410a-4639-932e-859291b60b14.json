@@ -1,0 +1,28 @@
+{
+  "id": "auritus-e988838b-410a-4639-932e-859291b60b14",
+  "title": "Jobs stay pending forever: no worker claims and AWS Batch fallback does not fire",
+  "description": "## Observed\n\nJobs submitted to the demo API are accepted and then stay `pending`\nindefinitely. Nothing ever claims them.\n\n- Content hash `2caf28aa` (home page pitch): `POST /jobs` returned `201`,\n  and `{\"status\": \"pending\", \"audio_url\": null}` was still the response\n  40+ minutes later.\n- Content hash `01355d8a` (an earlier wording of the same pitch): `201`,\n  then `pending` for the full 7 minutes it was polled.\n\nPre-existing hashes such as `31491bc9` (Gettysburg) return `done` with a\nsigned URL, so the job API, storage, and signed delivery all work. Only\nthe *production* of new audio is affected.\n\n## Expected\n\nPer the architecture: a local worker races to claim the job, and if nobody\nclaims it within the configured window, a workflow submits an AWS Batch\nGPU job. With no local worker running, the Batch fallback should take the\njob. Either path should move it out of `pending`.\n\nForty minutes with no state change means the fallback is not firing at\nall — this is the \"AWS safety net\" the site advertises.\n\n## Impact\n\nAny new text on any page is permanently silent. Only hashes that were\nbaked previously can play. The home page demo cannot speak until this is\nresolved.\n\nContent-hash dedup means this needs to succeed exactly once per hash: a\nsingle successful render of `2caf28aa` makes the home page demo audible\npermanently.\n\n## Gherkin\n\n```gherkin\nFeature: Cloud fallback produces audio when no local worker is available\n  Scenario: No local worker claims the job\n    Given no local worker is claiming jobs\n    And a job has been pending past the configured claim timeout\n    When the fallback workflow runs\n    Then an AWS Batch GPU job is submitted for that job\n    And the job status leaves \"pending\"\n```",
+  "type": "bug",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "708a62fd-c010-4ae7-be50-1219e4336168",
+      "author": "ryan",
+      "text": "Invalid as written — my error. Withdrawing this.\n\nThe job did complete. Content hash `2caf28aa` now returns\n`{\"status\": \"done\"}` with a signed `audio_url`, and the home page player\nreports \"Ready\". The claim \"stays pending forever\" is wrong.\n\nWhat I actually observed was latency: the job sat `pending` for roughly\n40 minutes between submission and completion, which is why I mistook a\nslow path for a dead one. Whether that is the expected AWS Batch GPU cold\nstart or worth tuning is a separate judgement, and I have no basis for\ncalling it a defect.\n\nLeaving a note in case the latency is worth its own card: submitted\n~12:22, observed `done` ~13:20.",
+      "created_at": "2026-09-13T17:21:16.936853Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-13T17:16:14.621901Z",
+  "updated_at": "2026-09-13T17:21:16.973690Z",
+  "closed_at": "2026-09-13T17:21:16.973660Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

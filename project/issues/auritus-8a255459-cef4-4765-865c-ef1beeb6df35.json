@@ -1,0 +1,28 @@
+{
+  "id": "auritus-8a255459-cef4-4765-865c-ef1beeb6df35",
+  "title": "Embed player never renders: .auritus-root stays empty",
+  "description": "## Observed\n\nOn a clean production build (`next build` + the static `out/` export served\nover HTTP), the embed boots, POSTs `/jobs`, and polls `GET /jobs/<hash>`\nsuccessfully — every response 200 — but the element it mounts,\n`.auritus-root`, stays empty. No player controls ever appear. The only\nthing the reader sees is the first-paint placeholder chrome.\n\nReproduced on two pages, both with `rootChildCount: 0` after polling for\n20+ seconds:\n\n- `/examples/basic` — content hash `31491bc9`. That job is `done` and\n  returns a signed `audio_url`, so missing audio is **not** the cause.\n- `/` — content hash `2caf28aa` (the new home page demo).\n\n## Expected\n\n`mountPlayer` renders the controls and a status line into `.auritus-root`.\n`embed/src/player/index.ts` already implements `statusLabel()` and a\n\"Waiting for audio…\" state, so even a `pending` job should render a\nplayer rather than nothing.\n\n## Impact\n\nNo page can play audio, including the shipped examples. This blocks the M7\ngate: \"PyPI publishing awaits proof of live examples and fallback paths.\"\n\n## Ruling out\n\n- Not missing audio — the Gettysburg job is `done` with a signed URL.\n- Not a dev-server artifact — reproduced against a static production\n  export, not just `next dev`.\n- Not CORS or site-key scoping — the preflight returns 204 and the job\n  calls all return 200 from `localhost`.\n\n## Leads\n\n- Under `next dev` the player was observed rendering and then vanishing.\n  `site/components/AuritusEmbed.tsx` calls `mounted.remove()` in its\n  effect cleanup, and `reactStrictMode: true` double-invokes effects in\n  development. That may be a second, separate defect layered on this one.\n- The Claude in-app browser pane blocks the cross-origin API call, so it\n  is not a valid environment for reproducing this. Use Playwright or a\n  normal browser.\n\n## Gherkin\n\n```gherkin\nFeature: Embedded player renders\n  Scenario: A page carrying the embed shows player controls\n    Given a page with the Auritus embed and a registered site key\n    When the embed boots and the job API responds\n    Then the player controls are visible to the reader\n    And a status line reflects the current job status\n```",
+  "type": "bug",
+  "status": "closed",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "2a04db57-34d7-4bc7-8196-a9e0929340f5",
+      "author": "ryan",
+      "text": "Invalid — my error. Withdrawing this.\n\nThe player *does* render. It mounts into a **shadow root** attached to\n`.auritus-root`, which auritus-e5075a already notes (\"Play exists in\nshadow DOM\"). My probe counted `root.children.length`, which only sees\nlight DOM, so a correctly-mounted player always read as zero.\n\nRe-probed via `root.shadowRoot`: 3 children, a working Play button, and\nstatus \"Ready\". Nothing is broken.\n\nFirst-paint chrome — the real concern in this area — is already tracked\nby auritus-e5075a (in_progress) and auritus-ab3214.",
+      "created_at": "2026-09-13T17:21:08.844112Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-13T17:16:01.868197Z",
+  "updated_at": "2026-09-13T17:21:08.880261Z",
+  "closed_at": "2026-09-13T17:21:08.880221Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
