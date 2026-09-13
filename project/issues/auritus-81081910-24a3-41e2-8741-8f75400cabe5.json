@@ -1,0 +1,20 @@
+{
+  "id": "auritus-81081910-24a3-41e2-8741-8f75400cabe5",
+  "title": "Job telemetry captures worker race attribution, duration, and failures",
+  "description": "Capture worker race execution path (local vs batch), timestamps, durations, character counts, and explicit failure transitions in DynamoDB AuritusJobs.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a72acda0-dc7b-44d5-9629-18edc0458fdc",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T19:42:09.143171Z",
+  "updated_at": "2026-09-13T19:42:09.143200Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
