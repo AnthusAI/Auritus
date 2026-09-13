@@ -31,14 +31,6 @@ function resolveBoot(): AuritusBoot | undefined {
   return global?.boot ?? global?.default?.boot;
 }
 
-function resolveDispose(): (() => void) | undefined {
-  if (typeof window === "undefined") {
-    return undefined;
-  }
-  const global = (window as Window & { Auritus?: AuritusGlobal }).Auritus;
-  return global?.disposePlayers ?? global?.default?.disposePlayers;
-}
-
 function waitForBoot(timeoutMs = 15_000): Promise<AuritusBoot> {
   const existing = resolveBoot();
   if (existing) {
@@ -105,7 +97,6 @@ export function AuritusEmbed({
         mounted.dispatchEvent(new Event("auritus-dispose"));
         mounted.remove();
       }
-      resolveDispose()?.();
     };
   }, [
     siteKey,

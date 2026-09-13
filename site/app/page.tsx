@@ -1,5 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AuritusEmbed } from "@/components/AuritusEmbed";
+import { AuritusPlayerHost } from "@/components/AuritusPlayerHost";
+import { HOME_SPOKEN_PITCH } from "@/components/homeSpokenPitch";
 
 const choices = [
   {
@@ -49,6 +52,13 @@ export default function HomePage() {
             control the model, the data path, and the balance of quality and
             cost.
           </p>
+          <AuritusPlayerHost
+            name="What Auritus does"
+            byline="A 30-second introduction, narrated by Auritus"
+          />
+          <article className="home-spoken">
+            <p>{HOME_SPOKEN_PITCH}</p>
+          </article>
           <div className="hero-actions">
             <Link className="button button-primary" href="/docs/usage">
               Start with the embed
@@ -88,7 +98,9 @@ export default function HomePage() {
       <section className="choice-section" aria-labelledby="control-title">
         <div className="section-heading">
           <p className="kicker">Control is the product</p>
-          <h2 id="control-title">A narration layer that adapts to your stack.</h2>
+          <h2 id="control-title">
+            A narration layer that adapts to your stack.
+          </h2>
           <p>
             Build a listening experience without treating your publisher content
             and production choices as somebody else&apos;s defaults.
@@ -105,19 +117,28 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="architecture-panel" aria-labelledby="architecture-title">
+      <section
+        className="architecture-panel"
+        aria-labelledby="architecture-title"
+      >
         <div className="architecture-copy">
           <p className="kicker">Designed for a reliable handoff</p>
-          <h2 id="architecture-title">Your GPU when it is there. AWS when it is not.</h2>
+          <h2 id="architecture-title">
+            Your GPU when it is there. AWS when it is not.
+          </h2>
           <p>
-            A local worker races to claim the job. If nobody claims it during the
-            configured window, a workflow submits an AWS Batch GPU job. The
+            A local worker races to claim the job. If nobody claims it during
+            the configured window, a workflow submits an AWS Batch GPU job. The
             conditional claim means only one worker finishes the audio.
           </p>
           <ul className="check-list">
-            <li>Content-hash deduplication keeps repeated requests efficient.</li>
+            <li>
+              Content-hash deduplication keeps repeated requests efficient.
+            </li>
             <li>Private audio is returned with short-lived access.</li>
-            <li>Per-site quotas, budgets, and a kill switch limit cloud work.</li>
+            <li>
+              Per-site quotas, budgets, and a kill switch limit cloud work.
+            </li>
           </ul>
           <Link className="button button-outline" href="/docs/architecture">
             Explore deployment options
@@ -142,19 +163,28 @@ export default function HomePage() {
           <li>
             <div>
               <h3>Deploy your stack</h3>
-              <p>Provision the API, worker fallback, private audio storage, and operator authentication in AWS.</p>
+              <p>
+                Provision the API, worker fallback, private audio storage, and
+                operator authentication in AWS.
+              </p>
             </div>
           </li>
           <li>
             <div>
               <h3>Register an origin</h3>
-              <p>Create a site key scoped to the publisher domain that will host the player.</p>
+              <p>
+                Create a site key scoped to the publisher domain that will host
+                the player.
+              </p>
             </div>
           </li>
           <li>
             <div>
               <h3>Drop in the player</h3>
-              <p>Add the embed once. Auritus extracts the readable content and keeps the player in step with your page.</p>
+              <p>
+                Add the embed once. Auritus extracts the readable content and
+                keeps the player in step with your page.
+              </p>
             </div>
           </li>
         </ul>
@@ -165,7 +195,9 @@ export default function HomePage() {
 
       <section className="security-note" aria-labelledby="security-title">
         <p className="kicker">Security architecture in progress</p>
-        <h2 id="security-title">Clear boundaries now. Deeper control evidence next.</h2>
+        <h2 id="security-title">
+          Clear boundaries now. Deeper control evidence next.
+        </h2>
         <p>
           Auritus already uses private audio, short-lived delivery, conditional
           job claims, and spend limits. The secure-by-design documentation is
@@ -173,7 +205,9 @@ export default function HomePage() {
           distinguishes current behavior from planned controls such as origin
           enforcement and complete JWT validation.
         </p>
-        <Link href="/docs/security">Read the authentication and security design</Link>
+        <Link href="/docs/security">
+          Read the authentication and security design
+        </Link>
       </section>
 
       <footer className="marketing-footer">
@@ -187,6 +221,16 @@ export default function HomePage() {
           <a href="https://github.com/AnthusAI/Auritus">GitHub</a>
         </div>
       </footer>
+      <AuritusEmbed
+        siteKey="demo-site-key"
+        apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
+        name="What Auritus does"
+        byline="A 30-second introduction, narrated by Auritus"
+        ttsBackend="kokoro"
+        voiceId="af_heart"
+        root=".home-spoken"
+        playerHost=".auritus-player-host"
+      />
     </main>
   );
 }

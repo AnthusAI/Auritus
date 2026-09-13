@@ -54,7 +54,8 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
     pollIntervalMs = DEFAULT_POLL_MS,
   } = options;
 
-  const shadow = host.attachShadow({ mode: "open" });
+  const shadow = host.shadowRoot ?? host.attachShadow({ mode: "open" });
+  shadow.replaceChildren();
   const style = document.createElement("style");
   style.textContent = PLAYER_STYLES;
   shadow.appendChild(style);
