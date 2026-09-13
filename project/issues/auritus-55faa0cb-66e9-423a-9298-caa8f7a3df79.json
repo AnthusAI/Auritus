@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-11T21:38:21.475254Z",
   "closed_at": null,
-  "right_now_summary": "Auritus runs in production with working TTS; AWS Batch checks and PyPI publishing still await access.",
-  "right_now_updated_at": "2026-09-13T13:34:36.781113Z",
+  "right_now_summary": "Auritus runs in production; AWS Batch checks, CI work, and PyPI publishing still await final setup.",
+  "right_now_updated_at": "2026-09-13T14:11:20.389729Z",
   "custom": {}
 }

@@ -3,18 +3,26 @@
   "title": "Same Gettysburg excerpt spoken by each real TTS on the public examples",
   "description": "",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 0,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "2fed5b54-afea-49a7-88b1-f3730a369434",
+      "author": "ryan",
+      "text": "Live proof: /examples/basic and /examples/qwen both show the Gettysburg Address. Kokoro job 31491bc9 plays ~23s; Qwen job 19897b03 plays ~48s of the same words. Hash now includes tts_backend. Higgs is not demoed.\n",
+      "created_at": "2026-09-13T14:11:10.730819Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T13:33:52.070900Z",
-  "updated_at": "2026-09-13T13:34:31.909652Z",
-  "closed_at": null,
-  "right_now_summary": "Each real TTS on the public examples is speaking the same Gettysburg excerpt.",
-  "right_now_updated_at": "2026-09-13T13:34:34.654882Z",
+  "updated_at": "2026-09-13T14:11:15.613123Z",
+  "closed_at": "2026-09-13T14:11:15.613081Z",
+  "right_now_summary": "The public examples play the Gettysburg Address with Kokoro and Qwen; Higgs has no demo.",
+  "right_now_updated_at": "2026-09-13T14:11:17.771345Z",
   "custom": {}
 }
