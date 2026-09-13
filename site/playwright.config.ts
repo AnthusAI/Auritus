@@ -15,9 +15,12 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: {
-    command: "npm run dev",
-    timeout: 30000,
-    url: baseURL,
-  },
+  webServer: baseURL.includes("localhost")
+    ? {
+        command: "npm run dev",
+        timeout: 30000,
+        url: baseURL,
+        reuseExistingServer: true,
+      }
+    : undefined,
 });
