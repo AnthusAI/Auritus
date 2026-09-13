@@ -46,6 +46,7 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .marketing-hero,
 .choice-section,
 .demo-section,
+.flow-section,
 .architecture-panel,
 .setup-section,
 .security-note,
@@ -61,12 +62,12 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 
 .marketing-header { padding-top: 1rem; }
 
-.brand-lockup { align-items: flex-end; display: inline-flex; gap: 0.7rem; text-decoration: none; }
+.brand-lockup { align-items: flex-end; display: inline-flex; gap: 1.2rem; text-decoration: none; }
 .brand-lockup-copy { display: grid; gap: 0.08rem; transform: translateY(-0.95rem) rotate(-7deg); transform-origin: 0 50%; }
-.wordmark { font-family: var(--font-display), serif; font-size: 1.7rem; font-weight: 700; letter-spacing: -0.06em; line-height: 0.9; text-decoration: none; }
+.wordmark { font-family: var(--font-display), serif; font-size: 3.4rem; font-weight: 700; letter-spacing: -0.06em; line-height: 0.9; text-decoration: none; }
 .wordmark span { color: var(--accent); }
-.brand-tagline { color: var(--accent); font-size: 0.95rem; font-weight: 850; letter-spacing: 0.14em; line-height: 1; text-transform: uppercase; }
-.brand-announcer { height: auto; margin-block: -0.7rem -1.5rem; width: 6.4rem; }
+.brand-tagline { color: var(--accent); font-size: 1.9rem; font-weight: 850; letter-spacing: 0.14em; line-height: 1; text-transform: uppercase; }
+.brand-announcer { height: auto; margin-block: -1.2rem -2.4rem; width: 12.8rem; }
 
 .marketing-header nav,
 .docs-nav > div,
@@ -145,16 +146,22 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 0.85rem;
-  margin-top: 2.5rem;
-  max-width: 46rem;
+  margin-top: 0;
   padding: clamp(1.25rem, 3vw, 2rem);
 }
+.demo-panel-label { color: var(--accent); font-size: 0.76rem; font-weight: 800; letter-spacing: 0.12em; margin: 0 0 0.9rem; text-transform: uppercase; }
 .demo-article { margin-top: 1.5rem; }
-.demo-article p { font-size: 1.12rem; margin-bottom: 1rem; max-width: 38rem; }
-.demo-article p:first-child { font-family: var(--font-display), serif; font-size: 1.5rem; line-height: 1.25; }
+.demo-article p { font-size: 1rem; margin-bottom: 0.85rem; max-width: 38rem; }
+.demo-article p:first-child { font-family: var(--font-display), serif; font-size: 1.3rem; line-height: 1.25; }
 .demo-article p:last-child { border-top: 1px solid var(--line); color: var(--ink-muted); font-size: 0.85rem; margin-bottom: 0; padding-top: 1rem; }
 
-.architecture-panel { align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 1rem; color: var(--ink); display: grid; gap: 2.5rem; grid-template-columns: 0.85fr 1.15fr; margin-bottom: 6rem; overflow: hidden; padding: clamp(2rem, 5vw, 5rem); }
+/* The request-flow diagram, now after the audio demo rather than beside the
+   headline. Full width so the rebuilt grid diagram is legible. */
+.flow-section { padding-bottom: 6rem; }
+.flow-section img { border-radius: 0.85rem; box-shadow: 0 24px 60px rgba(55, 36, 16, 0.18); display: block; height: auto; margin-top: 2rem; max-width: 100%; width: 100%; }
+
+.architecture-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 1rem; color: var(--ink); display: grid; gap: 2.5rem; grid-template-columns: 1fr; margin-bottom: 6rem; overflow: hidden; padding: clamp(2rem, 5vw, 5rem); }
+.architecture-copy { max-width: 52rem; }
 .architecture-copy > p:not(.kicker) { color: var(--ink-muted); font-size: 1.1rem; }
 .architecture-panel .button-outline { margin-top: 1.3rem; }
 .check-list { color: var(--ink-muted); list-style: "↗  "; padding-left: 1.25rem; }
@@ -166,9 +173,9 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .setup-steps h3 { font-size: 1.55rem; margin: 0.6rem 0; }
 .setup-steps p { color: var(--ink-muted); margin-bottom: 0; }
 
-.security-note { background: var(--signal-soft); border: 1px solid var(--signal); border-radius: 0.85rem; margin-bottom: 5rem; max-width: min(980px, calc(100% - 3rem)); padding: clamp(2rem, 5vw, 4rem); }
-.security-note h2 { max-width: 18ch; }
-.security-note > p:not(.kicker) { max-width: 42rem; }
+.security-note { background: var(--signal-soft); border: 1px solid var(--signal); border-radius: 0.85rem; margin-bottom: 5rem; padding: clamp(2rem, 5vw, 4rem); }
+.security-note h2 { max-width: 24ch; }
+.security-note > p:not(.kicker) { max-width: 52rem; }
 .security-note a { color: var(--accent); font-weight: 800; }
 .marketing-footer { border-top: 1px solid var(--line); display: grid; gap: 1rem; grid-template-columns: auto 1fr auto; padding-block: 1.8rem 2.5rem; }
 .marketing-footer p { color: var(--ink-muted); margin: 0; }
@@ -284,7 +291,7 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
 }
 
 @media (max-width: 520px) {
-  .marketing-header, .marketing-footer, .marketing-hero, .choice-section, .demo-section, .architecture-panel, .setup-section, .documentation-page { width: min(100% - 2rem, 1180px); }
+  .marketing-header, .marketing-footer, .marketing-hero, .choice-section, .demo-section, .flow-section, .architecture-panel, .setup-section, .documentation-page { width: min(100% - 2rem, 1180px); }
   .marketing-header nav { font-size: 0.9rem; }
   .hero-proof { grid-template-columns: 1fr; }
   .hero-copy h1 { font-size: clamp(3.1rem, 15vw, 4.6rem); }

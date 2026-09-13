@@ -2,6 +2,35 @@
 
 <!-- version list -->
 
+## v0.11.1 (2026-09-13)
+
+### Bug Fixes
+
+- **site**: Correct the dark diagram canvas and make the hero diagram readable
+  ([`fb2be1c`](https://github.com/AnthusAI/Auritus/commit/fb2be1ce275bc795c9d2abfe9f16c0c4c9a41bd6))
+
+### Continuous Integration
+
+- Run Behave and Playwright on develop
+  ([`a455a2d`](https://github.com/AnthusAI/Auritus/commit/a455a2d51818ec72c77fbb85615b9ee38917c4a3))
+
+- Set AWS region so Behave can import the router handler
+  ([`cb8660f`](https://github.com/AnthusAI/Auritus/commit/cb8660f6276592b3cd47d5756b3993efc502f163))
+
+### Documentation
+
+- **site**: Explain the no-IAM-key auth architecture with diagrams
+  ([`9f4225a`](https://github.com/AnthusAI/Auritus/commit/9f4225a10814a867a7745f551f92c7518e762e49))
+
+### Testing
+
+- **site**: Follow the rewritten security page
+  ([`331c366`](https://github.com/AnthusAI/Auritus/commit/331c3666802e6e3f26d6b87c8f067d04a17a745a))
+
+- **site**: Require spoken-length audio on the home pitch
+  ([`e0addbc`](https://github.com/AnthusAI/Auritus/commit/e0addbc4a57a2157adefbf3ed2c616175f90b9f6))
+
+
 ## v0.11.0 (2026-09-13)
 
 ### Build System

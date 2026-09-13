@@ -149,8 +149,13 @@ test("landing page explains the local-first cloud fallback", async ({
       name: "Let every page speak.",
     }),
   ).toBeVisible();
+  // The fallback diagram must still say the local worker claims first and that
+  // AWS only steps in when nothing claims before the timeout.
   await expect(
-    page.getByRole("img", { name: /local GPU worker/i }),
+    page.getByRole("img", { name: /Your own GPU claims it first/i }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: /only if no claim arrives before the timeout/i }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: /explore deployment options/i }),
