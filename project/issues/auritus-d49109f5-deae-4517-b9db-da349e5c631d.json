@@ -3,7 +3,7 @@
   "title": "Docs match Cognito password login",
   "description": "Operator docs still tell people auritus login is Google OAuth/PKCE. Update README, docs/SELF_HOSTING.md, docs/ARCHITECTURE.md, docs/ACCEPTANCE.md, and site self-hosting page to USER_PASSWORD_AUTH: auritus login --username.",
   "type": "chore",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,12 +17,19 @@
       "text": "PR #12 opened: operator docs and README use auritus login --username; Google is optional IdP only.",
       "created_at": "2026-09-13T03:56:03.509117Z",
       "comment_type": "default"
+    },
+    {
+      "id": "7632bfff-d553-404c-ab39-f8481fe9fae9",
+      "author": "ryan",
+      "text": "Closed: PR #12 merged. README, self-hosting, architecture, and site usage docs use deploy then auritus login --username.",
+      "created_at": "2026-09-13T04:29:46.815069Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T03:49:53.105954Z",
-  "updated_at": "2026-09-13T03:56:03.509387Z",
-  "closed_at": null,
-  "right_now_summary": "A PR updates operator docs to use username/password login, with Google noted as an optional provider.",
-  "right_now_updated_at": "2026-09-13T03:56:06.897821Z",
+  "updated_at": "2026-09-13T04:29:46.815098Z",
+  "closed_at": "2026-09-13T04:29:41.138785Z",
+  "right_now_summary": "Operator docs now show `auritus login --username`; Google remains an optional identity provider.",
+  "right_now_updated_at": "2026-09-13T04:29:48.445987Z",
   "custom": {}
 }
