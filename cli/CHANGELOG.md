@@ -2,6 +2,29 @@
 
 <!-- version list -->
 
+## v0.11.0 (2026-09-13)
+
+### Build System
+
+- Make diagram renders reproducible and builds dev-safe
+  ([`34d3775`](https://github.com/AnthusAI/Auritus/commit/34d377536297d57c630002f65ccff68268f7efd2))
+
+### Code Style
+
+- **site**: Format ElevatorPitch with Prettier
+  ([`2e8ee7a`](https://github.com/AnthusAI/Auritus/commit/2e8ee7abc634c60a1d303d7472575753fcfec038))
+
+### Documentation
+
+- Render diagrams in the newsprint palette
+  ([`20f149e`](https://github.com/AnthusAI/Auritus/commit/20f149ea8bfbf783b47ae7ac22afa68888076eb3))
+
+### Features
+
+- Speak the home-page pitch and stop overlapping boots from wiping the player
+  ([`dfb3b11`](https://github.com/AnthusAI/Auritus/commit/dfb3b1100cabb41539472d61c938fb672dd09d28))
+
+
 ## v0.10.0 (2026-09-13)
 
 ### Bug Fixes
