@@ -245,6 +245,47 @@ class BackendStack(Stack):
         )
         user_pool_client.node.add_dependency(google_idp)
 
+        web_console_client = cognito.UserPoolClient(
+            self,
+            "AuritusWebConsoleClient",
+            user_pool=user_pool,
+            generate_secret=False,
+            access_token_validity=Duration.hours(1),
+            id_token_validity=Duration.hours(1),
+            refresh_token_validity=Duration.days(30),
+            refresh_token_rotation_grace_period=Duration.seconds(30),
+            enable_token_revocation=True,
+            o_auth=cognito.OAuthSettings(
+                flows=cognito.OAuthFlows(authorization_code_grant=True),
+                scopes=[
+                    cognito.OAuthScope.OPENID,
+                    cognito.OAuthScope.EMAIL,
+                    cognito.OAuthScope.PROFILE,
+                ],
+                callback_urls=[
+                    "http://localhost:3000/callback",
+                    "http://localhost:3000",
+                    "https://console.aurit.us/callback",
+                    "https://console.aurit.us",
+                    "https://aurit.us/console/callback",
+                ],
+                logout_urls=[
+                    "http://localhost:3000/login",
+                    "https://console.aurit.us/login",
+                    "https://aurit.us/console/login",
+                ],
+            ),
+            supported_identity_providers=[
+                cognito.UserPoolClientIdentityProvider.COGNITO,
+                cognito.UserPoolClientIdentityProvider.GOOGLE,
+            ],
+            auth_flows=cognito.AuthFlow(
+                user_password=True,
+                user_srp=True,
+            ),
+        )
+        web_console_client.node.add_dependency(google_idp)
+
         router_fn = lambda_.Function(
             self,
             "RouterFn",
@@ -281,6 +322,12 @@ class BackendStack(Stack):
         router_fn.add_to_role_policy(
             iam.PolicyStatement(
                 actions=["ses:SendEmail", "ses:SendRawEmail"],
+                resources=["*"],
+            )
+        )
+        router_fn.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["batch:DescribeJobQueues", "batch:UpdateJobQueue"],
                 resources=["*"],
             )
         )
@@ -340,6 +387,7 @@ class BackendStack(Stack):
             (apigwv2.HttpMethod.POST, "/jobs/{hash}/redeem"),
             (apigwv2.HttpMethod.PUT, "/jobs/{hash}/claim"),
             (apigwv2.HttpMethod.PUT, "/jobs/{hash}/done"),
+            (apigwv2.HttpMethod.PUT, "/jobs/{hash}/failed"),
             (apigwv2.HttpMethod.POST, "/jobs/{hash}/presign-upload"),
             (apigwv2.HttpMethod.POST, "/alerts/session"),
         ]:
@@ -351,6 +399,10 @@ class BackendStack(Stack):
 
         for method, path in [
             (apigwv2.HttpMethod.GET, "/jobs/claimable"),
+            (apigwv2.HttpMethod.GET, "/admin/overview"),
+            (apigwv2.HttpMethod.GET, "/admin/jobs"),
+            (apigwv2.HttpMethod.GET, "/admin/jobs/{hash}"),
+            (apigwv2.HttpMethod.POST, "/admin/queue/toggle"),
         ]:
             http_api.add_routes(
                 path=path,
@@ -635,6 +687,9 @@ class BackendStack(Stack):
         CfnOutput(self, "ApiUrl", value=http_api.api_endpoint or "")
         CfnOutput(self, "UserPoolId", value=user_pool.user_pool_id)
         CfnOutput(self, "UserPoolClientId", value=user_pool_client.user_pool_client_id)
+        CfnOutput(
+            self, "WebConsoleClientId", value=web_console_client.user_pool_client_id
+        )
         CfnOutput(self, "JobsTableName", value=jobs.table_name)
         CfnOutput(self, "SitesTableName", value=sites.table_name)
         CfnOutput(self, "AudioBucketName", value=audio_bucket.bucket_name)

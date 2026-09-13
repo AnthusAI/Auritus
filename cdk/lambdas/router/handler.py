@@ -38,6 +38,7 @@ _sites = _dynamodb.Table(SITES_TABLE)
 _alerts = _dynamodb.Table(ALERTS_TABLE) if ALERTS_TABLE else None
 _cognito = boto3.client("cognito-idp")
 _ses = boto3.client("ses")
+_batch = boto3.client("batch")
 
 
 def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
@@ -71,6 +72,9 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         if method == "PUT" and path.endswith("/done"):
             content_hash = path_params.get("hash") or ""
             return _mark_done(content_hash, body, headers)
+        if method == "PUT" and path.endswith("/failed"):
+            content_hash = path_params.get("hash") or ""
+            return _mark_failed(content_hash, body, headers)
         if method == "POST" and path.endswith("/presign-upload"):
             content_hash = path_params.get("hash") or ""
             return _presign_upload(content_hash, headers)
@@ -83,6 +87,16 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         if method == "DELETE" and path.startswith("/sites/"):
             site_id = path_params.get("id") or path.removeprefix("/sites/")
             return _delete_site(site_id, headers)
+        if method == "GET" and path == "/admin/overview":
+            return _get_admin_overview(headers)
+        if method == "GET" and path == "/admin/jobs":
+            query_params = event.get("queryStringParameters") or {}
+            return _list_admin_jobs(headers, query_params)
+        if method == "GET" and path.startswith("/admin/jobs/"):
+            content_hash = path_params.get("hash") or path.removeprefix("/admin/jobs/")
+            return _get_admin_job(content_hash, headers)
+        if method == "POST" and path == "/admin/queue/toggle":
+            return _toggle_admin_queue(body, headers)
         return _response(404, {"error": "not_found"})
     except PermissionError as exc:
         return _response(403, {"error": str(exc)})
@@ -316,6 +330,13 @@ def _get_job(content_hash: str, headers: dict[str, str]) -> dict[str, Any]:
         "audio_url": _audio_url(item.get("audio_key")),
         "name": item.get("name"),
         "byline": item.get("byline"),
+        "worker_type": item.get("worker_type"),
+        "claimed_by": item.get("claimed_by") or item.get("claim_owner"),
+        "claimed_at": item.get("claimed_at"),
+        "completed_at": item.get("completed_at"),
+        "failed_at": item.get("failed_at"),
+        "duration_seconds": item.get("duration_seconds"),
+        "error_message": item.get("error_message"),
     }
     return _response(200, payload)
 
@@ -380,11 +401,14 @@ def _claim_job(
     claim_deadline = str(body.get("claim_deadline") or int(time.time() + 900))
     now = _utc_now_iso()
     now_epoch = str(int(time.time()))
+    worker_type = "batch" if claim_owner.startswith("batch:") else "local"
     try:
         _jobs.update_item(
             Key={"content_hash": content_hash},
             UpdateExpression=(
                 "SET #status = :claimed, claim_owner = :owner, "
+                "claimed_by = :owner, worker_type = :wtype, "
+                "claimed_at = :now, claimed_at_epoch = :now_epoch, "
                 "claim_deadline = :deadline, updated_at = :now"
             ),
             ConditionExpression=(
@@ -396,16 +420,26 @@ def _claim_job(
                 ":claimed": "claimed",
                 ":pending": "pending",
                 ":owner": claim_owner,
+                ":wtype": worker_type,
                 ":deadline": claim_deadline,
                 ":now": now,
-                ":now_epoch": now_epoch,
+                ":now_epoch": Decimal(now_epoch),
             },
         )
     except ClientError as exc:
         if "ConditionalCheckFailed" in str(exc):
             return _response(409, {"error": "already_claimed"})
         raise
-    return _response(200, {"content_hash": content_hash, "status": "claimed"})
+    return _response(
+        200,
+        {
+            "content_hash": content_hash,
+            "status": "claimed",
+            "worker_type": worker_type,
+            "claimed_by": claim_owner,
+            "claimed_at": now,
+        },
+    )
 
 
 def _mark_done(
@@ -417,11 +451,18 @@ def _mark_done(
     if not audio_key:
         raise ValueError("audio_key_required")
     now = _utc_now_iso()
+    now_epoch = int(time.time())
+
+    item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
+    claimed_epoch = int(item.get("claimed_at_epoch", now_epoch)) if item else now_epoch
+    duration_seconds = max(1, now_epoch - claimed_epoch)
+
     _jobs.update_item(
         Key={"content_hash": content_hash},
         UpdateExpression=(
-            "SET #status = :done, audio_key = :key, updated_at = :now "
-            "REMOVE claim_owner, claim_deadline"
+            "SET #status = :done, audio_key = :key, updated_at = :now, "
+            "completed_at = :now, duration_seconds = :duration "
+            "REMOVE claim_deadline"
         ),
         ConditionExpression="#status IN (:claimed, :pending)",
         ExpressionAttributeNames={"#status": "status"},
@@ -429,11 +470,67 @@ def _mark_done(
             ":done": "done",
             ":key": audio_key,
             ":now": now,
+            ":duration": duration_seconds,
             ":claimed": "claimed",
             ":pending": "pending",
         },
     )
-    return _response(200, {"content_hash": content_hash, "status": "done"})
+    return _response(
+        200,
+        {
+            "content_hash": content_hash,
+            "status": "done",
+            "completed_at": now,
+            "duration_seconds": duration_seconds,
+        },
+    )
+
+
+def _mark_failed(
+    content_hash: str, body: dict[str, Any], headers: dict[str, str]
+) -> dict[str, Any]:
+    if not _check_job_token(headers, content_hash):
+        _require_operator(headers)
+    reason = body.get("reason") or "unknown_error"
+    owner = body.get("owner")
+    now = _utc_now_iso()
+    set_clauses = [
+        "#status = :failed",
+        "error_message = :reason",
+        "failed_at = :now",
+        "updated_at = :now",
+    ]
+    attr_values: dict[str, Any] = {
+        ":failed": "failed",
+        ":reason": reason,
+        ":now": now,
+        ":claimed": "claimed",
+        ":pending": "pending",
+    }
+    if owner:
+        worker_type = "batch" if owner.startswith("batch:") else "local"
+        set_clauses.extend(["claimed_by = :owner", "worker_type = :wtype"])
+        attr_values[":owner"] = owner
+        attr_values[":wtype"] = worker_type
+
+    update_expr = f"SET {', '.join(set_clauses)} REMOVE claim_deadline"
+
+    _jobs.update_item(
+        Key={"content_hash": content_hash},
+        UpdateExpression=update_expr,
+        ConditionExpression="#status IN (:claimed, :pending)",
+        ExpressionAttributeNames={"#status": "status"},
+        ExpressionAttributeValues=attr_values,
+    )
+    return _response(
+        200,
+        {
+            "content_hash": content_hash,
+            "status": "failed",
+            "error_message": reason,
+            "failed_at": now,
+        },
+    )
 
 
 def _redeem_token(
@@ -615,3 +712,156 @@ def _alert_session(body: dict[str, Any]) -> dict[str, Any]:
     except ClientError:
         return _response(200, {"sent": False, "reason": "send_failed"})
     return _response(200, {"sent": True})
+
+
+def _get_admin_overview(headers: dict[str, str]) -> dict[str, Any]:
+    """Return high-level KPIs: job status counts, worker race split, and queue health."""
+    _require_operator(headers)
+    counts = {"pending": 0, "claimed": 0, "done": 0, "failed": 0}
+    worker_counts = {"local": 0, "batch": 0}
+    durations: list[float] = []
+
+    res = _jobs.scan(Limit=100)
+    items = res.get("Items") or []
+    for item in items:
+        status = item.get("status", "unknown")
+        if status in counts:
+            counts[status] += 1
+        wtype = item.get("worker_type")
+        if wtype in worker_counts:
+            worker_counts[wtype] += 1
+        dur = item.get("duration_seconds")
+        if dur is not None:
+            durations.append(float(dur))
+
+    avg_duration = round(sum(durations) / len(durations), 2) if durations else 0.0
+
+    queue_state = "UNKNOWN"
+    if BATCH_JOB_QUEUE_NAME:
+        try:
+            q_res = _batch.describe_job_queues(jobQueues=[BATCH_JOB_QUEUE_NAME])
+            queues = q_res.get("jobQueues") or []
+            if queues:
+                queue_state = queues[0].get("state", "UNKNOWN")
+        except Exception:
+            queue_state = "UNKNOWN"
+
+    return _response(
+        200,
+        {
+            "counts": counts,
+            "worker_breakdown": worker_counts,
+            "avg_duration_seconds": avg_duration,
+            "batch_queue_state": queue_state,
+            "total_sampled_jobs": len(items),
+        },
+    )
+
+
+def _list_admin_jobs(
+    headers: dict[str, str], query_params: dict[str, str]
+) -> dict[str, Any]:
+    """Return a list of generation jobs with full telemetry metadata."""
+    _require_operator(headers)
+    status_filter = query_params.get("status")
+    limit = min(100, int(query_params.get("limit") or 50))
+
+    if status_filter:
+        res = _jobs.query(
+            IndexName="status-created_at-index",
+            KeyConditionExpression="#s = :status",
+            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeValues={":status": status_filter},
+            ScanIndexForward=False,
+            Limit=limit,
+        )
+    else:
+        res = _jobs.scan(Limit=limit)
+
+    items = res.get("Items") or []
+    items.sort(key=lambda x: str(x.get("created_at", "")), reverse=True)
+
+    formatted_jobs = []
+    for item in items:
+        audio_key = item.get("audio_key")
+        formatted_jobs.append(
+            {
+                "content_hash": item["content_hash"],
+                "status": item.get("status"),
+                "tts_backend": item.get("tts_backend"),
+                "voice_id": item.get("voice_id"),
+                "text": str(item.get("text", ""))[:120],
+                "name": item.get("name", ""),
+                "byline": item.get("byline", ""),
+                "site_id": item.get("site_id"),
+                "worker_type": item.get("worker_type"),
+                "claimed_by": item.get("claimed_by") or item.get("claim_owner"),
+                "created_at": item.get("created_at"),
+                "claimed_at": item.get("claimed_at"),
+                "completed_at": item.get("completed_at"),
+                "failed_at": item.get("failed_at"),
+                "duration_seconds": item.get("duration_seconds"),
+                "error_message": item.get("error_message"),
+                "audio_url": _audio_url(audio_key) if audio_key else None,
+            }
+        )
+
+    return _response(200, {"jobs": formatted_jobs})
+
+
+def _get_admin_job(content_hash: str, headers: dict[str, str]) -> dict[str, Any]:
+    """Return full inspection details for a single job."""
+    _require_operator(headers)
+    item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
+    if not item:
+        raise LookupError("job_not_found")
+    audio_key = item.get("audio_key")
+    return _response(
+        200,
+        {
+            "content_hash": content_hash,
+            "status": item.get("status"),
+            "tts_backend": item.get("tts_backend"),
+            "voice_id": item.get("voice_id"),
+            "text": item.get("text", ""),
+            "name": item.get("name", ""),
+            "byline": item.get("byline", ""),
+            "site_id": item.get("site_id"),
+            "site_key": item.get("site_key"),
+            "worker_type": item.get("worker_type"),
+            "claimed_by": item.get("claimed_by") or item.get("claim_owner"),
+            "created_at": item.get("created_at"),
+            "claimed_at": item.get("claimed_at"),
+            "completed_at": item.get("completed_at"),
+            "failed_at": item.get("failed_at"),
+            "duration_seconds": item.get("duration_seconds"),
+            "error_message": item.get("error_message"),
+            "audio_url": _audio_url(audio_key) if audio_key else None,
+        },
+    )
+
+
+def _toggle_admin_queue(
+    body: dict[str, Any], headers: dict[str, str]
+) -> dict[str, Any]:
+    """Toggle or set the AWS Batch GPU job queue state."""
+    _require_operator(headers)
+    if not BATCH_JOB_QUEUE_NAME:
+        raise ValueError("batch_queue_not_configured")
+
+    desired_state = body.get("state")
+    if not desired_state:
+        q_res = _batch.describe_job_queues(jobQueues=[BATCH_JOB_QUEUE_NAME])
+        queues = q_res.get("jobQueues") or []
+        current_state = queues[0].get("state", "ENABLED") if queues else "ENABLED"
+        desired_state = "DISABLED" if current_state == "ENABLED" else "ENABLED"
+    else:
+        desired_state = str(desired_state).upper()
+        if desired_state not in ("ENABLED", "DISABLED"):
+            raise ValueError("invalid_state")
+
+    _batch.update_job_queue(
+        jobQueue=BATCH_JOB_QUEUE_NAME,
+        state=desired_state,
+    )
+    return _response(200, {"queue_name": BATCH_JOB_QUEUE_NAME, "state": desired_state})
