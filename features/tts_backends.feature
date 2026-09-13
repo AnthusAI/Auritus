@@ -18,6 +18,11 @@ Feature: Pluggable TTS backends
     When the Kokoro voice is resolved for synthesis
     Then the Kokoro voice_id is "af_heart"
 
+  Scenario: Kokoro maps legacy default voice_id to af_heart
+    Given a Kokoro job with voice_id "default"
+    When the Kokoro voice is resolved for synthesis
+    Then the Kokoro voice_id is "af_heart"
+
   Scenario: Qwen uses Ryan when voice_id is omitted
     Given a Qwen job without an explicit voice_id
     When the Qwen voice is resolved for synthesis
