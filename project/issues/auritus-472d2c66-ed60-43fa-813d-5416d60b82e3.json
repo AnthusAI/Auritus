@@ -3,18 +3,26 @@
   "title": "CI runs Gherkin and Playwright acceptance",
   "description": "## Behavior\n\nCI on develop must run the product specifications, not only unit lint.\n\n```gherkin\nFeature: Quality gates run the product specifications\n  Scenario: CI runs Behave\n    Given the CI workflow file\n    Then a step runs behave on the features directory\n\n  Scenario: CI runs Playwright acceptance\n    Given the CI workflow file\n    Then a step runs Playwright against the site\n```\n\n## Implementation brief\n\n1. `.github/workflows/ci.yml`: after Pytest, `python -m behave ../features` in `cli/`.\n2. After Site build, install Chromium and `npx playwright test` in `site/`. Set `NEXT_DIST_DIR=.next-ci` on the existing Next build so Playwright's `npm run dev` is not poisoned.\n3. `features/quality_gates.feature` plus steps reading `ci.yml`.\n4. Do not enable PyPI.",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "75744c60-95ef-4ad1-b605-8bdf6a7ad319",
+      "author": "ryan",
+      "text": "Merged PR #36. CI quality now runs Behave and Playwright (run 34774676446 succeeded, including Site — Playwright). AWS region is set on the job so the alert-endpoint scenario can import the router handler.",
+      "created_at": "2026-09-13T18:30:45.789219Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T18:20:05.804010Z",
-  "updated_at": "2026-09-13T18:20:41.013541Z",
-  "closed_at": null,
-  "right_now_summary": "CI changes are defined to run Behave and Playwright acceptance tests.",
-  "right_now_updated_at": "2026-09-13T18:20:43.020478Z",
+  "updated_at": "2026-09-13T18:30:45.789260Z",
+  "closed_at": "2026-09-13T18:30:38.896109Z",
+  "right_now_summary": "CI now runs Behave and Playwright acceptance tests successfully.",
+  "right_now_updated_at": "2026-09-13T18:30:47.198496Z",
   "custom": {}
 }

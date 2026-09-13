@@ -45,12 +45,19 @@
       "text": "Promoted via PR #35. https://aurit.us/ now has Hear it for yourself (Kokoro `2caf28aa`); Playwright against aurit.us passed for the home pitch POST, Kokoro example speech, and Qwen example POST. Remaining on this epic: a01473 PyPI, still last.",
       "created_at": "2026-09-13T18:13:45.705871Z",
       "comment_type": "default"
+    },
+    {
+      "id": "61ec9b51-28ef-4ca7-a6a6-1109b822a65a",
+      "author": "ryan",
+      "text": "CI now runs Gherkin and Playwright (PR #36 / 472d2c). Remaining specified work on this epic is still a01473 PyPI, last.",
+      "created_at": "2026-09-13T18:30:51.038957Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:38:50.679842Z",
-  "updated_at": "2026-09-13T18:13:45.705885Z",
+  "updated_at": "2026-09-13T18:30:51.038984Z",
   "closed_at": null,
-  "right_now_summary": "The first PyPI release awaits trusted publishing; live demos and the license record are ready.",
-  "right_now_updated_at": "2026-09-13T18:20:45.052491Z",
+  "right_now_summary": "Only the trusted PyPI publisher setup and first upload remain; all other release and hardening work is complete.",
+  "right_now_updated_at": "2026-09-13T18:30:52.192294Z",
   "custom": {}
 }
