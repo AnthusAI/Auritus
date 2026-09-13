@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AuritusEmbed } from "@/components/AuritusEmbed";
+import { AuritusEmbed, AuritusPlayerHost } from "@/components/AuritusEmbed";
 
 export default function QwenExamplePage() {
   return (
@@ -8,7 +8,7 @@ export default function QwenExamplePage() {
         <Link href="/examples">Examples</Link>
         <Link href="/docs/usage">Usage</Link>
       </nav>
-      <div className="auritus-player-host" />
+      <AuritusPlayerHost />
       <article className="example-article">
         <h1>Qwen narration example</h1>
         <p>

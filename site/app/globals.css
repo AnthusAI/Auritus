@@ -139,6 +139,21 @@ h2 {
   min-height: 5.5rem;
 }
 
+.auritus-player-placeholder {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--auritus-bg, #ffffff);
+  border: 1px solid var(--auritus-border, rgba(20, 32, 26, 0.14));
+  border-radius: var(--auritus-radius, 10px);
+  box-shadow: var(--auritus-shadow, 0 8px 24px rgba(20, 32, 26, 0.08));
+  color: var(--auritus-fg, #14201a);
+  font-weight: 600;
+}
+
+.auritus-player-host:has(.auritus-root) .auritus-player-placeholder {
+  display: none;
+}
+
 @keyframes rise {
   from {
     opacity: 0;

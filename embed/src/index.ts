@@ -123,25 +123,9 @@ export async function boot(options: BootOptions = {}): Promise<HTMLElement> {
     siteKey: config.siteKey,
   });
 
-  const created = await api.createJob({
-    content_hash: contentHash,
-    text,
-    name,
-    byline,
-    tts_backend: config.ttsBackend ?? "kokoro",
-    voice_id: config.voiceId,
-  });
-
-  if (generation !== bootGeneration) {
-    const skipped = document.createElement("div");
-    skipped.setAttribute("data-auritus-boot-skipped", "true");
-    return skipped;
-  }
-
-  const resolvedHash = created.content_hash || contentHash;
   const host = document.createElement("div");
   host.className = "auritus-root";
-  host.setAttribute("data-auritus-hash", resolvedHash);
+  host.setAttribute("data-auritus-hash", contentHash);
 
   if (config.playerHost) {
     const mountPoint = document.querySelector(config.playerHost);
@@ -155,13 +139,51 @@ export async function boot(options: BootOptions = {}): Promise<HTMLElement> {
     element.insertAdjacentElement("afterend", host);
   }
 
-  return mountPlayer({
+  const mounted = mountPlayer({
     host,
     api,
-    contentHash: resolvedHash,
+    contentHash,
     name,
     byline,
   });
+
+  if (generation !== bootGeneration) {
+    mounted.dispatchEvent(new Event("auritus-dispose"));
+    mounted.remove();
+    const skipped = document.createElement("div");
+    skipped.setAttribute("data-auritus-boot-skipped", "true");
+    return skipped;
+  }
+
+  try {
+    await api.createJob({
+      content_hash: contentHash,
+      text,
+      name,
+      byline,
+      tts_backend: config.ttsBackend ?? "kokoro",
+      voice_id: config.voiceId,
+    });
+  } catch (err) {
+    if (generation === bootGeneration) {
+      const errorEl = host.shadowRoot?.querySelector(".auritus-error");
+      if (errorEl instanceof HTMLElement) {
+        errorEl.hidden = false;
+        errorEl.textContent = err instanceof Error ? err.message : String(err);
+      }
+    }
+    throw err;
+  }
+
+  if (generation !== bootGeneration) {
+    mounted.dispatchEvent(new Event("auritus-dispose"));
+    mounted.remove();
+    const skipped = document.createElement("div");
+    skipped.setAttribute("data-auritus-boot-skipped", "true");
+    return skipped;
+  }
+
+  return mounted;
 }
 
 function shouldAutoBoot(): boolean {

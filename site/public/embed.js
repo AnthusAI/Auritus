@@ -362,6 +362,11 @@ var Auritus = (() => {
         applyJob(job);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
+        if (/\b404\b/.test(message)) {
+          statusEl.hidden = false;
+          statusEl.textContent = "Waiting for audio\u2026";
+          return;
+        }
         setError(message);
         stopPolling();
       }
@@ -462,23 +467,9 @@ var Auritus = (() => {
       baseUrl: config.apiBaseUrl,
       siteKey: config.siteKey
     });
-    const created = await api.createJob({
-      content_hash: contentHash,
-      text,
-      name,
-      byline,
-      tts_backend: config.ttsBackend ?? "kokoro",
-      voice_id: config.voiceId
-    });
-    if (generation !== bootGeneration) {
-      const skipped = document.createElement("div");
-      skipped.setAttribute("data-auritus-boot-skipped", "true");
-      return skipped;
-    }
-    const resolvedHash = created.content_hash || contentHash;
     const host = document.createElement("div");
     host.className = "auritus-root";
-    host.setAttribute("data-auritus-hash", resolvedHash);
+    host.setAttribute("data-auritus-hash", contentHash);
     if (config.playerHost) {
       const mountPoint = document.querySelector(config.playerHost);
       if (!mountPoint) {
@@ -490,13 +481,47 @@ var Auritus = (() => {
     } else {
       element.insertAdjacentElement("afterend", host);
     }
-    return mountPlayer({
+    const mounted = mountPlayer({
       host,
       api,
-      contentHash: resolvedHash,
+      contentHash,
       name,
       byline
     });
+    if (generation !== bootGeneration) {
+      mounted.dispatchEvent(new Event("auritus-dispose"));
+      mounted.remove();
+      const skipped = document.createElement("div");
+      skipped.setAttribute("data-auritus-boot-skipped", "true");
+      return skipped;
+    }
+    try {
+      await api.createJob({
+        content_hash: contentHash,
+        text,
+        name,
+        byline,
+        tts_backend: config.ttsBackend ?? "kokoro",
+        voice_id: config.voiceId
+      });
+    } catch (err) {
+      if (generation === bootGeneration) {
+        const errorEl = host.shadowRoot?.querySelector(".auritus-error");
+        if (errorEl instanceof HTMLElement) {
+          errorEl.hidden = false;
+          errorEl.textContent = err instanceof Error ? err.message : String(err);
+        }
+      }
+      throw err;
+    }
+    if (generation !== bootGeneration) {
+      mounted.dispatchEvent(new Event("auritus-dispose"));
+      mounted.remove();
+      const skipped = document.createElement("div");
+      skipped.setAttribute("data-auritus-boot-skipped", "true");
+      return skipped;
+    }
+    return mounted;
   }
   function shouldAutoBoot() {
     const current = document.currentScript;

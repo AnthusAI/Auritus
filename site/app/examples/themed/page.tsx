@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AuritusEmbed } from "@/components/AuritusEmbed";
+import { AuritusEmbed, AuritusPlayerHost } from "@/components/AuritusEmbed";
 
 export default function ThemedExamplePage() {
   return (
@@ -20,7 +20,7 @@ export default function ThemedExamplePage() {
         <Link href="/docs">Docs</Link>
         <Link href="/examples/ignore">Ignore example</Link>
       </nav>
-      <div className="auritus-player-host" />
+      <AuritusPlayerHost />
       <article className="example-article">
         <h1>Themed player example</h1>
         <p>
