@@ -24,10 +24,17 @@
       "text": "Picked this up after the previous session was cut short. What landed, on\nbranch `feat/newsprint-brand-lockup` (not yet merged):\n\n**Lockup.** The engraving was in a 3.2rem circle with `object-fit: cover`,\nwhich cropped off the bullhorn — the subject of the mark — and set a white\nJPEG disc on the cream page. Knocked the background out into a flat-ink\nalpha PNG (`auritus-announcer.png`, 512px, generated from the JPEG with\nluminance as alpha so the crosshatch antialiases against the paper),\ndropped the circle, and ran it at 6.4rem overhanging the header baseline\nlike a masthead cut. Moved it left of the wordmark so the bullhorn points\ninto \"Auritus\" rather than off the page edge. Dark mode inverts it to\nwhite linework; mobile steps down to 5rem.\n\n**Wordmark.** Tilted the \"Auritus. / BE HEARD\" block -7deg about its left\nedge (`transform-origin: 0 50%`) and lifted it onto the bell's axis, so it\nreads as being shouted out of the horn. The pivot is what sells it — the\nend nearest the bell stays put and the block hinges out of it. -5deg read\nas a rendering accident, -8deg got unstable for a lockup. `transform` does\nnot affect layout, so header height and nav are untouched.\n\n**D2 palette.** The theme overrides were already in the `.d2` sources but\nnothing had re-rendered, so the committed SVGs were still theme 6 \"Grape\nsoda\" purple and theme 200 Catppuccin. Re-rendered with the pinned d2\nv0.7.1. Checked all 19 overridden slots against every colour both themes\nemit — coverage was complete. One real bug in the mapping: `N7` was the\nonly slot that was not a site token, pure white in light and pure black in\ndark, the latter reading as a hole punched in the warm dark paper. Pointed\nthem at `--card` and just under `--paper`. All 36 colours across the three\ndiagrams are now newsprint tokens, with no purple or Catppuccin left in\neither scheme.\n\nLight and dark verified on the home page and `/docs/architecture`.\n\nFollow-on cards: auritus-f0ae14 (home page demo and hero copy) and\nauritus-6e6e4d (diagram render reproducibility).\n\nLeaving this open until the PR merges.",
       "created_at": "2026-09-13T17:28:49.637754Z",
       "comment_type": "default"
+    },
+    {
+      "id": "47a13fbb-803a-4c60-aded-4e6fa82d0be7",
+      "author": "ryan",
+      "text": "Extending the newsprint palette to the D2 diagram sources while preserving their existing white light-mode and black dark-mode canvases.\n\n(Restored: this comment was written in the newsprint worktree on 2026-09-13T16:00:31Z and never committed. I discarded it locally while cleaning up a stale working copy, and am re-filing it here so the record is intact. Original comment id 60561a12.)",
+      "created_at": "2026-09-13T17:29:58.383474Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T15:44:34.748244Z",
-  "updated_at": "2026-09-13T17:28:49.637776Z",
+  "updated_at": "2026-09-13T17:29:58.383486Z",
   "closed_at": null,
   "right_now_summary": "The Auritus logo and newsprint lockup are still being refined, with light and dark modes retained.",
   "right_now_updated_at": "2026-09-13T16:06:57.488533Z",
