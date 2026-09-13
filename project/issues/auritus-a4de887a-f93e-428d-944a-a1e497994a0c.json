@@ -14,7 +14,7 @@
   "created_at": "2026-09-12T12:31:18.123624Z",
   "updated_at": "2026-09-12T12:31:18.123671Z",
   "closed_at": null,
-  "right_now_summary": "Real TTS backends are being added and tested, with Kokoro working and Qwen GPU support still under review.",
-  "right_now_updated_at": "2026-09-13T14:15:15.037383Z",
+  "right_now_summary": "Real TTS backends are being added and tested, with Kokoro working and Qwen, GPU batching, and token refresh underway.",
+  "right_now_updated_at": "2026-09-13T14:25:04.713118Z",
   "custom": {}
 }

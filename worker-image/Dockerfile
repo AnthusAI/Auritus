@@ -1,6 +1,6 @@
 # Worker image for AWS Batch (GPU provided by Batch at runtime).
-# Kokoro and its CPU torch wheel are baked in so Batch jobs do not spend their
-# startup window installing dependencies.
+# Kokoro and Qwen 3 CustomVoice (plus CPU torch) are baked in so Batch jobs
+# do not spend their startup window installing synthesizer packages.
 FROM python:3.11-slim
 
 ENV DEBIAN_FRONTEND=noninteractive \

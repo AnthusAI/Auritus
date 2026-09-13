@@ -90,23 +90,30 @@ class QwenBackend(TTSBackend):
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
         """Generate via PyTorch qwen_tts (fallback for non-Apple)."""
-        from qwen_tts import QwenTTS
+        import numpy as np
+        from qwen_tts import Qwen3TTSModel
 
         if QwenBackend._model is None:
-            QwenBackend._model = QwenTTS(
+            load_kwargs: dict[str, Any] = {}
+            try:
+                import torch
+
+                if torch.cuda.is_available():
+                    load_kwargs["device_map"] = "cuda:0"
+            except ImportError:
+                pass
+            QwenBackend._model = Qwen3TTSModel.from_pretrained(
                 QWEN_TORCH_MODEL,
+                **load_kwargs,
             )
         voice = resolve_qwen_voice(meta)
-        audio_tensor = QwenBackend._model.generate(text, voice=voice)
-        if isinstance(audio_tensor, tuple):
-            audio_tensor = audio_tensor[0]
-        if hasattr(audio_tensor, "tolist"):
-            samples = audio_tensor.tolist()
-        elif hasattr(audio_tensor, "__iter__"):
-            samples = list(audio_tensor)
-        else:
-            samples = [float(audio_tensor)]
-        return _to_wav(samples, sample_rate=24000)
+        wavs, sample_rate = QwenBackend._model.generate_custom_voice(
+            text=text,
+            speaker=voice,
+            language="English",
+        )
+        audio_np = np.array(wavs[0]).reshape(-1)
+        return _to_wav(audio_np, sample_rate=int(sample_rate))
 
 
 def _to_wav(samples: list, sample_rate: int = 24000) -> bytes:

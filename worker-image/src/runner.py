@@ -28,31 +28,35 @@ def _auth_headers(bearer: str) -> dict[str, str]:
     }
 
 
-def _install_backend(name: str) -> None:
-    """Install TTS packages at runtime if not already present.
+RUNTIME_PACKAGES = {
+    "kokoro": ("kokoro", ["kokoro>=0.9.0", "torch", "soundfile"]),
+    "qwen": ("qwen_tts", ["qwen-tts", "torch", "soundfile"]),
+    "higgs": ("soundfile", ["torch", "soundfile"]),
+    "fish": ("fish_speech", ["fish-speech", "torch", "soundfile"]),
+    "coqui": ("TTS", ["TTS", "torch", "soundfile"]),
+    "bark": ("transformers", ["transformers", "torch", "soundfile"]),
+}
 
-    :param name: Backend name (kokoro, qwen, etc.).
+
+def _install_backend(name: str) -> None:
+    """Install the native TTS package if it is not already importable.
+
+    The worker image always ships ``tts.<name>`` wrappers, so import of that
+    module is not evidence that the synthesizer is installed.
     """
     import importlib
-    import sys
+    import subprocess
 
+    spec = RUNTIME_PACKAGES.get(name)
+    if spec is None:
+        return
+    module_name, packages = spec
     try:
-        importlib.import_module(f"tts.{name}")
+        importlib.import_module(module_name)
     except ImportError:
         print(f"Installing TTS backend: {name}...")
-        import subprocess
-
-        packages = {
-            "kokoro": ["kokoro>=0.9.0", "torch", "soundfile"],
-            "qwen": ["qwen-tts", "torch", "soundfile"],
-            "higgs": ["torch", "soundfile"],
-            "fish": ["fish-speech", "torch", "soundfile"],
-            "coqui": ["TTS", "torch", "soundfile"],
-            "bark": ["transformers", "torch", "soundfile"],
-        }
-        deps = packages.get(name, packages.get(name, ["torch", "soundfile"]))
         subprocess.run(
-            [sys.executable, "-m", "pip", "install", *deps],
+            [sys.executable, "-m", "pip", "install", *packages],
             check=True,
         )
 

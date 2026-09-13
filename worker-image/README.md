@@ -45,5 +45,6 @@ docker build -t auritus-worker:latest worker-image/
 - `src/runner.py` — Batch entrypoint
 - `src/tts/base.py` — `TTSBackend` ABC
 - `src/tts/higgs.py`, `src/tts/qwen.py` — pluggable backends
-- `src/tts/kokoro.py` — real Kokoro speech on Batch/Linux via PyTorch
+- `src/tts/kokoro.py` — Kokoro speech via PyTorch
+- `src/tts/qwen.py` — Qwen 3 CustomVoice via PyTorch on Linux Batch
 - `src/tts/registry.py` — backend selection by name
