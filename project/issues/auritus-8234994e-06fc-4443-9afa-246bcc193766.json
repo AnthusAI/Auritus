@@ -1,0 +1,20 @@
+{
+  "id": "auritus-8234994e-06fc-4443-9afa-246bcc193766",
+  "title": "task Playwright Kokoro speech acceptance",
+  "description": "",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T01:21:39.149984Z",
+  "updated_at": "2026-09-13T01:21:39.150388Z",
+  "closed_at": null,
+  "right_now_summary": "Playwright acceptance tests for Kokoro speech are being prepared.",
+  "right_now_updated_at": "2026-09-13T01:21:42.256818Z",
+  "custom": {}
+}
