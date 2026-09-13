@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.11.3 (2026-09-13)
+
+### Bug Fixes
+
+- **site**: Stop the landing page telling the same story twice
+  ([`d6f7390`](https://github.com/AnthusAI/Auritus/commit/d6f73905d632aaa4cdf155fe5143d5e21c232fcb))
+
+
 ## v0.11.2 (2026-09-13)
 
 ### Bug Fixes
