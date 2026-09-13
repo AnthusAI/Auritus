@@ -68,7 +68,7 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
       <p class="auritus-byline"></p>
     </div>
     <div class="auritus-controls">
-      <button type="button" class="auritus-play" disabled aria-label="Play">Play</button>
+      <button type="button" class="auritus-play" aria-label="Play">Play</button>
       <div class="auritus-track" aria-hidden="true">
         <div class="auritus-track-fill"></div>
       </div>
@@ -96,6 +96,14 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
   shadow.appendChild(audio);
 
   let pollTimer: ReturnType<typeof setInterval> | undefined;
+  let pendingPlay =
+    host.parentElement?.getAttribute("data-auritus-play-intent") === "true";
+
+  playBtn.disabled = false;
+  if (pendingPlay) {
+    statusEl.hidden = false;
+    statusEl.textContent = "Starting when ready…";
+  }
 
   function setError(message: string): void {
     errorEl.hidden = false;
@@ -105,7 +113,9 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
 
   function applyJob(job: JobRecord): void {
     statusEl.hidden = false;
-    statusEl.textContent = statusLabel(job);
+    statusEl.textContent = pendingPlay
+      ? "Starting when ready…"
+      : statusLabel(job);
     if (job.status === "failed") {
       setError("Audio could not be generated.");
       stopPolling();
@@ -116,6 +126,11 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
       audio.src = job.audio_url;
       playBtn.disabled = false;
       statusEl.hidden = true;
+      if (pendingPlay) {
+        pendingPlay = false;
+        rewindIfEnded(audio);
+        void audio.play();
+      }
     }
   }
 
@@ -134,7 +149,9 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
       const message = err instanceof Error ? err.message : String(err);
       if (/\b404\b/.test(message)) {
         statusEl.hidden = false;
-        statusEl.textContent = "Waiting for audio…";
+        statusEl.textContent = pendingPlay
+          ? "Starting when ready…"
+          : "Waiting for audio…";
         return;
       }
       setError(message);
@@ -158,6 +175,12 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
   playBtn.addEventListener("click", () => {
     if (!audio.paused) {
       audio.pause();
+      return;
+    }
+    if (!audio.src) {
+      pendingPlay = true;
+      statusEl.hidden = false;
+      statusEl.textContent = "Starting when ready…";
       return;
     }
     rewindIfEnded(audio);

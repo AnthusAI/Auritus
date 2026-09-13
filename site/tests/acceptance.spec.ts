@@ -22,7 +22,8 @@ async function waitForPlayableClip(page: Page) {
       const playBtn = host?.shadowRoot?.querySelector(
         ".auritus-play",
       ) as HTMLButtonElement | null;
-      return Boolean(playBtn && !playBtn.disabled);
+      const audio = host?.shadowRoot?.querySelector("audio");
+      return Boolean(playBtn && audio?.src);
     },
     { timeout: 120_000 },
   );
