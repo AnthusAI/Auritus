@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AuritusEmbed, AuritusPlayerHost } from "@/components/AuritusEmbed";
+import { GettysburgExcerpt } from "@/components/GettysburgExcerpt";
 
 export default function ThemedExamplePage() {
   return (
@@ -16,33 +17,19 @@ export default function ThemedExamplePage() {
       }
     >
       <nav className="site">
-        <Link href="/">Auritus</Link>
-        <Link href="/docs">Docs</Link>
-        <Link href="/examples/ignore">Ignore example</Link>
+        <Link href="/examples">Examples</Link>
+        <Link href="/examples/basic">Kokoro</Link>
+        <Link href="/examples/qwen">Qwen</Link>
       </nav>
       <AuritusPlayerHost />
       <article className="example-article">
-        <h1>Themed player example</h1>
-        <p>
-          It is a truth universally acknowledged, that a single man in
-          possession of a good fortune, must be in want of a wife.
-        </p>
-        <p>
-          However little known the feelings or views of such a man may be on his
-          first entering a neighbourhood, this truth is so well fixed in the
-          minds of the surrounding families, that he is considered the rightful
-          property of some one or other of their daughters.
-        </p>
-        <p>
-          This page uses Kokoro with a custom player theme. The excerpt is from
-          Pride and Prejudice, which is in the public domain.
-        </p>
+        <GettysburgExcerpt backendLabel="Kokoro (af_heart) and a custom player theme" />
       </article>
       <AuritusEmbed
         siteKey="demo-site-key"
         apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
-        name="Themed player example"
-        byline="Jane Austen, 1813"
+        name="Gettysburg Address"
+        byline="Abraham Lincoln, 1863 — themed Kokoro"
         ttsBackend="kokoro"
         voiceId="af_heart"
         root=".example-article"

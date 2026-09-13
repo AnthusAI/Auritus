@@ -116,7 +116,11 @@ export async function boot(options: BootOptions = {}): Promise<HTMLElement> {
     root: config.root,
     ignoreSelectors: config.ignoreSelectors,
   });
-  const contentHash = computeContentHash(text, config.voiceId);
+  const contentHash = computeContentHash(
+    text,
+    config.voiceId,
+    config.ttsBackend,
+  );
 
   const api = new AuritusApiClient({
     baseUrl: config.apiBaseUrl,
