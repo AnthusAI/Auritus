@@ -1,25 +1,43 @@
 # TTS model licenses
 
-Auritus itself is MIT-licensed. The TTS backends are separate.
+Auritus itself is MIT-licensed. The TTS backends are separate. This is not
+legal advice. Operators must confirm the cited cards before redistributing
+weights.
+
+Recorded 13 September 2026 against the backends Auritus actually ships.
+
+## Kokoro (default speech)
+
+- Checkpoint: [hexgrad/Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)
+- Weights license: **Apache-2.0** (Hugging Face `license: apache-2.0`)
+- Inference package: `kokoro` on PyPI (worker image pins `kokoro==0.9.4`)
+- Image policy: pip wheels may be baked; **model weights are fetched at
+  runtime**, not copied into the git tree or the Docker build context
+- Extra dependency: typical Kokoro pipelines use **espeak-ng (GPLv3)** for
+  grapheme-to-phoneme. Redistributing a binary that links espeak-ng can carry
+  GPL obligations even though the weights are Apache-2.0.
+
+## Qwen 3 CustomVoice
+
+- Checkpoint: [Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice)
+- Code: [QwenLM/Qwen3-TTS](https://github.com/QwenLM/Qwen3-TTS) and PyPI
+  `qwen-tts==0.1.1` (**Apache-2.0**)
+- Weights license: **Apache-2.0** on the CustomVoice model card
+- Image policy: `qwen-tts` and `torchaudio` wheels may be baked; **weights are
+  fetched at runtime** (Hugging Face cache on the worker)
 
 ## Higgs (Boson)
 
-- Status: **verify before redistributing weights**
-- Strategy: **runtime fetch** of weights (not baked into the Batch image)
-- Action: confirm Boson / Higgs license terms and attribution requirements
-  before claiming full "open clone" redistributability for model weights.
+- Status: **tone stub only**. Not a speech demo. Do not treat Higgs as
+  redistributable until a pinned Boson checkpoint and its card are recorded
+  here as approved.
 
-## Qwen 3
+## Decision for the current ship
 
-- Status: **verify before redistributing weights**
-- Strategy: **runtime fetch** of weights (not baked into the Batch image)
-- Action: confirm Alibaba / Qwen license terms (often Apache-2.0 for code,
-  with separate terms for weights) before baking or redistributing.
+- Public examples and Batch jobs use **Kokoro** and **Qwen**, not Higgs.
+- The Batch image may install open pip packages. It must not COPY large
+  third-party weight blobs from the repository.
+- PyPI publish of the Auritus CLI remains a separate story (`a01473`) and is
+  not enabled until `AURITUS_PUBLISH_PYPI` is set.
 
-## Decision for v0.1
-
-Ship the pluggable interface and stub generators so the pipeline can be
-acceptance-tested. Document weight fetch behind environment variables
-(`AURITUS_HIGGS_WEIGHTS_URI`, `AURITUS_QWEN_WEIGHTS_URI`). Do not publish a
-Docker image that embeds third-party weights until license sign-off is
-recorded here as **approved**.
+See [MODEL_LICENSES.md](MODEL_LICENSES.md) for the tabular checklist.
