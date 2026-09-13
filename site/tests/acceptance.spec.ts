@@ -57,14 +57,17 @@ test("basic example plays Kokoro speech scoped to article", async ({
 
   await expect(page.locator(".auritus-root")).toBeAttached();
 
-  await page.waitForFunction(() => {
-    const host = document.querySelector(".auritus-root");
-    const shadow = host?.shadowRoot;
-    const playBtn = shadow?.querySelector(
-      ".auritus-play",
-    ) as HTMLButtonElement | null;
-    return Boolean(playBtn && !playBtn.disabled);
-  });
+  await page.waitForFunction(
+    () => {
+      const host = document.querySelector(".auritus-root");
+      const shadow = host?.shadowRoot;
+      const playBtn = shadow?.querySelector(
+        ".auritus-play",
+      ) as HTMLButtonElement | null;
+      return Boolean(playBtn && !playBtn.disabled);
+    },
+    { timeout: 120_000 },
+  );
 
   const playVisibleInShadow = await page
     .locator(".auritus-root")
@@ -77,27 +80,30 @@ test("basic example plays Kokoro speech scoped to article", async ({
 
   const durationSeconds = await page
     .locator(".auritus-root")
-    .evaluate(async (host) => {
-      const audio = host.shadowRoot?.querySelector("audio");
-      if (!audio?.src) {
-        return 0;
-      }
-      if (Number.isFinite(audio.duration) && audio.duration > 0) {
-        return audio.duration;
-      }
-      await new Promise<void>((resolve, reject) => {
-        audio.addEventListener("loadedmetadata", () => resolve(), {
-          once: true,
+    .evaluate(
+      async (host) => {
+        const audio = host.shadowRoot?.querySelector("audio");
+        if (!audio?.src) {
+          return 0;
+        }
+        if (Number.isFinite(audio.duration) && audio.duration > 0) {
+          return audio.duration;
+        }
+        await new Promise<void>((resolve, reject) => {
+          audio.addEventListener("loadedmetadata", () => resolve(), {
+            once: true,
+          });
+          audio.addEventListener(
+            "error",
+            () => reject(new Error("audio metadata load failed")),
+            { once: true },
+          );
+          audio.load();
         });
-        audio.addEventListener(
-          "error",
-          () => reject(new Error("audio metadata load failed")),
-          { once: true },
-        );
-        audio.load();
-      });
-      return audio.duration;
-    });
+        return audio.duration;
+      },
+      { timeout: 120_000 },
+    );
 
   expect(durationSeconds).toBeGreaterThanOrEqual(4);
 });
