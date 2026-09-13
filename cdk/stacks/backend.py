@@ -414,6 +414,10 @@ class BackendStack(Stack):
                         name="AURITUS_JOBS_TABLE",
                         value=jobs.table_name,
                     ),
+                    batch.CfnJobDefinition.EnvironmentProperty(
+                        name="AURITUS_TTS_BACKEND",
+                        value="kokoro",
+                    ),
                 ],
                 log_configuration=batch.CfnJobDefinition.LogConfigurationProperty(
                     log_driver="awslogs"
