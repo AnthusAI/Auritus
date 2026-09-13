@@ -3,7 +3,7 @@
   "title": "M-TTS-2: Qwen3-TTS integration",
   "description": "Implement Qwen3-TTS-0.6B (Apache-2.0) as second real TTS backend on GPU.",
   "type": "epic",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -27,9 +27,9 @@
     }
   ],
   "created_at": "2026-09-12T12:31:26.166888Z",
-  "updated_at": "2026-09-13T14:15:12.342526Z",
+  "updated_at": "2026-09-13T14:25:00.995104Z",
   "closed_at": null,
-  "right_now_summary": "Qwen CustomVoice works locally, but GPU batch support still needs validation.",
-  "right_now_updated_at": "2026-09-13T14:15:13.382345Z",
+  "right_now_summary": "Local Qwen speech works, but GPU batch support still needs proof.",
+  "right_now_updated_at": "2026-09-13T14:25:02.276406Z",
   "custom": {}
 }
