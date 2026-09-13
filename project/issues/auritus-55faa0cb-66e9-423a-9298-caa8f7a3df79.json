@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-11T21:38:21.475254Z",
   "closed_at": null,
-  "right_now_summary": "The core system works while CI, AWS verification, and the cloud fallback are still being built and tested.",
-  "right_now_updated_at": "2026-09-13T00:29:05.292678Z",
+  "right_now_summary": "Core features work, while CI checks, AWS verification, and PyPI release hardening continue.",
+  "right_now_updated_at": "2026-09-13T00:38:24.053345Z",
   "custom": {}
 }

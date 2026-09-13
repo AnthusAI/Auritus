@@ -3,18 +3,33 @@
   "title": "Cloud Batch fallback generates real Kokoro speech end-to-end",
   "description": "",
   "type": "task",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-e5d525e2-52c4-414f-8c17-6ceb78e8d6f7",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "0c777ec2-7552-4d26-a7c8-7d606c5fede0",
+      "author": "ryan",
+      "text": "Started implementation: baking Kokoro dependencies and espeak-ng into the worker image, defaulting Batch jobs to Kokoro, and aligning presigned S3 upload headers. I will run worker lint/tests and report live Batch limitations.",
+      "created_at": "2026-09-13T00:30:45.451671Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "f23e0ca0-d767-433e-b932-533fd5681930",
+      "author": "ryan",
+      "text": "Implementation complete locally. Worker image now installs espeak-ng and bakes pinned torch/kokoro/soundfile dependencies; runner defaults to Kokoro, uses job tts_backend, sends the presigned Content-Type, and marks done.  and \u001b[1;32mAll checks passed!\u001b[0m pass; registry import resolves Kokoro. No new Gherkin scenario added because existing cloud-fallback step definitions do not cover this worker-level behavior. Live Batch validation remains blocked until an image is built/pushed and a permitted Batch job/token is available.",
+      "created_at": "2026-09-13T00:38:19.211953Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T00:13:13.183742Z",
-  "updated_at": "2026-09-13T00:13:13.183773Z",
+  "updated_at": "2026-09-13T00:38:19.212249Z",
   "closed_at": null,
-  "right_now_summary": "The team is building a Cloud Batch fallback that produces real Kokoro speech from start to finish.",
-  "right_now_updated_at": "2026-09-13T00:13:14.780414Z",
+  "right_now_summary": "The Kokoro fallback is implemented and tested locally, but live Batch validation awaits an image and job access.",
+  "right_now_updated_at": "2026-09-13T00:38:20.931492Z",
   "custom": {}
 }
