@@ -23,10 +23,10 @@ def test_batch_gpu_job_fits_g4dn_xlarge() -> None:
         "AWS::Batch::JobDefinition",
         {
             "ContainerProperties": {
-                "Vcpus": 2,
-                "Memory": 8192,
                 "ResourceRequirements": Match.array_with(
                     [
+                        Match.object_like({"Type": "VCPU", "Value": "2"}),
+                        Match.object_like({"Type": "MEMORY", "Value": "8192"}),
                         Match.object_like({"Type": "GPU", "Value": "1"}),
                     ]
                 ),
@@ -60,9 +60,14 @@ def test_batch_gpu_job_fits_g4dn_xlarge() -> None:
     assert len(compute_envs) == 1
 
     container = next(iter(job_defs.values()))["Properties"]["ContainerProperties"]
-    job_vcpus = int(container["Vcpus"])
+    requirements = {
+        item["Type"]: item["Value"] for item in container["ResourceRequirements"]
+    }
+    job_vcpus = int(requirements["VCPU"])
     instance_types = next(iter(compute_envs.values()))["Properties"][
         "ComputeResources"
     ]["InstanceTypes"]
     assert instance_types == ["g4dn.xlarge"]
     assert job_vcpus < G4DN_XLARGE_VCPUS
+    assert "Vcpus" not in container
+    assert "Memory" not in container
