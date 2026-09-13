@@ -2,6 +2,24 @@
 
 <!-- version list -->
 
+## v0.10.0 (2026-09-13)
+
+### Bug Fixes
+
+- **auth**: Isolate alert rate-limit keys in a dedicated table
+  ([`7c2713d`](https://github.com/AnthusAI/Auritus/commit/7c2713d1d5f350c4d48b345fd374128709eaeac6))
+
+### Chores
+
+- Record shipped TTS licenses and skip PyPI until enabled
+  ([`86ee30d`](https://github.com/AnthusAI/Auritus/commit/86ee30d4cb71070bb44461713193a3a959494428))
+
+### Features
+
+- **auth**: Unattended worker auth via refresh-token rotation
+  ([`1ba9c01`](https://github.com/AnthusAI/Auritus/commit/1ba9c017cb8fe3453b5096032f80dca935e4c8cf))
+
+
 ## v0.9.0 (2026-09-13)
 
 ### Documentation
