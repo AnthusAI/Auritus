@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:46.796266Z",
   "updated_at": "2026-09-11T21:38:46.796293Z",
   "closed_at": null,
-  "right_now_summary": "The site is live at aurit.us, and its example pages are ready for acceptance testing.",
-  "right_now_updated_at": "2026-09-11T23:51:57.667188Z",
+  "right_now_summary": "The site is live at aurit.us, and its example pages are ready for end-to-end testing.",
+  "right_now_updated_at": "2026-09-13T00:08:29.400386Z",
   "custom": {}
 }
