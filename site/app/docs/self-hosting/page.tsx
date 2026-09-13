@@ -13,11 +13,13 @@ export default function SelfHostingDocsPage() {
           Deploy the CDK stack: <code>auritus deploy</code>
         </li>
         <li>
-          Put your Google OAuth client id/secret into the stack&apos;s Secrets
-          Manager secret, then attach Google as a Cognito IdP.
+          Optional: put your Google OAuth client id/secret into the stack&apos;s
+          Secrets Manager secret and attach Google as a Cognito IdP (not required
+          for CLI login).
         </li>
         <li>
-          <code>auritus login</code> (Cognito Google OAuth, short-lived JWTs)
+          <code>auritus login --username you@example.com</code> (Cognito email
+          and password; JWTs cached under <code>~/.auritus/credentials</code>)
         </li>
         <li>
           <code>auritus site create --origin https://your.site</code>

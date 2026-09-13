@@ -9,7 +9,7 @@ The example pages under `site/app/examples/` are the acceptance fixtures:
 Run against a deployed API + local worker:
 
 ```bash
-auritus login
+auritus login --username you@example.com
 auritus worker
 # open https://aurit.us/examples/basic
 ```
