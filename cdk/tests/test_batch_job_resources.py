@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from aws_cdk import App, Environment
 from aws_cdk.assertions import Match, Template
-
 from stacks.backend import BackendStack
 
 G4DN_XLARGE_VCPUS = 4
