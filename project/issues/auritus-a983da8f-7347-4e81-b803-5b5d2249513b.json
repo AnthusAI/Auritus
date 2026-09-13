@@ -52,12 +52,19 @@
       "text": "CI now runs Gherkin and Playwright (PR #36 / 472d2c). Remaining specified work on this epic is still a01473 PyPI, last.",
       "created_at": "2026-09-13T18:30:51.038957Z",
       "comment_type": "default"
+    },
+    {
+      "id": "eaea7780-8043-41ce-8434-cfe25311fe21",
+      "author": "ryan",
+      "text": "Play-while-waiting is on aurit.us (Amplify main job 92 SUCCEEDED; embed.js serves Starting when ready). Playwright against https://aurit.us is 18/18 green, including spoken-length Qwen. Remaining on this epic: a01473 PyPI, still last.",
+      "created_at": "2026-09-13T22:25:09.312879Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:38:50.679842Z",
-  "updated_at": "2026-09-13T18:30:51.038984Z",
+  "updated_at": "2026-09-13T22:25:09.312896Z",
   "closed_at": null,
-  "right_now_summary": "Release hardening and demos are complete; the remaining work is enabling trusted publishing for the first PyPI upload.",
-  "right_now_updated_at": "2026-09-13T22:19:53.801313Z",
+  "right_now_summary": "The first PyPI release remains the only specified task, while the site, tests, and license record are ready.",
+  "right_now_updated_at": "2026-09-13T22:25:10.501298Z",
   "custom": {}
 }
