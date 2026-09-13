@@ -46,6 +46,44 @@ def test_create_job_legacy_default_voice_maps_to_af_heart(
     assert item["voice_id"] == "af_heart"
 
 
+def test_create_job_qwen_default_voice_stays_default(
+    router_resources: dict[str, object],
+) -> None:
+    """Do not map Qwen default voice_id to Kokoro af_heart."""
+    event = router_resources["event"](
+        "POST",
+        "/jobs",
+        body={"text": "Hello", "voice_id": "default", "tts_backend": "qwen"},
+        headers=_site_headers(),
+    )
+    response = router_resources["handler"].handler(event, None)
+    body = router_resources["response_body"](response)
+    item = router_resources["jobs"].get_item(
+        Key={"content_hash": body["content_hash"]}
+    )["Item"]
+    assert item["voice_id"] == "default"
+    assert item["tts_backend"] == "qwen"
+
+
+def test_create_job_qwen_omitted_voice_stays_default(
+    router_resources: dict[str, object],
+) -> None:
+    """Omitted voice_id on Qwen jobs remains default, not af_heart."""
+    event = router_resources["event"](
+        "POST",
+        "/jobs",
+        body={"text": "Hello", "tts_backend": "qwen"},
+        headers=_site_headers(),
+    )
+    response = router_resources["handler"].handler(event, None)
+    body = router_resources["response_body"](response)
+    item = router_resources["jobs"].get_item(
+        Key={"content_hash": body["content_hash"]}
+    )["Item"]
+    assert item["voice_id"] == "default"
+    assert item["tts_backend"] == "qwen"
+
+
 def test_create_job_bad_origin(router_resources: dict[str, object]) -> None:
     """Reject a request from an unapproved origin."""
     headers = {
