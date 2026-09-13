@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.11.5 (2026-09-13)
+
+### Bug Fixes
+
+- **site**: Aim the wordmark out of the megaphone
+  ([`b871341`](https://github.com/AnthusAI/Auritus/commit/b871341e8460d5c2b4b923bbdae8c88c98c95ce8))
+
+
 ## v0.11.4 (2026-09-13)
 
 ### Bug Fixes
