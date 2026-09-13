@@ -64,7 +64,7 @@ def run_worker(*, once: bool = False) -> None:
                 fg=typer.colors.YELLOW,
                 err=True,
             )
-            if once:
+            if once is True:
                 return
             time.sleep(poll_interval)
             continue
