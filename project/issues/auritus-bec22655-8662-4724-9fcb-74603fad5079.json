@@ -10,11 +10,19 @@
   "parent": "auritus-a72acda0-dc7b-44d5-9629-18edc0458fdc",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "b4b409ee-2b70-4c06-bb2f-39442ae2b249",
+      "author": "ryan",
+      "text": "Production AuritusBackend redeployed after rollback. The first changeset failed because Cognito rejects ALLOW_REFRESH_TOKEN_AUTH when refresh-token rotation is enabled. That override is gone.\n\nRouter Lambda LastModified is 2026-09-13T23:04:31Z. A new job 325b9a6bf2554c20 claimed as local:telemetry-proof returned worker_type=local. API URL unchanged.\n\nPR: https://github.com/AnthusAI/Auritus/pull/45",
+      "created_at": "2026-09-13T23:08:22.321289Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T22:42:11.372797Z",
-  "updated_at": "2026-09-13T22:44:02.658178Z",
+  "updated_at": "2026-09-13T23:08:22.321761Z",
   "closed_at": null,
-  "right_now_summary": "The production router needs redeployment so new claims record `worker_type` in DynamoDB.",
-  "right_now_updated_at": "2026-09-13T22:44:04.681568Z",
+  "right_now_summary": "Production was redeployed, and a new job now records `worker_type=local` as expected.",
+  "right_now_updated_at": "2026-09-13T23:08:26.540679Z",
   "custom": {}
 }
