@@ -1,0 +1,20 @@
+{
+  "id": "auritus-f35a852b-2014-4438-b421-d464b7860f69",
+  "title": "Playwright proves Qwen and example pages speak",
+  "description": "## Behavior\n\nKokoro basic and the home pitch already require a playable clip of real duration. Qwen, themed, and ignore only assert the POST body, so a tone stub or a hung player would still pass CI.\n\n```gherkin\nFeature: Example pages demonstrate distinct speech\n  Scenario: Qwen example audio is spoken-length\n    Given the Qwen example page\n    When the player has a playable clip\n    Then audio duration is at least twenty seconds\n\n  Scenario: Themed and ignore examples also speak\n    Given those example pages\n    When each player has a playable clip\n    Then audio duration is at least eight seconds\n```\n\n## Implementation brief\n\n1. `site/tests/acceptance.spec.ts` — after the existing POST asserts, `waitForPlayableClip` + `clipDurationSeconds` on `/examples/qwen` (>= 20), `/examples/themed` (>= 8), and `/examples/ignore` (>= 8).\n2. Do not enable PyPI.",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T21:51:17.388317Z",
+  "updated_at": "2026-09-13T21:52:12.575363Z",
+  "closed_at": null,
+  "right_now_summary": "Playwright now verifies that Qwen, themed, and ignore examples play audio of the required length.",
+  "right_now_updated_at": "2026-09-13T21:52:14.121591Z",
+  "custom": {}
+}
