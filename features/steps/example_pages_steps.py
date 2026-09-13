@@ -20,16 +20,39 @@ GETTYSBURG_ARTICLE = """
 @given("the home page spoken article")
 def step_home_article(context) -> None:
     context.root_html = """
-<article class="home-spoken">
-  <p>Press play. What you hear is this page reading itself. Auritus turns any
-  article into audio on demand, from a single script tag — no pre-recording,
-  no studio, no per-article cost. You choose the voice model. You decide where
-  the text goes. Your own GPU does the work, and AWS picks up the slack when it
-  cannot. It's open source, and every article on your site can speak, with the
-  choices that matter still yours.</p>
+<article class="demo-article">
+  <p>Press play. What you hear is this page reading itself.</p>
+  <p>Auritus turns any article into audio on demand, from a single script
+  tag — no pre-recording, no studio, no per-article cost.</p>
+  <p>You choose the voice model. You decide where the text goes. Your own
+  GPU does the work, and AWS picks up the slack when it cannot.</p>
+  <p>It's open source, and every article on your site can speak, with
+  the choices that matter still yours.</p>
+  <p data-auritus-ignore>Narrated by Auritus with Kokoro (af_heart) — the same embed
+  documented in Usage.</p>
 </article>
 """
     context.example_tts_backend = "kokoro"
+
+
+@given("the home page demo layout")
+def step_home_layout(context) -> None:
+    context.page_html = """
+<section class="demo-section">
+  <div class="demo-panel">
+    <div class="auritus-player-host">
+      <div class="auritus-player-placeholder">
+        <p class="auritus-placeholder-name">What Auritus does</p>
+        <p class="auritus-placeholder-byline">A 30-second introduction, narrated by Auritus</p>
+        <div class="auritus-placeholder-controls">
+          <button type="button" disabled aria-label="Play">Play</button>
+        </div>
+      </div>
+    </div>
+    <article class="demo-article"><p>Press play.</p></article>
+  </div>
+</section>
+"""
 
 
 @given("the basic example page article")
@@ -95,6 +118,15 @@ def step_player_above_article(context) -> None:
     assert host_at < article_at
 
 
+@then("the player host is above the demo article")
+def step_player_above_demo_article(context) -> None:
+    html = context.page_html
+    host_at = html.find('class="auritus-player-host"')
+    article_at = html.find('class="demo-article"')
+    assert host_at != -1 and article_at != -1
+    assert host_at < article_at
+
+
 @then("the player host shows a Play control before the embed boots")
 def step_player_placeholder(context) -> None:
     html = context.page_html
@@ -102,7 +134,10 @@ def step_player_placeholder(context) -> None:
     assert "Play" in html
     placeholder_at = html.find("auritus-player-placeholder")
     article_at = html.find('class="example-article"')
-    assert placeholder_at != -1 and placeholder_at < article_at
+    if article_at == -1:
+        article_at = html.find('class="demo-article"')
+    assert placeholder_at != -1 and article_at != -1
+    assert placeholder_at < article_at
 
 
 @then('the example embed requests tts_backend "{backend}"')

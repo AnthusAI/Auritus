@@ -26,7 +26,11 @@ mkdir -p "${DOCUMENTATION_OUTPUT_DIRECTORY}" "${SITE_OUTPUT_DIRECTORY}"
 
 for source in "${SOURCE_DIRECTORY}"/*.d2; do
   name="$(basename "${source}" .d2)"
-  "${d2_command[@]}" "${source}" "${DOCUMENTATION_OUTPUT_DIRECTORY}/${name}.svg" --layout elk --theme 6 --dark-theme 200
+  # --salt pins the generated CSS scope id. Without it D2 picks a random id per
+  # run, so every render churns the whole file and the CI drift check below can
+  # never pass. Salting per diagram also keeps ids unique when several diagrams
+  # are embedded in one page.
+  "${d2_command[@]}" "${source}" "${DOCUMENTATION_OUTPUT_DIRECTORY}/${name}.svg" --layout elk --theme 6 --dark-theme 200 --salt "${name}"
   cp "${DOCUMENTATION_OUTPUT_DIRECTORY}/${name}.svg" "${SITE_OUTPUT_DIRECTORY}/${name}.svg"
 done
 
