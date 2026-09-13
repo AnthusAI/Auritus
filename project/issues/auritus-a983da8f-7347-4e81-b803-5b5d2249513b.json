@@ -22,7 +22,7 @@
   "created_at": "2026-09-11T21:38:50.679842Z",
   "updated_at": "2026-09-13T15:51:07.978500Z",
   "closed_at": null,
-  "right_now_summary": "Live examples and worker paths are proven; PyPI publishing and README updates remain.",
-  "right_now_updated_at": "2026-09-13T15:51:09.131562Z",
+  "right_now_summary": "PyPI publishing remains, while docs and release workflows are updated and live speech examples are proven.",
+  "right_now_updated_at": "2026-09-13T15:56:01.223665Z",
   "custom": {}
 }
