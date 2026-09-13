@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.13.0 (2026-09-13)
+
+### Features
+
+- **site**: Take the masthead up another step where the room exists
+  ([`f7f30fa`](https://github.com/AnthusAI/Auritus/commit/f7f30faab8aff473b8a4191a6b2b3400185565f5))
+
+
 ## v0.12.0 (2026-09-13)
 
 ### Features
