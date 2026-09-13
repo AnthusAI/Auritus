@@ -17,12 +17,19 @@
       "text": "aurit.us examples now show Play chrome on first paint and speak Kokoro (~23s) and Qwen (~48s) after promoting develop to main (PR #29). Local worker and Batch (Kokoro + Qwen) were already proven. Remaining on this epic: CLI PyPI via trusted publishing (a01473), kept last.",
       "created_at": "2026-09-13T15:51:07.978490Z",
       "comment_type": "default"
+    },
+    {
+      "id": "35e61b4f-504d-4090-aebb-6461473a4511",
+      "author": "ryan",
+      "text": "Model-license record now cites shipped Kokoro and Qwen Apache-2.0 cards (PR #30). Release workflow skips PyPI unless AURITUS_PUBLISH_PYPI is true. Remaining on this epic: a01473 trusted publisher, still last.",
+      "created_at": "2026-09-13T16:03:52.102163Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:38:50.679842Z",
-  "updated_at": "2026-09-13T15:51:07.978500Z",
+  "updated_at": "2026-09-13T16:03:52.102180Z",
   "closed_at": null,
-  "right_now_summary": "PyPI publishing remains, while docs and release workflows are updated and live speech examples are proven.",
-  "right_now_updated_at": "2026-09-13T15:56:01.223665Z",
+  "right_now_summary": "Live demos and model-license docs are in place; PyPI trusted publishing is the last remaining step.",
+  "right_now_updated_at": "2026-09-13T16:03:54.439428Z",
   "custom": {}
 }

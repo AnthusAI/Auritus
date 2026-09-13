@@ -3,7 +3,7 @@
   "title": "TTS license record matches shipped Kokoro and Qwen",
   "description": "## Behavior\nThe model-license record names Kokoro and Qwen as the shipped speech backends, Higgs as a stub, and records Apache-2.0 citations plus the espeak-ng GPLv3 dependency note. Weights stay runtime-fetched; pip wheels may be in the Batch image.\n\n## Implementation brief\n1. Rewrite `docs/TTS_LICENSES.md` and `docs/MODEL_LICENSES.md` to include Kokoro (`hexgrad/Kokoro-82M` Apache-2.0), Qwen3-TTS CustomVoice Apache-2.0, Higgs stub.\n2. Keep `docs/SELF_HOSTING.md` pointing at MODEL_LICENSES.md.\n3. Gate `.github/workflows/release.yml` PyPI publish on `vars.AURITUS_PUBLISH_PYPI == 'true'` so main merges do not fail while a01473 stays last.\n4. Gherkin: release workflow skips PyPI unless that variable is enabled.",
   "type": "chore",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -12,9 +12,9 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-09-13T15:55:21.351812Z",
-  "updated_at": "2026-09-13T15:55:58.347161Z",
-  "closed_at": null,
-  "right_now_summary": "The license docs and release workflow are being updated to match the shipped speech backends.",
-  "right_now_updated_at": "2026-09-13T15:55:59.449771Z",
+  "updated_at": "2026-09-13T16:03:46.835892Z",
+  "closed_at": "2026-09-13T16:03:46.833794Z",
+  "right_now_summary": "License docs will be updated for Kokoro, Qwen, and Higgs, while PyPI publishing remains gated by a repository variable.",
+  "right_now_updated_at": "2026-09-13T16:03:48.246949Z",
   "custom": {}
 }
