@@ -7,7 +7,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 from botocore.exceptions import ClientError
 
-from auritus.auth import AuthError, clear_tokens, load_tokens, login_with_password
+from auritus.auth import (
+    AuthError,
+    clear_tokens,
+    get_access_token,
+    load_tokens,
+    login_with_password,
+    save_tokens,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -65,3 +72,47 @@ def test_login_with_password_bad_password_raises_auth_error() -> None:
         pytest.raises(AuthError, match="Invalid email or password"),
     ):
         login_with_password("operator@example.com", "wrong-placeholder")
+
+
+def test_get_access_token_refreshes_when_expired() -> None:
+    save_tokens(
+        {
+            "access_token": "old-access",
+            "refresh_token": "refresh-xyz",
+            "obtained_at": 1,
+            "expires_in": 3600,
+            "token_type": "Bearer",
+        }
+    )
+    refreshed = {
+        "access_token": "new-access",
+        "expires_in": 3600,
+        "token_type": "Bearer",
+    }
+
+    def fake_post(url, data=None, **kwargs):
+        class Response:
+            status_code = 200
+
+            def json(self):
+                return refreshed
+
+            def raise_for_status(self):
+                return None
+
+        return Response()
+
+    mock_config = {
+        "cognito_client_id": "client-id",
+        "cognito_domain": "auritus-test",
+        "region": "us-east-1",
+    }
+    with patch("auritus.auth.httpx.post", side_effect=fake_post), patch(
+        "auritus.auth.load_config", return_value=mock_config
+    ):
+        token = get_access_token()
+
+    assert token == "new-access"
+    cached = load_tokens()
+    assert cached is not None
+    assert cached["access_token"] == "new-access"

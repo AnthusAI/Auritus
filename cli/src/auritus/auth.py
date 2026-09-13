@@ -177,6 +177,6 @@ def get_access_token() -> str:
             raise AuthError("Session expired. Run `auritus login` again.")
         try:
             tokens = refresh_tokens()
-        except AuthError:
-            raise AuthError("Session expired. Run `auritus login` again.") from None
+        except AuthError as exc:
+            raise AuthError("Session expired. Run `auritus login` again.") from exc
     return str(tokens["access_token"])

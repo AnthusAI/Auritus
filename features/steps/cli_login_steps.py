@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from behave import given, then, when
-
 from auritus.auth import (
     clear_tokens,
     credentials_path,
@@ -14,6 +12,7 @@ from auritus.auth import (
     login_with_password,
     save_tokens,
 )
+from behave import given, then, when
 
 
 @given("a mock Cognito USER_PASSWORD_AUTH endpoint")
@@ -110,39 +109,3 @@ def step_new_token(context) -> None:
     cached = load_tokens()
     assert cached is not None
     assert cached.get("access_token") == "new-access"
-
-
-@given("a deployed Cognito user pool with Google IdP")
-def step_live_pool(context) -> None:
-    if not context.integration:
-        return
-    raise NotImplementedError(
-        "Live OAuth is exercised manually with AURITUS_INTEGRATION=1"
-    )
-
-
-@given("the operator completes the OAuth loopback flow")
-def step_complete_oauth(context) -> None:
-    if not context.integration:
-        return
-    raise NotImplementedError(
-        "Live OAuth is exercised manually with AURITUS_INTEGRATION=1"
-    )
-
-
-@when("the operator runs auritus login via Google OAuth")
-def step_run_login_google(context) -> None:
-    if not context.integration:
-        return
-    raise NotImplementedError(
-        "Live OAuth is exercised manually with AURITUS_INTEGRATION=1"
-    )
-
-
-@then("the CLI can call operator APIs with a valid JWT")
-def step_valid_jwt(context) -> None:
-    if not context.integration:
-        return
-    raise NotImplementedError(
-        "Live OAuth is exercised manually with AURITUS_INTEGRATION=1"
-    )
