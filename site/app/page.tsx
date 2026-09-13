@@ -23,8 +23,19 @@ export default function HomePage() {
   return (
     <main>
       <header className="marketing-header">
-        <Link className="wordmark" href="/" aria-label="Auritus home">
-          Auritus<span>.</span>
+        <Link className="brand-lockup" href="/" aria-label="Auritus home: Be heard">
+          <Image
+            className="brand-announcer"
+            src="/auritus-announcer.png"
+            alt=""
+            width={512}
+            height={504}
+            priority
+          />
+          <span className="brand-lockup-copy">
+            <span className="wordmark">Auritus<span>.</span></span>
+            <span className="brand-tagline">Be heard</span>
+          </span>
         </Link>
         <nav aria-label="Main navigation">
           <Link href="/docs/architecture">Architecture</Link>
@@ -39,14 +50,11 @@ export default function HomePage() {
       <section className="marketing-hero" aria-labelledby="hero-title">
         <div className="hero-copy">
           <p className="kicker">Open source narration infrastructure</p>
-          <h1 id="hero-title">
-            Let every article speak. Keep the choices that matter.
-          </h1>
+          <h1 id="hero-title">Let every article speak.</h1>
           <p className="hero-intro">
-            Auritus turns the useful text on a page into on-demand audio with a
-            small web embed, open-model workers, and an AWS safety net. You
-            control the model, the data path, and the balance of quality and
-            cost.
+            Auritus turns the readable text on any page into on-demand audio —
+            with a small embed, open-model workers you run, and an AWS safety
+            net behind them.
           </p>
           <div className="hero-actions">
             <Link className="button button-primary" href="/docs/usage">
