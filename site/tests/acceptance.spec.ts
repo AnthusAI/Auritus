@@ -146,7 +146,7 @@ test("landing page explains the local-first cloud fallback", async ({
 
   await expect(
     page.getByRole("heading", {
-      name: "Let every article speak.",
+      name: "Let every page speak.",
     }),
   ).toBeVisible();
   await expect(

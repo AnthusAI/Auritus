@@ -52,9 +52,9 @@ export default function ArchitecturePage() {
         </div>
         <Image
           src="/diagrams/overview.svg"
-          alt="Auritus overview: the publisher page extracts text, requests audio, sends work first to a local GPU worker, uses AWS only as a fallback, and returns a signed audio URL to the reader."
-          width={2953}
-          height={592}
+          alt="A reader opens your page, which carries one script tag. Auritus reads the page text. Your own GPU gets first refusal on rendering it, and AWS picks the job up only if it goes unclaimed. Either path produces private audio behind a short-lived link, which the reader listens to on the page."
+          width={1055}
+          height={390}
         />
       </section>
 

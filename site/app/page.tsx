@@ -60,7 +60,7 @@ export default function HomePage() {
       <section className="marketing-hero" aria-labelledby="hero-title">
         <div className="hero-copy">
           <p className="kicker">Open source narration infrastructure</p>
-          <h1 id="hero-title">Let every article speak.</h1>
+          <h1 id="hero-title">Let every page speak.</h1>
           <p className="hero-intro">
             Auritus turns the readable text on any page into on-demand audio —
             with a small embed, open-model workers you run, and an AWS safety
@@ -94,9 +94,9 @@ export default function HomePage() {
           <div className="signal-orbit orbit-two" aria-hidden="true" />
           <Image
             src="/diagrams/overview.svg"
-            alt="Auritus turns page content into a job that is handled first by an optional local worker, then by an AWS fallback, before returning private audio to the reader."
-            width={2953}
-            height={592}
+            alt="A reader opens your page, which carries one script tag. Auritus reads the page text. Your own GPU gets first refusal on rendering it, and AWS picks the job up only if it goes unclaimed. Either path produces private audio behind a short-lived link, which the reader listens to on the page."
+            width={1055}
+            height={390}
             priority
           />
         </div>

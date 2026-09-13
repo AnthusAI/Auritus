@@ -29,8 +29,8 @@ vars: {
       N3: "#a99273"
       N4: "#705c44"
       N5: "#4a3928"
-      N6: "#2d231b"
-      N7: "#1a1410"
+      N6: "#382b21"
+      N7: "#2d231b"
       B1: "#f3d3c1"
       B2: "#e19a78"
       B3: "#bd7258"
@@ -46,51 +46,48 @@ vars: {
   }
 }
 
-reader: {
-  label: "Reader"
-  shape: person
+# d2 fills a grid column-major, so declaration order is:
+# column 1 top, column 1 bottom, column 2 top, column 2 bottom, ...
+grid-columns: 3
+grid-gap: 80
+
+page: {
+  label: "Your page\none script tag"
+  style.font-size: 34
 }
 
-publisher: {
-  label: "Publisher page\none script tag"
-  shape: page
+reader: {
+  label: "A reader\nlistens"
+  style.font-size: 34
 }
 
 auritus: {
-  label: "Auritus"
-
-  extract: "Extract readable content\nand create a content hash"
-  request: "Request audio\nwith the site key"
-  player: "Private signed URL\nand accessible player"
+  label: "Auritus reads\nthe page text"
+  style.font-size: 34
+  style.bold: true
 }
 
-local: {
-  label: "Your hardware"
-  worker: "Local GPU worker\nOpen TTS model"
+audio: {
+  label: "Private audio\nshort-lived link"
+  style.font-size: 34
+  style.bold: true
 }
 
-aws: {
-  label: "Your AWS account"
-
-  api: "Private job API\nand job mutex"
-  fallback: "Cloud GPU fallback\nonly when needed"
-  audio: "Private audio\nshort-lived access"
+yours: {
+  label: "Your GPU\ngets first refusal"
+  style.font-size: 34
 }
 
-models: {
-  label: "Choose and tune\nthe model"
-  shape: hexagon
+cloud: {
+  label: "AWS picks it up\nonly if unclaimed"
+  style.font-size: 34
+  style.stroke-dash: 4
 }
 
-reader -> publisher: "opens an article"
-publisher -> auritus.extract: "embed loads"
-auritus.extract -> auritus.request
-auritus.request -> local.worker: "local path first"
-local.worker -> models
-local.worker -> aws.audio: "upload result"
-auritus.request -> aws.api
-aws.api -> aws.fallback: "wait only if unclaimed"
-aws.fallback -> models
-aws.fallback -> aws.audio
-aws.audio -> auritus.player: "signed audio URL"
-auritus.player -> reader: "listen"
+reader -> page: "opens" {style.font-size: 30}
+page -> auritus
+auritus -> yours
+yours -> cloud: "unclaimed" {style.font-size: 30; style.stroke-dash: 4}
+yours -> audio
+cloud -> audio
+audio -> reader {style.bold: true}
