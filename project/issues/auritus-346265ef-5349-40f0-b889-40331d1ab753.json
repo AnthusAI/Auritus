@@ -59,12 +59,19 @@
       "text": "PR #8 opened from fix/batch-job-fits-g4dn (2af454e): job definition 2 vCPU / 8192 MiB, BEST_FIT_PROGRESSIVE, still g4dn.xlarge + 1 GPU + kokoro. CDK pytest asserts placement vs instance vCPUs. Live proof still needs merge, cdk deploy, and a new Batch submit.",
       "created_at": "2026-09-13T01:56:24.436598Z",
       "comment_type": "default"
+    },
+    {
+      "id": "48b8fc0a-62da-45e3-9a41-58c04a916bc5",
+      "author": "ryan",
+      "text": "PR #8 merged to develop (b81c6fb): GPU jobs are 2 vCPU / 8192 MiB with BEST_FIT_PROGRESSIVE. Next is cdk deploy of AuritusBackend, then a new Batch proof submit. Composer 2.5 approved; CI quality passed after I001 import fix.",
+      "created_at": "2026-09-13T02:04:06.162203Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T00:13:13.183742Z",
-  "updated_at": "2026-09-13T01:56:24.436871Z",
+  "updated_at": "2026-09-13T02:04:06.162478Z",
   "closed_at": null,
-  "right_now_summary": "PR #8 lowers Batch resources to fit g4dn.xlarge; it still needs deployment and a new live proof job.",
-  "right_now_updated_at": "2026-09-13T01:56:26.589757Z",
+  "right_now_summary": "The job definition now fits g4dn.xlarge; deploy CDK and submit a new live Batch proof job.",
+  "right_now_updated_at": "2026-09-13T02:04:08.201031Z",
   "custom": {}
 }

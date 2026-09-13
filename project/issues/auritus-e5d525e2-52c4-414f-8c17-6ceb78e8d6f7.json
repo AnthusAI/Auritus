@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:43.348323Z",
   "updated_at": "2026-09-11T21:38:43.348346Z",
   "closed_at": null,
-  "right_now_summary": "Spend controls and fallback are deployed; the team is testing them on AWS, while the Batch resource fix awaits",
-  "right_now_updated_at": "2026-09-13T01:56:31.328888Z",
+  "right_now_summary": "The fallback and spend controls are deployed; the team is now running live AWS checks.",
+  "right_now_updated_at": "2026-09-13T02:04:10.332954Z",
   "custom": {}
 }
