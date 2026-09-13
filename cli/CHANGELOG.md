@@ -2,6 +2,32 @@
 
 <!-- version list -->
 
+## v0.6.3 (2026-09-13)
+
+### Bug Fixes
+
+- Default to Kokoro speech and scope example narration
+  ([`85592f8`](https://github.com/AnthusAI/Auritus/commit/85592f891e5d4f964891995a6c68c2bd8dfacc9c))
+
+- Make TTS backend imports lazy so CI needs no numpy
+  ([`cd6d4c7`](https://github.com/AnthusAI/Auritus/commit/cd6d4c702261761dbf0078deaaacc04ddaafbad8))
+
+### Chores
+
+- **kanbus**: Close Kokoro demo default fix task
+  ([`9c07342`](https://github.com/AnthusAI/Auritus/commit/9c07342fde761d0c62f2d2e7bf3fbb02a2f9ef1d))
+
+### Code Style
+
+- Black-format content_hash_steps for CI
+  ([`f00f334`](https://github.com/AnthusAI/Auritus/commit/f00f334959d4aec48de45854a66d3b4d166a1e5e))
+
+### Testing
+
+- Expect Kokoro as default TTS backend
+  ([`9381e9e`](https://github.com/AnthusAI/Auritus/commit/9381e9e5e990a1f3d0cae3e3bc0cc38a15e9e917))
+
+
 ## v0.6.2 (2026-09-12)
 
 ### Bug Fixes
