@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-11T21:38:21.475254Z",
   "closed_at": null,
-  "right_now_summary": "Auritus is largely built and deployed; CI, release hardening, and real-AWS verification remain.",
-  "right_now_updated_at": "2026-09-13T03:17:56.040064Z",
+  "right_now_summary": "The core system works while the team adds CI checks and verifies deployments and releases in real AWS.",
+  "right_now_updated_at": "2026-09-13T03:25:54.419568Z",
   "custom": {}
 }

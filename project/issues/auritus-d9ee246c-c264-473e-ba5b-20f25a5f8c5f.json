@@ -1,0 +1,20 @@
+{
+  "id": "auritus-d9ee246c-c264-473e-ba5b-20f25a5f8c5f",
+  "title": "CLI login uses Cognito email and password",
+  "description": "Google OAuth is not available (no Google Cloud app). The local worker needs a Cognito JWT for GET /jobs/claimable.\n\n## Behavior\nOperators authenticate with Cognito USER_PASSWORD_AUTH (email + password). Short-lived JWTs are stored in ~/.auritus/credentials mode 0600. Google OAuth remains future/integration-only until a Google app exists.\n\nThe live user pool client already allows USER_PASSWORD_AUTH. CDK source currently advertises Google-only OAuth login; align CLI and specs with password auth as the one working operator path.",
+  "type": "story",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-f08aeaf4-3cec-484d-9557-2835c15c2fdb",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T03:25:47.303228Z",
+  "updated_at": "2026-09-13T03:25:47.303294Z",
+  "closed_at": null,
+  "right_now_summary": "The CLI and specs are aligning around Cognito email/password login while Google OAuth remains a future option.",
+  "right_now_updated_at": "2026-09-13T03:25:49.760339Z",
+  "custom": {}
+}

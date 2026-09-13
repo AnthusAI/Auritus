@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:35.242Z",
   "updated_at": "2026-09-11T21:38:35.242040Z",
   "closed_at": null,
-  "right_now_summary": "Login, token storage, and the local worker now work, including live TTS job processing on AWS.",
-  "right_now_updated_at": "2026-09-13T01:51:47.589745Z",
+  "right_now_summary": "The local worker runs TTS jobs on live AWS, while CLI login and credential storage work.",
+  "right_now_updated_at": "2026-09-13T03:25:51.337455Z",
   "custom": {}
 }
