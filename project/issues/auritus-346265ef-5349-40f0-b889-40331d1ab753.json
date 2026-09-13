@@ -26,31 +26,17 @@
       "comment_type": "default"
     },
     {
-<<<<<<< Updated upstream
       "id": "504c8288-702b-4aec-a1c2-e1727d5f6c62",
       "author": "ryan",
       "text": "Worker image now bakes Kokoro+torch+espeak-ng; PR opened. Still need ECR rebuild/push and a live Batch job proof. Disk was full earlier which blocked local docker build.",
       "created_at": "2026-09-13T00:48:20.199581Z",
-=======
-      "id": "58a1bc7d-e3db-4285-b1da-43b0b884fb44",
-      "author": "ryan",
-      "text": "Addressed PR1 review follow-ups on once-flag: Click 8.5 needed flag_value=True; worker is now a top-level command with CLI tests. Content-Type on S3 PUT remains omitted.",
-      "created_at": "2026-09-13T00:59:05.347468Z",
->>>>>>> Stashed changes
       "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T00:13:13.183742Z",
-<<<<<<< Updated upstream
   "updated_at": "2026-09-13T00:48:20.199635Z",
   "closed_at": null,
   "right_now_summary": "A PR is open, but live Batch validation awaits an image push and an authorized job.",
   "right_now_updated_at": "2026-09-13T00:48:21.934197Z",
-=======
-  "updated_at": "2026-09-13T00:59:05.347717Z",
-  "closed_at": null,
-  "right_now_summary": "The Kokoro fallback is implemented and tested locally; live Batch validation awaits a pushed image and access.",
-  "right_now_updated_at": "2026-09-13T00:59:08.538574Z",
->>>>>>> Stashed changes
   "custom": {}
 }

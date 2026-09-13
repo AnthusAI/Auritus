@@ -14,12 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-11T21:38:21.475254Z",
   "closed_at": null,
-<<<<<<< Updated upstream
   "right_now_summary": "Core features are built and tested, while CI, release hardening, and real-AWS checks remain.",
   "right_now_updated_at": "2026-09-13T00:48:26.506979Z",
-=======
-  "right_now_summary": "The core system works, while CI and live AWS checks are still being added and verified.",
-  "right_now_updated_at": "2026-09-13T00:59:12.468269Z",
->>>>>>> Stashed changes
   "custom": {}
 }
