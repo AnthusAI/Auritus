@@ -2,6 +2,86 @@
 
 <!-- version list -->
 
+## v0.6.4 (2026-09-13)
+
+### Bug Fixes
+
+- Bake Kokoro into Batch image and harden worker once-check
+  ([`c8ac819`](https://github.com/AnthusAI/Auritus/commit/c8ac8198683fdb22df8bdfb20b8cbd403d72ca50))
+
+- Declare Batch GPU jobs with VCPU and MEMORY resource requirements
+  ([`76e579a`](https://github.com/AnthusAI/Auritus/commit/76e579a925ff6b5b03662168d715a253e45fe8b9))
+
+- Default cloud TTS backend to Kokoro
+  ([`c0ae28f`](https://github.com/AnthusAI/Auritus/commit/c0ae28f94fecf2ebc2daeb67e94009446fd5660e))
+
+- Give each example unique speech and re-boot the player
+  ([`e5e4f94`](https://github.com/AnthusAI/Auritus/commit/e5e4f941f2e7c0381d28c756ca43da8d097a2b62))
+
+- Omit Content-Type on Batch S3 upload
+  ([`d3b7ffc`](https://github.com/AnthusAI/Auritus/commit/d3b7ffca2b41a0560991891aff050779a6f4f49c))
+
+- Size Batch GPU jobs to fit g4dn.xlarge
+  ([`2af454e`](https://github.com/AnthusAI/Auritus/commit/2af454e410831e79e7d597a3a89c3436af7b3b2e))
+
+- Wire worker --once as a real bool under Click 8.5
+  ([`78d9545`](https://github.com/AnthusAI/Auritus/commit/78d95459092690502b23b56d63cf51d550b67222))
+
+- **cli**: Cognito USER_PASSWORD_AUTH login
+  ([`85315a0`](https://github.com/AnthusAI/Auritus/commit/85315a08311344ff3782b057e3bd4d2fb632b1b3))
+
+- **cli**: Run token refresh in default CI
+  ([`a8a2bce`](https://github.com/AnthusAI/Auritus/commit/a8a2bce9ef29e6b301f0f6b7e1748bdada8f0c9f))
+
+- **tts**: Default Kokoro voice to af_heart
+  ([`1fe0011`](https://github.com/AnthusAI/Auritus/commit/1fe00110be038e8525bc55f09e7193ed0c5578f8))
+
+- **tts**: Load Qwen CustomVoice and default to Ryan
+  ([`615d48c`](https://github.com/AnthusAI/Auritus/commit/615d48c865afbdc6ee564fcc06970cc9056f8b54))
+
+- **tts**: Scope af_heart default voice to Kokoro backend
+  ([`bc575c3`](https://github.com/AnthusAI/Auritus/commit/bc575c3e1b4fc9c0b20272f0f806c24cf71f12fb))
+
+### Code Style
+
+- Ruff I001 on cli_login_steps imports
+  ([`5b711e7`](https://github.com/AnthusAI/Auritus/commit/5b711e769b8ebebc93d9866a5693dc8d109f7da9))
+
+- Ruff I001 on cli_login_steps imports
+  ([`8873f5e`](https://github.com/AnthusAI/Auritus/commit/8873f5e705ed1f9d5fd3ebb1c4d0d064ea331447))
+
+- Satisfy CI ruff I001 on CDK imports
+  ([`195b81d`](https://github.com/AnthusAI/Auritus/commit/195b81d6fdd1d5c790da12703772036d67df6b45))
+
+### Documentation
+
+- Deploy before login; document Cognito password CLI auth
+  ([`2b81d28`](https://github.com/AnthusAI/Auritus/commit/2b81d2848596d159620c854e026c2c7f511f576d))
+
+- Describe Cognito password CLI login
+  ([`fde318a`](https://github.com/AnthusAI/Auritus/commit/fde318a55c5ce5ef348c03b3ed4d0b609dfb49e3))
+
+- Fix acceptance and site self-hosting login steps
+  ([`da6faa9`](https://github.com/AnthusAI/Auritus/commit/da6faa98b33d752380bf28efc38cc8b49e3f8131))
+
+### Testing
+
+- Align login Gherkin with file-based token cache
+  ([`19dbd31`](https://github.com/AnthusAI/Auritus/commit/19dbd31d58aed443ef9abbc1252a65ea258814a3))
+
+- Assert Kokoro speech wiring in Playwright
+  ([`d1d6534`](https://github.com/AnthusAI/Auritus/commit/d1d65347dc1f67dc6642ed8781f276c664361716))
+
+- Prove Qwen and Kokoro registry without loading weights
+  ([`82b0b3f`](https://github.com/AnthusAI/Auritus/commit/82b0b3f5c89e71363958d51805be37a06d600b2e))
+
+- Restore Kokoro default-voice Gherkin scenario
+  ([`cd0be00`](https://github.com/AnthusAI/Auritus/commit/cd0be00ea65d720641579bb924987c139edf51d8))
+
+- Wait up to 120s for Kokoro job in Playwright
+  ([`15d4d41`](https://github.com/AnthusAI/Auritus/commit/15d4d412f5217e2aab82fd3e4d296d27e6b60201))
+
+
 ## v0.6.3 (2026-09-13)
 
 ### Bug Fixes
