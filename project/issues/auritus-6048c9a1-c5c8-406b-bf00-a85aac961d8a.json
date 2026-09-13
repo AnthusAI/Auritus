@@ -3,7 +3,7 @@
   "title": "README names Kokoro and Qwen as speech backends",
   "description": "README currently lists Higgs and Qwen first. Higgs is a tone stub. Document Kokoro (default speech) and Qwen (second backend); Higgs remains a stub.",
   "type": "chore",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -20,9 +20,9 @@
     }
   ],
   "created_at": "2026-09-13T12:18:41.944583Z",
-  "updated_at": "2026-09-13T12:23:17.839365Z",
-  "closed_at": null,
-  "right_now_summary": "The README is being updated to list Kokoro as default, Qwen second, and Higgs as a tone stub.",
-  "right_now_updated_at": "2026-09-13T12:23:19.928828Z",
+  "updated_at": "2026-09-13T14:21:59.212535Z",
+  "closed_at": "2026-09-13T14:21:59.211938Z",
+  "right_now_summary": "The README is being updated to name Kokoro as default, Qwen as second, and Higgs as a stub.",
+  "right_now_updated_at": "2026-09-13T14:22:01.318649Z",
   "custom": {}
 }
