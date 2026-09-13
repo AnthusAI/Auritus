@@ -1,7 +1,9 @@
 # Auritus
 
 Open-source (MIT) drop-in web embed that just-in-time generates TTS audio of a
-page's content.
+page's content. You choose the open model, its parameters, and where synthesis
+runs: a GPU you control first, with AWS GPU capacity available as a dependable
+fallback.
 
 **Site:** [aurit.us](https://aurit.us)
 
@@ -15,6 +17,25 @@ page's content.
    (default 15 minutes), Step Functions submits an AWS Batch GPU job.
 4. Pluggable TTS backends: Kokoro (default speech) and Qwen 3 CustomVoice.
    Higgs remains a 440 Hz tone stub, not a speech demo.
+
+## How it works
+
+![Auritus architecture: the publisher page sends a content hash to Auritus; a local GPU worker handles synthesis first, AWS handles the fallback, and the reader receives a private signed audio URL.](docs/diagrams/rendered/overview.svg)
+
+Auritus is designed for teams that want the convenience of embedded narration
+without handing their page content and model choices to a TTS vendor. The
+browser sends only the content it needs to narrate to infrastructure you
+operate. A local worker can remove cloud GPU cost for ordinary work; AWS Batch
+keeps the experience available when that worker is offline or busy.
+
+## AWS deployment architecture
+
+![AWS architecture: a publisher origin calls the Auritus API, which coordinates DynamoDB, Step Functions, AWS Batch, private audio storage, and a short-lived playback URL; an optional local worker can claim first.](docs/diagrams/rendered/aws-deployment.svg)
+
+The complete component explanation, identity choices, and security-design
+status are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). To regenerate these
+SVGs from their D2 source, see [docs/diagrams/README.md](docs/diagrams/README.md)
+and run `make diagrams`.
 
 ## Status
 

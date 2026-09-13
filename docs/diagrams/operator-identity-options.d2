@@ -1,0 +1,41 @@
+direction: down
+
+vars: {
+  d2-config: {
+    pad: 32
+  }
+}
+
+operator: {
+  label: "Auritus operator"
+  shape: person
+}
+
+cognito: {
+  label: "Amazon Cognito user pool"
+}
+
+cli: {
+  label: "Auritus CLI and\noperator API routes"
+  shape: hexagon
+}
+
+native: {
+  label: "Native Cognito user\nsupported now"
+  shape: rectangle
+}
+
+google: {
+  label: "Google project\nconfiguration required\nbefore it is available"
+  shape: rectangle
+}
+
+identity-center: {
+  label: "AWS IAM Identity Center\nenterprise SAML option\nplanned: requires implementation and review"
+  shape: rectangle
+  style.stroke-dash: 4
+}
+
+operator -> native -> cognito -> cli
+operator -> google -> cognito
+operator -> identity-center -> cognito

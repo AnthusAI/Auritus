@@ -1,0 +1,56 @@
+direction: right
+
+vars: {
+  d2-config: {
+    pad: 32
+  }
+}
+
+reader: {
+  label: "Reader"
+  shape: person
+}
+
+publisher: {
+  label: "Publisher page\none script tag"
+  shape: page
+}
+
+auritus: {
+  label: "Auritus"
+
+  extract: "Extract readable content\nand create a content hash"
+  request: "Request audio\nwith the site key"
+  player: "Private signed URL\nand accessible player"
+}
+
+local: {
+  label: "Your hardware"
+  worker: "Local GPU worker\nOpen TTS model"
+}
+
+aws: {
+  label: "Your AWS account"
+
+  api: "Private job API\nand job mutex"
+  fallback: "Cloud GPU fallback\nonly when needed"
+  audio: "Private audio\nshort-lived access"
+}
+
+models: {
+  label: "Choose and tune\nthe model"
+  shape: hexagon
+}
+
+reader -> publisher: "opens an article"
+publisher -> auritus.extract: "embed loads"
+auritus.extract -> auritus.request
+auritus.request -> local.worker: "local path first"
+local.worker -> models
+local.worker -> aws.audio: "upload result"
+auritus.request -> aws.api
+aws.api -> aws.fallback: "wait only if unclaimed"
+aws.fallback -> models
+aws.fallback -> aws.audio
+aws.audio -> auritus.player: "signed audio URL"
+auritus.player -> reader: "listen"

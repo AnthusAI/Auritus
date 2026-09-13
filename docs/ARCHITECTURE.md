@@ -4,6 +4,29 @@ Auritus is a just-in-time TTS pipeline: the browser embed hashes page content,
 the API stores jobs behind a mutex, operators' local GPU workers race to claim
 work, and AWS Batch runs only when nobody claims in time.
 
+![Auritus overview: the embed prepares text, local GPU synthesis is attempted first, AWS provides the fallback, and the reader receives a private URL.](diagrams/rendered/overview.svg)
+
+## Why this architecture
+
+Auritus keeps the three choices that a hosted TTS product usually makes for you
+in the operator's hands:
+
+- **Data location:** page text is handled by the infrastructure you operate.
+  The generated audio is private by default.
+- **Model choice:** the worker backend is pluggable, so a team can choose an
+  open model and tune its quality, voice, and cost tradeoffs.
+- **Compute cost and resilience:** a worker on your own GPU can synthesize the
+  routine work. AWS Batch is available when local hardware does not claim the
+  job in time.
+
+## AWS deployment
+
+![AWS architecture: API Gateway and router coordinate DynamoDB jobs, Step Functions watches the local-claim window, AWS Batch handles an unclaimed job, and private audio is delivered through a short-lived URL.](diagrams/rendered/aws-deployment.svg)
+
+The local worker and the Batch worker use the same job-claim rules. That means
+the cloud path does not duplicate work simply because a local GPU is slow: only
+the worker that wins the conditional claim may complete the job.
+
 ## Components
 
 | Layer | Responsibility |
@@ -61,17 +84,56 @@ sequenceDiagram
 
 ## Site keys and embed auth
 
-- Each publisher origin is registered with `auritus site create`.
+- Publisher-origin registration and enforcement are planned secure-by-design
+  work; the current site-creation path does not persist an origin binding.
 - The embed sends `X-Auritus-Site-Key` on job and playback requests.
-- The router validates the key against the `AuritusSites` table (origin binding,
-  quotas). Site keys are not Cognito JWTs; they are deployer-issued capabilities
-  scoped to a hostname.
+- The router currently validates the key against the `AuritusSites` table and
+  enforces quotas. Runtime origin registration and enforcement are planned work,
+  not completed controls. Site keys are not Cognito JWTs; they are deployer-
+  issued capabilities.
 
-## Operator auth (Cognito)
+## Operator identity choices
 
-- CDK provisions a Cognito user pool and app client. Google may be attached as
-  an optional external IdP (client id/secret in Secrets Manager); the CLI does
-  not use that path today.
+![Operator identity choices: native Cognito users are supported now; Google requires configuration; the IAM Identity Center SAML option is planned and not implemented.](diagrams/rendered/operator-identity-options.svg)
+
+- **Native Cognito user — supported now:** CDK provisions a user pool and app
+  client. `auritus login --username <email>` uses the native pool's
+  `USER_PASSWORD_AUTH` flow.
+- **Google project through Cognito — configuration required:** the stack has an
+  optional Google IdP resource, but a working browser flow still needs real
+  Google credentials and a configured Cognito user-pool domain. The present CLI
+  deliberately does not use this browser-based flow. Do not describe Google
+  sign-in as available until that deployment path is implemented and tested.
+- **AWS IAM Identity Center — viable enterprise option, not implemented:** IAM
+  Identity Center can provide a customer-managed SAML 2.0 application, and
+  Cognito user pools can consume SAML 2.0 federation. This is a sensible future
+  path for workforce SSO, but Auritus has not implemented, tested, or reviewed
+  this integration. It must not be presented as an available login method.
+
+For the supported CLI path, short-lived JWTs are stored locally under
+`~/.auritus/credentials` with mode `0600`. Operator routes (`/sites`, claimable
+listing, kill switch) accept an `Authorization: Bearer` JWT. The current Lambda
+authorizer does not yet verify JWT signatures or expiry, so production-grade
+token validation remains required security work.
+
+## Secure-by-design status
+
+The system is intentionally structured around private audio, short-lived
+delivery URLs, conditional job claims, and spending limits. Origin enforcement
+and production-grade operator JWT validation are not complete today. The full
+secure-by-design architecture and control evidence are still under development.
+This document describes current behavior, not a completed security assurance
+package. Future security material belongs in a dedicated section that identifies
+each control's threat, owner, implementation evidence, and review status.
+
+### Planned security documentation structure
+
+| Section | What it will establish |
+| --- | --- |
+| Trust boundaries | What crosses from publisher, local worker, and AWS account. |
+| Identities and authorization | Operator, site-key, worker, and deployment permissions. |
+| Data handling | Text, audio, metadata, retention, and deletion behavior. |
+| Control evidence | CDK, tests, logging, and review evidence for each claim. |
 - `auritus login --username <email>` calls Cognito `USER_PASSWORD_AUTH` and
   stores short-lived JWTs in `~/.auritus/credentials` (mode 0600).
 - Operator routes (`/sites`, claimable listing, kill switch) require

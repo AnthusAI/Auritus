@@ -81,6 +81,50 @@ test("embed script is loaded", async ({ page }) => {
   await expect(page.locator('script[src*="embed.js"]')).toBeAttached();
 });
 
+test("landing page explains the local-first cloud fallback", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(
+    page.getByRole("heading", {
+      name: "Let every article speak. Keep the choices that matter.",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: /local GPU worker/i }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /explore deployment options/i }),
+  ).toHaveAttribute("href", "/docs/architecture");
+  await expect(page.locator(".choice-number")).toHaveCount(0);
+});
+
+test("landing page does not overflow a narrow viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const dimensions = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+});
+
+test("architecture documentation labels future identity work as planned", async ({
+  page,
+}) => {
+  await page.goto("/docs/architecture");
+
+  await expect(
+    page.getByRole("heading", {
+      name: "Choose the login experience your team needs.",
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("Future enterprise option")).toBeVisible();
+  await expect(
+    page.getByText(/has not implemented or reviewed it yet/i),
+  ).toBeVisible();
+});
+
 test("basic example plays Kokoro speech scoped to article", async ({
   page,
 }) => {
