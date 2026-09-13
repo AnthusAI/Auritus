@@ -112,9 +112,9 @@ export default function HomePage() {
         </div>
         <Image
           src="/diagrams/overview.svg"
-          alt="A reader opens your page, which carries one script tag. Auritus reads the page text. Your own GPU gets first refusal on rendering it, and AWS picks the job up only if it goes unclaimed. Either path produces private audio behind a short-lived link, which the reader listens to on the page."
-          width={1055}
-          height={390}
+          alt="Your page carries one script tag. Auritus reads the page text, audio is rendered on demand and returned as private audio behind a short-lived link, and a reader listens to it on the same page."
+          width={707}
+          height={410}
         />
         <AuritusEmbed
           siteKey="demo-site-key"

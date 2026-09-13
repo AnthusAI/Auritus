@@ -46,48 +46,35 @@ vars: {
   }
 }
 
-# d2 fills a grid column-major, so declaration order is:
-# column 1 top, column 1 bottom, column 2 top, column 2 bottom, ...
-grid-columns: 3
-grid-gap: 80
+# The journey only. Who renders the audio -- your GPU or AWS Batch -- is the
+# subject of the fallback diagram, and repeating it here made the landing page
+# show the same story twice.
+grid-columns: 2
+grid-gap: 90
 
 page: {
   label: "Your page\none script tag"
-  style.font-size: 34
+  style.font-size: 36
 }
 
 reader: {
   label: "A reader\nlistens"
-  style.font-size: 34
+  style.font-size: 36
 }
 
 auritus: {
   label: "Auritus reads\nthe page text"
-  style.font-size: 34
+  style.font-size: 36
   style.bold: true
 }
 
 audio: {
   label: "Private audio\nshort-lived link"
-  style.font-size: 34
+  style.font-size: 36
   style.bold: true
 }
 
-yours: {
-  label: "Your GPU\ngets first refusal"
-  style.font-size: 34
-}
-
-cloud: {
-  label: "AWS picks it up\nonly if unclaimed"
-  style.font-size: 34
-  style.stroke-dash: 4
-}
-
-reader -> page: "opens" {style.font-size: 30}
 page -> auritus
-auritus -> yours
-yours -> cloud: "unclaimed" {style.font-size: 30; style.stroke-dash: 4}
-yours -> audio
-cloud -> audio
+auritus -> audio: "rendered on demand" {style.font-size: 30}
 audio -> reader {style.bold: true}
+reader -> page: "on the same page" {style.font-size: 30}
