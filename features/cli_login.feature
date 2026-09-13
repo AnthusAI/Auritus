@@ -1,6 +1,6 @@
 Feature: CLI operator login
   Operators authenticate with Cognito using Google OAuth and receive short-lived
-  JWTs stored in the system keyring (or a mode-0600 file fallback).
+  JWTs stored in a mode-0600 file under the Auritus config directory.
 
   Scenario: Login stores Cognito tokens locally
     Given a mock Cognito token endpoint

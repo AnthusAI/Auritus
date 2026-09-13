@@ -6,7 +6,13 @@ from unittest.mock import patch
 
 from behave import given, then, when
 
-from auritus.auth import clear_tokens, get_access_token, load_tokens, save_tokens
+from auritus.auth import (
+    clear_tokens,
+    credentials_path,
+    get_access_token,
+    load_tokens,
+    save_tokens,
+)
 
 
 @given("a mock Cognito token endpoint")
@@ -32,6 +38,9 @@ def step_complete_oauth(context) -> None:
 
 @then("Cognito tokens are cached for the CLI")
 def step_tokens_cached(context) -> None:
+    path = credentials_path()
+    assert path.is_file()
+    assert (path.stat().st_mode & 0o777) == 0o600
     cached = load_tokens()
     assert cached is not None
     assert cached.get("access_token") == "mock-access"
