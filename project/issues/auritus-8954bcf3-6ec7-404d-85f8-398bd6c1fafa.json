@@ -3,18 +3,26 @@
   "title": "Playwright proves the home pitch is spoken-length audio",
   "description": "## Behavior\n\n```gherkin\nFeature: The home page demonstrates narration on itself\n  Scenario: Ready home audio is spoken-length\n    Given the home page embed has posted the Kokoro pitch\n    When the player has a playable clip\n    Then audio duration is at least twenty seconds\n```\n\nTone stubs are far shorter. This keeps CI from treating a 440 Hz beep as a working demo.\n\n## Implementation brief\n\n1. Extend `site/tests/acceptance.spec.ts` landing test to wait for enabled Play and assert `audio.duration >= 20`.\n2. Do not enable PyPI.",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "e4ad8c15-3790-4ceb-a1c5-b476802b2abd",
+      "author": "ryan",
+      "text": "Merged PR #37. CI Playwright requires the home Kokoro clip to last at least 20 seconds (green on run 34775302748). Proven against https://aurit.us as well.",
+      "created_at": "2026-09-13T18:43:33.932426Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T18:34:46.895190Z",
-  "updated_at": "2026-09-13T18:35:18.191033Z",
-  "closed_at": null,
-  "right_now_summary": "The landing test is being updated to require a playable home clip lasting at least 20 seconds.",
-  "right_now_updated_at": "2026-09-13T18:35:20.626027Z",
+  "updated_at": "2026-09-13T18:43:33.932448Z",
+  "closed_at": "2026-09-13T18:43:27.227289Z",
+  "right_now_summary": "The home page now passes Playwright checks requiring its Kokoro clip to last at least 20 seconds.",
+  "right_now_updated_at": "2026-09-13T18:43:35.854347Z",
   "custom": {}
 }
