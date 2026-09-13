@@ -252,6 +252,17 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
   .brand-lockup-copy { transform: translateY(-3.3rem) rotate(-7deg); }
 }
 
+/* Above ~1240px the header hits its 1180px cap, so the slack beside the nav
+   stops shrinking and the masthead can take another step up. Below that the
+   container is still narrowing and 1.5x is already close to the nav. */
+@media (min-width: 1240px) {
+  .brand-lockup { gap: 2rem; }
+  .brand-announcer { margin-block: -0.5rem -5.55rem; width: 21.5rem; }
+  .wordmark { font-size: 5.7rem; }
+  .brand-tagline { font-size: 3.2rem; }
+  .brand-lockup-copy { transform: translateY(-3.7rem) rotate(-7deg); }
+}
+
 @media (max-width: 950px) {
   .marketing-header { align-items: flex-start; flex-direction: column; gap: 1rem; }
 }
