@@ -39,7 +39,7 @@ The player mounts immediately after the script tag unless
 | `data-auritus-api` | API base URL (default: origin of the script URL). |
 | `data-auritus-root` | CSS selector for content root (default: `document.body`). |
 | `data-auritus-voice` | Voice id (default: `default`). |
-| `data-auritus-tts-backend` | TTS backend (default: `higgs`). |
+| `data-auritus-tts-backend` | TTS backend (default: `kokoro`). |
 | `data-auritus-ignore-selectors` | Comma-separated extra ignore selectors. |
 | `data-auritus-player-host` | CSS selector where the player should mount. |
 
@@ -49,8 +49,8 @@ The player mounts immediately after the script tag unless
 - `data-auritus-pronounce="spoken form"` replaces the element's text for TTS.
 - `data-auritus-break` inserts a pause marker in the TTS input.
 
-Content hash includes **only** normalized text, `voice_id`, and `tts_backend`.
-Name and byline affect the player UI and job metadata, not the hash.
+Content hash includes **only** normalized text and `voice_id`.
+Name, byline, and `tts_backend` affect the job and player, not the hash.
 
 ## Theming
 

@@ -30,7 +30,7 @@ Optional: `AWS_BATCH_JOB_ID` (used in the claim owner id).
 
 1. POST `/jobs/{hash}/redeem` with the job token (falls back to the token as bearer if redeem is not deployed).
 2. PUT `/jobs/{hash}/claim` with `claim_owner`.
-3. Load the TTS backend from `src/tts/registry.py` (`higgs` or `qwen`).
+3. Load the requested TTS backend from `src/tts/registry.py` (default `kokoro`).
 4. POST `/jobs/{hash}/presign-upload`, PUT audio to S3, PUT `/jobs/{hash}/done`.
 5. On failure, PUT `/jobs/{hash}/failed` when available.
 
@@ -44,5 +44,6 @@ docker build -t auritus-worker:latest worker-image/
 
 - `src/runner.py` — Batch entrypoint
 - `src/tts/base.py` — `TTSBackend` ABC
-- `src/tts/higgs.py`, `src/tts/qwen.py` — pluggable backends (silent WAV stubs until weights are wired)
+- `src/tts/higgs.py`, `src/tts/qwen.py` — pluggable backends
+- `src/tts/kokoro.py` — real Kokoro speech on Batch/Linux via PyTorch
 - `src/tts/registry.py` — backend selection by name
