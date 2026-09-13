@@ -17,12 +17,19 @@
       "text": "Live aurit.us/examples/basic: after boot, Play exists in shadow DOM (Ready, ~23s audio). First paint has no chrome because boot awaits POST /jobs before mountPlayer. Empty .auritus-player-host looks like sage page background. Accessibility snapshot also omits the shadow Play button.\n\nFix: first-paint placeholder plus mount chrome before createJob; 404 while creating is waiting, not failure.\n",
       "created_at": "2026-09-13T12:38:23.310590Z",
       "comment_type": "default"
+    },
+    {
+      "id": "3fae013a-745b-4de6-be24-1b3d313470af",
+      "author": "ryan",
+      "text": "Live https://aurit.us/examples/basic and /examples/qwen show Play after boot and generated audio (Kokoro ~23s, Qwen ~48s). First paint still says Loading player, and Play at the end of a clip does not restart. Remaining chrome work is auritus-ab3214.",
+      "created_at": "2026-09-13T15:09:15.228812Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T12:37:46.877410Z",
-  "updated_at": "2026-09-13T12:38:23.310610Z",
+  "updated_at": "2026-09-13T15:09:15.228837Z",
   "closed_at": null,
-  "right_now_summary": "A placeholder now shows player controls before job creation, avoiding a blank first paint while POST /jobs loads.",
-  "right_now_updated_at": "2026-09-13T12:38:24.451759Z",
+  "right_now_summary": "The player now shows Play after boot, but first paint still says Loading and Play cannot restart finished clips.",
+  "right_now_updated_at": "2026-09-13T15:09:17.340090Z",
   "custom": {}
 }
