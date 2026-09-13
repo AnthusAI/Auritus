@@ -1,7 +1,8 @@
 Feature: Example pages demonstrate distinct speech
   Kokoro and Qwen speak the same Gettysburg excerpt so listeners can compare
   backends. Spoken copy is at least two paragraphs. Ignore markup is a separate
-  fixture.
+  fixture. Playwright requires a playable clip of spoken length on each
+  example so a tone stub cannot pass.
 
   Scenario: Basic example requests Kokoro for the Gettysburg excerpt
     Given the basic example page article
