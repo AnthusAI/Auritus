@@ -12,6 +12,8 @@ from auritus.config import global_config_path, load_config, save_config
 
 app = typer.Typer(help="Deploy the Auritus CDK stack and write outputs to config.")
 
+CDK_CLI_PACKAGE = "aws-cdk@2.1141.0"
+
 
 def _repo_root() -> Path:
     here = Path(__file__).resolve()
@@ -35,7 +37,9 @@ def deploy(
 
     outputs_file = cdk_dir / "cdk-outputs.json"
     cmd = [
-        "cdk",
+        "npx",
+        "--yes",
+        CDK_CLI_PACKAGE,
         "deploy",
         stack,
         "--outputs-file",

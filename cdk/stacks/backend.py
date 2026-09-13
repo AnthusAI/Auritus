@@ -81,6 +81,11 @@ from constructs import Construct
 
 LAMBDA_ROOT = Path(__file__).resolve().parents[1] / "lambdas"
 DEFAULT_CLAIM_TIMEOUT_SECONDS = 900
+OPERATOR_AUTH_FLOWS = [
+    "ALLOW_USER_PASSWORD_AUTH",
+    "ALLOW_USER_SRP_AUTH",
+    "ALLOW_REFRESH_TOKEN_AUTH",
+]
 
 
 class BackendStack(Stack):
@@ -244,6 +249,7 @@ class BackendStack(Stack):
             ),
         )
         user_pool_client.node.add_dependency(google_idp)
+        self._keep_refresh_token_auth(user_pool_client)
 
         web_console_client = cognito.UserPoolClient(
             self,
@@ -285,6 +291,7 @@ class BackendStack(Stack):
             ),
         )
         web_console_client.node.add_dependency(google_idp)
+        self._keep_refresh_token_auth(web_console_client)
 
         router_fn = lambda_.Function(
             self,
@@ -698,6 +705,16 @@ class BackendStack(Stack):
         CfnOutput(self, "ClaimTimeoutSeconds", value=str(claim_timeout_seconds))
         CfnOutput(self, "WorkerEcrRepositoryUri", value=worker_repo.repository_uri)
         CfnOutput(self, "GoogleOAuthSecretArn", value=google_secret.secret_arn)
+
+    def _keep_refresh_token_auth(self, client: cognito.UserPoolClient) -> None:
+        """Keep refresh-token auth alongside password and SRP on a Cognito client.
+
+        :param client: User pool client whose CloudFormation auth flows need refresh.
+        """
+        cfn_client = client.node.default_child
+        if not isinstance(cfn_client, cognito.CfnUserPoolClient):
+            raise TypeError("expected CfnUserPoolClient for operator auth flows")
+        cfn_client.explicit_auth_flows = OPERATOR_AUTH_FLOWS
 
     def _batch_instance_profile(self) -> iam.CfnInstanceProfile:
         """Create an EC2 instance profile for AWS Batch GPU workers.
