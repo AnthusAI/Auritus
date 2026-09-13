@@ -1,19 +1,15 @@
-"""Cognito Google OAuth login via local loopback listener."""
+"""Cognito operator authentication for the Auritus CLI."""
 
 from __future__ import annotations
 
-import hashlib
 import json
-import secrets
-import threading
 import time
-import urllib.parse
-import webbrowser
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from typing import Any
 
+import boto3
 import httpx
+from botocore.exceptions import ClientError
 
 from auritus.config import config_dir, load_config
 
@@ -21,7 +17,7 @@ REFRESH_SKEW_SECONDS = 10
 
 
 class AuthError(RuntimeError):
-    """Raised when OAuth login fails."""
+    """Raised when Cognito login or token refresh fails."""
 
 
 def credentials_path() -> Path:
@@ -53,13 +49,16 @@ def clear_tokens() -> None:
         path.unlink()
 
 
-def _pkce_pair() -> tuple[str, str]:
-    import base64
-
-    verifier = secrets.token_urlsafe(64)
-    digest = hashlib.sha256(verifier.encode("ascii")).digest()
-    challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
-    return verifier, challenge
+def _cognito_client_config() -> tuple[str, str]:
+    cfg = load_config()
+    client_id = str(cfg.get("cognito_client_id") or "")
+    region = str(cfg.get("region") or "us-east-1")
+    if not client_id:
+        raise AuthError(
+            "Missing cognito_client_id in config. "
+            "Run `auritus deploy` first, or set it with `auritus config set`."
+        )
+    return client_id, region
 
 
 def _token_endpoint() -> tuple[str, str]:
@@ -74,6 +73,60 @@ def _token_endpoint() -> tuple[str, str]:
         )
     token_url = f"https://{domain}.auth.{region}.amazoncognito.com/oauth2/token"
     return client_id, token_url
+
+
+def login_with_password(username: str, password: str) -> dict[str, Any]:
+    """Authenticate with Cognito USER_PASSWORD_AUTH and cache tokens.
+
+    :param username: Cognito username (typically the operator email).
+    :param password: Cognito password.
+    :returns: Token dictionary containing access_token, id_token, refresh_token.
+    :raises AuthError: If configuration is incomplete or Cognito rejects login.
+    """
+    client_id, region = _cognito_client_config()
+    client = boto3.client("cognito-idp", region_name=region)
+    try:
+        response = client.initiate_auth(
+            ClientId=client_id,
+            AuthFlow="USER_PASSWORD_AUTH",
+            AuthParameters={
+                "USERNAME": username,
+                "PASSWORD": password,
+            },
+        )
+    except ClientError as exc:
+        code = exc.response.get("Error", {}).get("Code", "")
+        message = exc.response.get("Error", {}).get("Message", str(exc))
+        if code in ("NotAuthorizedException", "UserNotFoundException"):
+            raise AuthError("Invalid email or password.") from exc
+        raise AuthError(f"Cognito login failed: {message}") from exc
+
+    challenge = response.get("ChallengeName")
+    if challenge == "NEW_PASSWORD_REQUIRED":
+        raise AuthError(
+            "Cognito requires a new password. Set a permanent password in the "
+            "Cognito user pool console, then run `auritus login` again."
+        )
+    if challenge:
+        raise AuthError(f"Unsupported Cognito challenge: {challenge}")
+
+    result = response.get("AuthenticationResult") or {}
+    access = result.get("AccessToken")
+    if not access:
+        raise AuthError("Login failed: Cognito did not return an access token.")
+
+    tokens: dict[str, Any] = {
+        "access_token": access,
+        "expires_in": int(result.get("ExpiresIn") or 3600),
+        "token_type": result.get("TokenType") or "Bearer",
+        "obtained_at": int(time.time()),
+    }
+    if result.get("IdToken"):
+        tokens["id_token"] = result["IdToken"]
+    if result.get("RefreshToken"):
+        tokens["refresh_token"] = result["RefreshToken"]
+    save_tokens(tokens)
+    return tokens
 
 
 def refresh_tokens() -> dict[str, Any]:
@@ -111,118 +164,19 @@ def _access_token_expired(tokens: dict[str, Any]) -> bool:
     return time.time() >= obtained + expires_in - REFRESH_SKEW_SECONDS
 
 
-def login_interactive(
-    open_browser: bool = True, timeout_seconds: int = 300
-) -> dict[str, Any]:
-    """Run Cognito Google OAuth authorization-code flow on a loopback listener.
-
-    :param open_browser: Whether to open the system browser.
-    :param timeout_seconds: How long to wait for the callback.
-    :returns: Token dictionary containing access_token, id_token, refresh_token.
-    :raises AuthError: If configuration is incomplete or login fails.
-    """
-    client_id, token_url = _token_endpoint()
-    cfg = load_config()
-    domain = str(cfg.get("cognito_domain") or "")
-    region = str(cfg.get("region") or "us-east-1")
-
-    verifier, challenge = _pkce_pair()
-    state = secrets.token_urlsafe(16)
-    result: dict[str, Any] = {}
-    error_box: list[str] = []
-
-    class Handler(BaseHTTPRequestHandler):
-        def do_GET(self) -> None:
-            parsed = urllib.parse.urlparse(self.path)
-            if parsed.path != "/callback":
-                self.send_response(404)
-                self.end_headers()
-                return
-            params = urllib.parse.parse_qs(parsed.query)
-            if params.get("state", [None])[0] != state:
-                error_box.append("state mismatch")
-                self.send_response(400)
-                self.end_headers()
-                self.wfile.write(b"state mismatch")
-                return
-            code = params.get("code", [None])[0]
-            if not code:
-                error_box.append("missing code")
-                self.send_response(400)
-                self.end_headers()
-                self.wfile.write(b"missing code")
-                return
-            result["code"] = code
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b"Auritus login complete. You can close this tab.")
-
-        def log_message(self, format: str, *args: Any) -> None:
-            return
-
-    server = HTTPServer(("127.0.0.1", 0), Handler)
-    port = server.server_address[1]
-    redirect_uri = f"http://127.0.0.1:{port}/callback"
-    authorize_url = (
-        f"https://{domain}.auth.{region}.amazoncognito.com/oauth2/authorize?"
-        + urllib.parse.urlencode(
-            {
-                "client_id": client_id,
-                "response_type": "code",
-                "scope": "openid email profile",
-                "redirect_uri": redirect_uri,
-                "state": state,
-                "code_challenge_method": "S256",
-                "code_challenge": challenge,
-                "identity_provider": "Google",
-            }
-        )
-    )
-
-    thread = threading.Thread(target=server.handle_request, daemon=True)
-    thread.start()
-    if open_browser:
-        webbrowser.open(authorize_url)
-    else:
-        print(authorize_url)
-
-    deadline = time.time() + timeout_seconds
-    while time.time() < deadline and "code" not in result and not error_box:
-        time.sleep(0.1)
-    server.server_close()
-    if error_box:
-        raise AuthError(error_box[0])
-    if "code" not in result:
-        raise AuthError("Login timed out waiting for OAuth callback")
-
-    data = {
-        "grant_type": "authorization_code",
-        "client_id": client_id,
-        "code": result["code"],
-        "redirect_uri": redirect_uri,
-        "code_verifier": verifier,
-    }
-    response = httpx.post(token_url, data=data, timeout=30.0)
-    if response.status_code >= 400:
-        raise AuthError(
-            f"Token exchange failed: {response.status_code} {response.text}"
-        )
-    tokens = response.json()
-    tokens["obtained_at"] = int(time.time())
-    save_tokens(tokens)
-    return tokens
-
-
 def get_access_token() -> str:
-    """Return the cached Cognito access token.
+    """Return a valid Cognito access token, refreshing when near expiry.
 
-    The access token is valid for 1 hour. For the local worker demo this
-    is sufficient — no refresh needed. If the token expires during a long
-    session, the worker will get 401 from the API and can re-authenticate.
-
-    :raises AuthError: If the operator is not logged in.
+    :raises AuthError: If the operator is not logged in or refresh fails.
     """
     tokens = load_tokens()
     if not tokens or "access_token" not in tokens:
         raise AuthError("Not logged in. Run `auritus login`.")
+    if _access_token_expired(tokens):
+        if not tokens.get("refresh_token"):
+            raise AuthError("Session expired. Run `auritus login` again.")
+        try:
+            tokens = refresh_tokens()
+        except AuthError as exc:
+            raise AuthError("Session expired. Run `auritus login` again.") from exc
     return str(tokens["access_token"])
