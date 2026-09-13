@@ -14,6 +14,21 @@ async function waitForJobPost(page: Page) {
   );
 }
 
+test("basic example shows player chrome without JavaScript", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.goto("/examples/basic");
+  await expect(page.getByText("Loading player")).toBeVisible();
+  const hostBox = await page.locator(".auritus-player-host").boundingBox();
+  const articleBox = await page.locator(".example-article").boundingBox();
+  expect(hostBox).toBeTruthy();
+  expect(articleBox).toBeTruthy();
+  expect(hostBox!.y).toBeLessThan(articleBox!.y);
+  await context.close();
+});
+
 test("basic example loads and shows player container", async ({ page }) => {
   await page.goto("/examples/basic");
   await expect(page.locator("[data-auritus-site-key]")).toBeAttached();
@@ -26,6 +41,26 @@ test("basic example loads and shows player container", async ({ page }) => {
   expect(articleBox).toBeTruthy();
   expect(hostBox!.height).toBeGreaterThan(40);
   expect(hostBox!.y).toBeLessThan(articleBox!.y);
+});
+
+test("player chrome mounts before POST /jobs returns", async ({ page }) => {
+  await page.route("**/jobs", async (route) => {
+    if (route.request().method() === "POST") {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 4000);
+      });
+    }
+    await route.continue();
+  });
+  await page.goto("/examples/basic");
+  await page.waitForFunction(
+    () => {
+      const host = document.querySelector(".auritus-root");
+      const play = host?.shadowRoot?.querySelector(".auritus-play");
+      return Boolean(play);
+    },
+    { timeout: 3000 },
+  );
 });
 
 test("themed example applies CSS variables", async ({ page }) => {
