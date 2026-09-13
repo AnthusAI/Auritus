@@ -1,0 +1,20 @@
+{
+  "id": "auritus-6e6e4d14-c310-40fc-8e0b-0a31d1400ee4",
+  "title": "Make D2 renders reproducible and keep verification builds off the dev server",
+  "description": "Two build-tooling defects found while re-rendering the diagrams for the\nnewsprint palette.\n\n## D2 renders were not reproducible, so the CI drift check could not pass\n\n`.github/workflows/ci.yml` installs the pinned d2 v0.7.1, runs\n`make diagrams`, then `git diff --exit-code` against the committed SVGs.\nThat check can never have passed: d2 picks a **random CSS scope id** per\nrun (`.d2-4009697037` -> `.d2-1836642998`) and embeds it in every rule, so\ntwo renders of unchanged sources differed by roughly 900 lines.\n\nFix: pass `--salt \"${name}\"` in `scripts/render-diagrams.sh`. That pins the\nid, and salting per diagram also keeps ids distinct when several diagrams\nare embedded in one page — which is the case on the architecture page.\nVerified by rendering twice and diffing: byte-identical.\n\nOn the version pin itself — it is load-bearing, not paranoia. The pin in\nthe script mirrors the one in CI, and that is what makes the drift check\nmeaningful. Homebrew only ships 0.9.0, which would produce SVGs that fail\nCI. To move versions, bump `D2_VERSION` and the `ci.yml` install together\nand re-render in the same commit.\n\n## A verification build silently breaks a running dev server\n\n`next build` and `next dev` share `.next`, so a build run against a live\ndev server replaces the dev manifests and leaves it serving Next's\nfallback shell — every route answering 200 with none of the site's content\nin it, which looks like a broken page rather than a stopped server. I did\nthis to my own dev server twice during this work.\n\nPartial mitigation: `distDir: process.env.NEXT_DIST_DIR || '.next'` in\n`site/next.config.js` allows building aside.\n\n**Caveat, and the reason this card exists:** the build that broke the\nserver the second time was itself run with `NEXT_DIST_DIR` set, so that\nguard demonstrably does not fully protect `.next`. I did not chase the\ncause, since confirming it means deliberately breaking a dev server the\nuser is working in. Until someone does, treat the operational rule as the\nreal protection: **do not run `next build` in a worktree while its dev\nserver is up.** Stop it, build, restart.\n\n## Files\n\n- `scripts/render-diagrams.sh` — `--salt`\n- `site/next.config.js` — `distDir`\n\nBranch `feat/newsprint-brand-lockup`, not yet merged.",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T17:28:48.493980Z",
+  "updated_at": "2026-09-13T17:28:48.494020Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
