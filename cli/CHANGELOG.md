@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v0.9.0 (2026-09-13)
+
+### Documentation
+
+- Add visual architecture and landing page
+  ([`48d8228`](https://github.com/AnthusAI/Auritus/commit/48d822862c5f3b44777d25b0e74b4af557bb06ca))
+
+- Clarify local workers race Batch after the claim timeout
+  ([`238f7d6`](https://github.com/AnthusAI/Auritus/commit/238f7d66249935de6997b82dc3d53730df597a1a))
+
+### Features
+
+- Show Play chrome before boot and restart finished clips
+  ([`a8ffbac`](https://github.com/AnthusAI/Auritus/commit/a8ffbac3e547072d2059e0955cada443a8e2c8e0))
+
+
 ## v0.8.0 (2026-09-13)
 
 ### Bug Fixes
