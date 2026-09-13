@@ -3,7 +3,7 @@
   "title": "Visual product education and documentation",
   "description": "Create a repeatable documentation diagram pipeline and improve the landing page, README, and website documentation with accessible, accurate explanations of Auritus deployment modes. AWS security details remain explicitly provisional until the secure-by-design architecture is finalized.",
   "type": "epic",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -20,9 +20,9 @@
     }
   ],
   "created_at": "2026-09-13T15:26:22.972394Z",
-  "updated_at": "2026-09-13T15:26:45.192322Z",
-  "closed_at": null,
-  "right_now_summary": "The product PR adds the D2 diagram pipeline, clearer deployment docs, theme support, and mobile tests.",
-  "right_now_updated_at": "2026-09-13T15:26:53.319271Z",
+  "updated_at": "2026-09-13T15:29:22.584450Z",
+  "closed_at": "2026-09-13T15:29:22.584410Z",
+  "right_now_summary": "The product PR adds the D2 pipeline, diagrams, landing-page redesign, theme support, and mobile tests.",
+  "right_now_updated_at": "2026-09-13T15:29:23.768785Z",
   "custom": {}
 }
