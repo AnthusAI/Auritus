@@ -66,12 +66,19 @@
       "text": "PR #8 merged to develop (b81c6fb): GPU jobs are 2 vCPU / 8192 MiB with BEST_FIT_PROGRESSIVE. Next is cdk deploy of AuritusBackend, then a new Batch proof submit. Composer 2.5 approved; CI quality passed after I001 import fix.",
       "created_at": "2026-09-13T02:04:06.162203Z",
       "comment_type": "default"
+    },
+    {
+      "id": "663a69a8-cf1a-4a98-b434-487ea2c416a6",
+      "author": "ryan",
+      "text": "AuritusBackend deployed. Live job def revision 2 is 2 vCPU / 8192 MiB. New compute env GpuComputeEnv-FoqcgRfVYqLG3HZB uses BEST_FIT_PROGRESSIVE. Submitted proof job 7513bf9d (hash 407fefa6) after stopping local workers.",
+      "created_at": "2026-09-13T02:08:33.357667Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T00:13:13.183742Z",
-  "updated_at": "2026-09-13T02:04:06.162478Z",
+  "updated_at": "2026-09-13T02:08:33.357936Z",
   "closed_at": null,
-  "right_now_summary": "The job definition now fits g4dn.xlarge; deploy CDK and submit a new live Batch proof job.",
-  "right_now_updated_at": "2026-09-13T02:04:08.201031Z",
+  "right_now_summary": "A new GPU Batch proof job is running with the updated 2-vCPU configuration and local workers stopped.",
+  "right_now_updated_at": "2026-09-13T02:08:34.695762Z",
   "custom": {}
 }

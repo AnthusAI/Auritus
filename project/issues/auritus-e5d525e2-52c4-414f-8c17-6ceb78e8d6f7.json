@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:43.348323Z",
   "updated_at": "2026-09-11T21:38:43.348346Z",
   "closed_at": null,
-  "right_now_summary": "The fallback and spend controls are deployed; the team is now running live AWS checks.",
-  "right_now_updated_at": "2026-09-13T02:04:10.332954Z",
+  "right_now_summary": "Spend guardrails and fallback are deployed; a GPU proof job runs while the team checks AWS behavior.",
+  "right_now_updated_at": "2026-09-13T02:08:36.450592Z",
   "custom": {}
 }
