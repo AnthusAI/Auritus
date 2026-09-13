@@ -3,18 +3,26 @@
   "title": "M3 - Local worker + first TTS backend (thin slice)",
   "description": "TTSBackend interface; first backend with license verified; local worker daemon; CLI login/config/deploy/site/player; thin-slice acceptance: one example page narrates via local worker.",
   "type": "epic",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "de68f984-78c7-4a7d-a743-7102bc906e98",
+      "author": "ryan",
+      "text": "Live proof: local worker claimed Kokoro jobs for unique example pages and completed them; Play enabled on aurit.us.",
+      "created_at": "2026-09-13T05:12:58.368635Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:38:35.242Z",
-  "updated_at": "2026-09-11T21:38:35.242040Z",
-  "closed_at": null,
-  "right_now_summary": "The local worker now claims jobs, runs TTS, uploads audio, and completes them on live AWS.",
-  "right_now_updated_at": "2026-09-13T04:29:49.767559Z",
+  "updated_at": "2026-09-13T05:13:01.885326Z",
+  "closed_at": "2026-09-13T05:13:01.885285Z",
+  "right_now_summary": "The local worker now narrates example pages with Kokoro, uploads audio, and Play is enabled on aurit.us.",
+  "right_now_updated_at": "2026-09-13T05:13:03.558031Z",
   "custom": {}
 }

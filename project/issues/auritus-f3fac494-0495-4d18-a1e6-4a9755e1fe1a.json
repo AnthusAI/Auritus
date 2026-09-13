@@ -3,18 +3,26 @@
   "title": "M6 - Website + acceptance",
   "description": "aurit.us on Amplify via Route 53 zone; marketing + docs; example pages as acceptance fixtures; acceptance suite.",
   "type": "epic",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "948f5af0-8fa9-40c3-822d-52a2222f3524",
+      "author": "ryan",
+      "text": "Live proof: unique example pages on Amplify; Playwright against https://aurit.us green including Kokoro speech duration.",
+      "created_at": "2026-09-13T05:13:05.231199Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:38:46.796266Z",
-  "updated_at": "2026-09-11T21:38:46.796293Z",
-  "closed_at": null,
-  "right_now_summary": "The site is live, fixes are deploying, and example pages are ready for end-to-end acceptance tests.",
-  "right_now_updated_at": "2026-09-13T04:13:11.699917Z",
+  "updated_at": "2026-09-13T05:13:09.048078Z",
+  "closed_at": "2026-09-13T05:13:09.048037Z",
+  "right_now_summary": "aurit.us is live on Amplify, and Playwright acceptance tests pass with working Kokoro audio.",
+  "right_now_updated_at": "2026-09-13T05:13:10.657697Z",
   "custom": {}
 }

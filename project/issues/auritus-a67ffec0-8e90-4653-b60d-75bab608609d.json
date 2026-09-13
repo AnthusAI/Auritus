@@ -3,7 +3,7 @@
   "title": "Example pages have unique long excerpts and distinct TTS backends",
   "description": "Live examples currently replay the ignore-example WAV. Causes: short similar fixtures, Next.js client navigation not re-booting the embed, and 8-character FNV hashes.\n\n## Behavior\nEach example has at least two public-domain paragraphs of unique spoken text. Basic and themed use Kokoro. A Qwen example requests tts_backend qwen. Ignore still demonstrates ignore/pronounce on a longer article. Navigating between examples boots a new player for that page's hash. Higgs remains off the examples (tone stub).\n\nSee features/example_pages.feature.",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -17,12 +17,26 @@
       "text": "Product branch `feat/example-unique-speech` is up. Root cause was Next.js `Script` keeping the first page's attrs and never re-booting. Examples now have unique long public-domain copy; Qwen has its own page. Higgs stays off the demos.",
       "created_at": "2026-09-13T04:13:04.320527Z",
       "comment_type": "default"
+    },
+    {
+      "id": "9a2ed921-7244-4ebf-a539-d97ba28c8219",
+      "author": "ryan",
+      "text": "Live aurit.us now has unique excerpts. Playwright against production: themed Austen POST, Qwen Darwin POST, ignore Mill POST, and ignore-to-basic client nav all passed. Play is still waiting: local worker 403 on /jobs/claimable until password login; Batch fallback is the 15-minute claim window.",
+      "created_at": "2026-09-13T05:04:26.410229Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "a80326bc-4dbd-4a62-9493-a7dd04f261cd",
+      "author": "ryan",
+      "text": "Live proof: basic hash 5c0ec94c and ignore 9f12385a differ; Playwright Kokoro speech test passed against https://aurit.us; Play enabled after local worker login.",
+      "created_at": "2026-09-13T05:12:36.221587Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T04:00:09.578243Z",
-  "updated_at": "2026-09-13T04:13:04.320722Z",
-  "closed_at": null,
-  "right_now_summary": "Example pages now use unique long excerpts, reboot players correctly, and route the Qwen demo to Qwen; Higgs stays off.",
-  "right_now_updated_at": "2026-09-13T04:13:09.659394Z",
+  "updated_at": "2026-09-13T05:12:42.468544Z",
+  "closed_at": "2026-09-13T05:12:42.468525Z",
+  "right_now_summary": "Examples now use unique long text and correct TTS backends, with navigation booting the right player.",
+  "right_now_updated_at": "2026-09-13T05:12:43.355513Z",
   "custom": {}
 }

@@ -27,3 +27,8 @@ Feature: Example pages demonstrate distinct speech
     When the generator extracts TTS text from that root
     Then the TTS text includes "The only freedom which deserves the name"
     And the TTS text does not include "This paragraph is ignored"
+
+  Scenario: The player sits above the spoken article
+    Given the basic example page layout
+    Then the player host is above the example article
+

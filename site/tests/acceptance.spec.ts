@@ -16,7 +16,16 @@ async function waitForJobPost(page: Page) {
 
 test("basic example loads and shows player container", async ({ page }) => {
   await page.goto("/examples/basic");
-  await expect(page.locator("[data-auritus-site-key]")).toBeVisible();
+  await expect(page.locator("[data-auritus-site-key]")).toBeAttached();
+  const host = page.locator(".auritus-player-host");
+  await expect(host).toBeVisible();
+  await expect(page.locator(".auritus-root")).toBeVisible({ timeout: 15_000 });
+  const hostBox = await host.boundingBox();
+  const articleBox = await page.locator(".example-article").boundingBox();
+  expect(hostBox).toBeTruthy();
+  expect(articleBox).toBeTruthy();
+  expect(hostBox!.height).toBeGreaterThan(40);
+  expect(hostBox!.y).toBeLessThan(articleBox!.y);
 });
 
 test("themed example applies CSS variables", async ({ page }) => {
@@ -28,7 +37,7 @@ test("themed example applies CSS variables", async ({ page }) => {
 
 test("ignore example has data-auritus-ignore on nav", async ({ page }) => {
   await page.goto("/examples/ignore");
-  await expect(page.locator("[data-auritus-ignore]")).toBeAttached();
+  await expect(page.locator("nav[data-auritus-ignore]")).toBeAttached();
 });
 
 test("embed script is loaded", async ({ page }) => {
