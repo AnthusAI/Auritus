@@ -38,12 +38,19 @@
       "text": "pypi.org/pypi/auritus is not published. GitHub releases exist (0.6.5). Trusted publisher still required.",
       "created_at": "2026-09-13T12:13:31.407257Z",
       "comment_type": "default"
+    },
+    {
+      "id": "644e27f8-8bf9-4e34-aefc-259c9e3f6bfc",
+      "author": "ryan",
+      "text": "PyPI stays last. Do not publish until live examples, local worker, and Batch fallback (Kokoro and Qwen) are proven. No trusted-publisher work until then.\n",
+      "created_at": "2026-09-13T14:48:56.950969Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:47:49.015523Z",
-  "updated_at": "2026-09-13T12:13:31.407282Z",
+  "updated_at": "2026-09-13T14:48:56.951009Z",
   "closed_at": null,
-  "right_now_summary": "GitHub releases are created, but PyPI publishing still awaits trusted publisher setup.",
-  "right_now_updated_at": "2026-09-13T12:13:33.821542Z",
+  "right_now_summary": "PyPI publishing awaits proof of live examples, the local worker, and Batch fallback paths.",
+  "right_now_updated_at": "2026-09-13T14:49:00.015654Z",
   "custom": {}
 }
