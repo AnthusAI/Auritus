@@ -3,18 +3,26 @@
   "title": "Example players sit below the article with no chrome so they look missing",
   "description": "Live /examples pages boot a player, but it mounts after the article card with a transparent background and a green play button on a green page. Readers report no player at all.\n\n## Behavior\nThe player is visible without scrolling past the article. It sits in a dedicated host above the spoken article, with a surface, border, and high-contrast Play control. Playwright asserts the host is visible and has a non-zero box.",
   "type": "bug",
-  "status": "open",
+  "status": "closed",
   "priority": 0,
   "assignee": null,
   "creator": null,
   "parent": "auritus-f9b2a4b9-4a73-4c3b-aba9-b0825bc31906",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "0712b12e-76d8-490f-a95f-4efc76e2e36c",
+      "author": "ryan",
+      "text": "Shipped on main. Live /examples/basic now shows a white player card above the article with Play.",
+      "created_at": "2026-09-13T12:09:37.427778Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T11:47:07.419816Z",
-  "updated_at": "2026-09-13T11:47:07.419894Z",
-  "closed_at": null,
-  "right_now_summary": "The player now sits above the article with a clear surface and visible Play button.",
-  "right_now_updated_at": "2026-09-13T11:47:10.039499Z",
+  "updated_at": "2026-09-13T12:09:45.243248Z",
+  "closed_at": "2026-09-13T12:09:45.243220Z",
+  "right_now_summary": "The player now appears above the article in a visible card with a clear Play button.",
+  "right_now_updated_at": "2026-09-13T12:09:47.029824Z",
   "custom": {}
 }
