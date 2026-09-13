@@ -205,6 +205,11 @@ class BackendStack(Stack):
             "AuritusCliClient",
             user_pool=user_pool,
             generate_secret=False,
+            access_token_validity=Duration.hours(1),
+            id_token_validity=Duration.hours(1),
+            refresh_token_validity=Duration.days(30),
+            refresh_token_rotation_grace_period=Duration.seconds(30),
+            enable_token_revocation=True,
             o_auth=cognito.OAuthSettings(
                 flows=cognito.OAuthFlows(authorization_code_grant=True),
                 scopes=[
@@ -245,11 +250,26 @@ class BackendStack(Stack):
                 "DAILY_SITE_QUOTA": str(
                     self.node.try_get_context("daily_site_quota") or 100
                 ),
+                "USER_POOL_ID": user_pool.user_pool_id,
+                "SES_FROM_ADDRESS": str(
+                    self.node.try_get_context("alert_from_address")
+                    or "auritus@example.com"
+                ),
             },
         )
         jobs.grant_read_write_data(router_fn)
         sites.grant_read_write_data(router_fn)
         audio_bucket.grant_read_write(router_fn)
+        user_pool.grant(
+            router_fn,
+            "cognito-idp:AdminGetUser",
+        )
+        router_fn.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["ses:SendEmail", "ses:SendRawEmail"],
+                resources=["*"],
+            )
+        )
 
         authorizer_fn = lambda_.Function(
             self,
@@ -307,6 +327,7 @@ class BackendStack(Stack):
             (apigwv2.HttpMethod.PUT, "/jobs/{hash}/claim"),
             (apigwv2.HttpMethod.PUT, "/jobs/{hash}/done"),
             (apigwv2.HttpMethod.POST, "/jobs/{hash}/presign-upload"),
+            (apigwv2.HttpMethod.POST, "/alerts/session"),
         ]:
             http_api.add_routes(
                 path=path,

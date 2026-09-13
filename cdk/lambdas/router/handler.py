@@ -27,11 +27,15 @@ FALLBACK_STATE_MACHINE_ARN = os.environ.get("FALLBACK_STATE_MACHINE_ARN", "")
 FALLBACK_SECONDS = int(os.environ.get("FALLBACK_SECONDS", "900"))
 DAILY_SITE_QUOTA = int(os.environ.get("DAILY_SITE_QUOTA", "100"))
 BATCH_JOB_QUEUE_NAME = os.environ.get("BATCH_JOB_QUEUE_NAME", "")
+USER_POOL_ID = os.environ.get("USER_POOL_ID", "")
+SES_FROM_ADDRESS = os.environ.get("SES_FROM_ADDRESS", "")
 
 KOKORO_DEFAULT_VOICE_ID = "af_heart"
 
 _jobs = _dynamodb.Table(JOBS_TABLE)
 _sites = _dynamodb.Table(SITES_TABLE)
+_cognito = boto3.client("cognito-idp")
+_ses = boto3.client("ses")
 
 
 def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
@@ -68,6 +72,8 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         if method == "POST" and path.endswith("/presign-upload"):
             content_hash = path_params.get("hash") or ""
             return _presign_upload(content_hash, headers)
+        if method == "POST" and path == "/alerts/session":
+            return _alert_session(body)
         if method == "POST" and path == "/sites":
             return _create_site(body, headers)
         if method == "GET" and path == "/sites":
@@ -527,3 +533,81 @@ def _delete_site(site_id: str, headers: dict[str, str]) -> dict[str, Any]:
     _require_operator(headers)
     _sites.delete_item(Key={"site_id": site_id})
     return _response(200, {"site_id": site_id, "deleted": True})
+
+
+ALERT_MIN_INTERVAL_SECONDS = 6 * 60 * 60
+
+
+def _alert_session(body: dict[str, Any]) -> dict[str, Any]:
+    """Email the operator when a worker session is near expiry or dead.
+
+    Unauthenticated on purpose: a worker whose refresh token is already dead
+    cannot present a bearer token, yet that is exactly when it needs help.
+    Abuse is bounded by verifying the email is a real Cognito user and
+    rate-limiting per email/kind via a DynamoDB TTL item.
+
+    :param body: ``{"operator_email", "kind", "machine"}``.
+    :returns: 200 on send, 404 for unknown user, 429 when rate-limited.
+    """
+    operator_email = str(body.get("operator_email") or "").strip().lower()
+    kind = str(body.get("kind") or "").strip()
+    machine = str(body.get("machine") or "")
+    if not operator_email or kind not in ("warning", "expired"):
+        return _response(400, {"error": "invalid_request"})
+
+    if not USER_POOL_ID:
+        return _response(503, {"error": "alerts_not_configured"})
+    try:
+        _cognito.admin_get_user(
+            UserPoolId=USER_POOL_ID,
+            Username=operator_email,
+        )
+    except ClientError as exc:
+        code = exc.response.get("Error", {}).get("Code", "")
+        if code in ("UserNotFoundException", "ResourceNotFoundException"):
+            return _response(404, {"error": "unknown_operator"})
+        return _response(500, {"error": "lookup_failed"})
+
+    rate_key = f"alert:{operator_email}:{kind}"
+    now = int(time.time())
+    try:
+        _jobs.put_item(
+            Item={
+                "content_hash": rate_key,
+                "ttl": now + ALERT_MIN_INTERVAL_SECONDS,
+            },
+            ConditionExpression="attribute_not_exists(content_hash)",
+        )
+    except ClientError as exc:
+        if (
+            exc.response.get("Error", {}).get("Code")
+            == "ConditionalCheckFailedException"
+        ):
+            return _response(429, {"error": "rate_limited"})
+        return _response(500, {"error": "rate_limit_failed"})
+
+    if not SES_FROM_ADDRESS or SES_FROM_ADDRESS == "auritus@example.com":
+        return _response(200, {"sent": False, "reason": "ses_not_configured"})
+    subject = (
+        "Auritus worker session expiring soon"
+        if kind == "warning"
+        else "Auritus worker session expired"
+    )
+    action = "renew soon" if kind == "warning" else "re-authenticate now"
+    body_text = (
+        f"The Auritus local worker on {machine or 'an unknown machine'} reports "
+        f"that its operator session is {'near expiry' if kind == 'warning' else 'expired'}. "
+        f"Run `auritus login` to {action} and resume unattended operation."
+    )
+    try:
+        _ses.send_email(
+            Source=SES_FROM_ADDRESS,
+            Destination={"ToAddresses": [operator_email]},
+            Message={
+                "Subject": {"Data": subject},
+                "Body": {"Text": {"Data": body_text}},
+            },
+        )
+    except ClientError:
+        return _response(200, {"sent": False, "reason": "send_failed"})
+    return _response(200, {"sent": True})
