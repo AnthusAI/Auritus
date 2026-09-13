@@ -10,6 +10,7 @@ from auritus.commands import killswitch as killswitch_cmd
 from auritus.commands import login as login_cmd
 from auritus.commands import player as player_cmd
 from auritus.commands import site as site_cmd
+from auritus.commands.login import logout_cmd
 
 app = typer.Typer(
     name="auritus",
@@ -18,6 +19,9 @@ app = typer.Typer(
 )
 
 app.add_typer(login_cmd.app, name="login")
+app.command(
+    name="logout", help="Revoke the cached refresh token and clear credentials."
+)(logout_cmd)
 app.add_typer(config_cmd.app, name="config")
 app.add_typer(deploy_cmd.app, name="deploy")
 app.add_typer(site_cmd.app, name="site")

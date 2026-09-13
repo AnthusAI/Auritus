@@ -19,7 +19,10 @@ export default function SelfHostingDocsPage() {
         </li>
         <li>
           <code>auritus login --username you@example.com</code> (Cognito email
-          and password; JWTs cached under <code>~/.auritus/credentials</code>)
+          and password; JWTs cached under <code>~/.auritus/credentials</code>;
+          see the{" "}
+          <Link href="/docs/security">security page</Link> for refresh-token
+          rotation and unattended worker auth)
         </li>
         <li>
           <code>auritus site create --origin https://your.site</code>

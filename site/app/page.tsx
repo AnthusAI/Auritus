@@ -28,6 +28,7 @@ export default function HomePage() {
         </Link>
         <nav aria-label="Main navigation">
           <Link href="/docs/architecture">Architecture</Link>
+          <Link href="/docs/security">Security</Link>
           <Link href="/docs">Docs</Link>
           <Link href="/examples">Examples</Link>
           <Link className="nav-cta" href="/docs/usage">
@@ -172,7 +173,7 @@ export default function HomePage() {
           distinguishes current behavior from planned controls such as origin
           enforcement and complete JWT validation.
         </p>
-        <Link href="/docs/architecture">Read the current design status</Link>
+        <Link href="/docs/security">Read the authentication and security design</Link>
       </section>
 
       <footer className="marketing-footer">

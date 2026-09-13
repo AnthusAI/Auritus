@@ -126,6 +126,29 @@ test("architecture documentation labels future identity work as planned", async 
   ).toBeVisible();
 });
 
+test("security page documents unattended worker auth and is reachable from the home nav", async ({
+  page,
+}) => {
+  await page.goto("/docs/security");
+  await expect(
+    page.getByRole("heading", {
+      name: /Authentication that stays out of your way/i,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /Refresh-token rotation/i }),
+  ).toBeVisible();
+
+  await expect(
+    page.getByRole("link", { name: /Configure your own stack/i }),
+  ).toHaveAttribute("href", "/docs/self-hosting");
+
+  await page.goto("/");
+  await expect(
+    page.getByRole("link", { name: "Security", exact: true }),
+  ).toHaveAttribute("href", "/docs/security");
+});
+
 test("basic example plays Kokoro speech scoped to article", async ({
   page,
 }) => {
