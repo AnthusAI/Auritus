@@ -89,33 +89,33 @@ export default function HomePage() {
             </div>
           </dl>
         </div>
-        <div className="hero-visual" aria-label="Auritus request flow diagram">
+        <div className="hero-visual">
           <div className="signal-orbit orbit-one" aria-hidden="true" />
           <div className="signal-orbit orbit-two" aria-hidden="true" />
-          <Image
-            src="/diagrams/overview.svg"
-            alt="A reader opens your page, which carries one script tag. Auritus reads the page text. Your own GPU gets first refusal on rendering it, and AWS picks the job up only if it goes unclaimed. Either path produces private audio behind a short-lived link, which the reader listens to on the page."
-            width={1055}
-            height={390}
-            priority
-          />
+          <div className="demo-panel">
+            <p className="demo-panel-label">Hear it for yourself</p>
+            <AuritusPlayerHost
+              name="What Auritus does"
+              byline="A 30-second introduction, narrated by Auritus"
+            />
+            <article className="demo-article">
+              <ElevatorPitch />
+            </article>
+          </div>
         </div>
       </section>
 
-      <section className="demo-section" aria-labelledby="demo-title">
+      <section className="flow-section" aria-labelledby="flow-title">
         <div className="section-heading compact">
-          <p className="kicker">Hear it for yourself</p>
-          <h2 id="demo-title">Thirty seconds, in its own voice.</h2>
+          <p className="kicker">What just happened</p>
+          <h2 id="flow-title">One script tag, and the page reads itself.</h2>
         </div>
-        <div className="demo-panel">
-          <AuritusPlayerHost
-            name="What Auritus does"
-            byline="A 30-second introduction, narrated by Auritus"
-          />
-          <article className="demo-article">
-            <ElevatorPitch />
-          </article>
-        </div>
+        <Image
+          src="/diagrams/overview.svg"
+          alt="A reader opens your page, which carries one script tag. Auritus reads the page text. Your own GPU gets first refusal on rendering it, and AWS picks the job up only if it goes unclaimed. Either path produces private audio behind a short-lived link, which the reader listens to on the page."
+          width={1055}
+          height={390}
+        />
         <AuritusEmbed
           siteKey="demo-site-key"
           apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
@@ -180,9 +180,9 @@ export default function HomePage() {
         <div className="architecture-diagram">
           <Image
             src="/diagrams/aws-deployment.svg"
-            alt="AWS architecture diagram showing the publisher origin, job API, DynamoDB tables, local GPU worker, fallback workflow, AWS Batch, private audio, and signed delivery URL."
-            width={2803}
-            height={580}
+            alt="The page asks for audio. A single conditional claim means only one worker ever wins it. Your own GPU claims it first; AWS Batch renders it only if no claim arrives before the timeout. Either path produces private audio, returned to the page as a short-lived link."
+            width={1191}
+            height={390}
           />
         </div>
       </section>

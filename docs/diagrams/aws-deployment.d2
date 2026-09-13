@@ -46,52 +46,46 @@ vars: {
   }
 }
 
-site: {
-  label: "Publisher origin"
+# d2 fills a grid column-major: column 1 top, column 1 bottom, column 2 top, ...
+grid-columns: 3
+grid-gap: 80
+
+request: {
+  label: "Page asks\nfor audio"
+  style.font-size: 34
 }
 
-aws: {
-  label: "Customer AWS account"
-
-  api: {
-    label: "HTTP API + router"
-  }
-  jobs: {
-    label: "Job and site tables\nconditional claim mutex"
-  }
-  workflow: {
-    label: "Fallback workflow"
-  }
-  batch: {
-    label: "GPU fallback\nopen-model worker"
-  }
-  audio: {
-    label: "Private audio"
-  }
-  edge: {
-    label: "Short-lived playback URL"
-  }
-  controls: {
-    label: "Quota, budget,\nand kill switch"
-    shape: hexagon
-  }
+delivery: {
+  label: "Short-lived link\nback to the page"
+  style.font-size: 34
 }
 
-local: {
-  label: "Optional local GPU"
-  worker: "Claims first,\nsynthesizes locally"
+claim: {
+  label: "One conditional claim\nonly one worker wins"
+  style.font-size: 34
+  style.bold: true
 }
 
-site -> aws.api: "site key + origin"
-aws.api -> aws.jobs: "create / claim / status"
-aws.api -> aws.workflow: "start fallback timer"
-local.worker -> aws.api: "claim job"
-local.worker -> aws.audio: "upload audio"
-aws.workflow -> aws.jobs: "still pending?"
-aws.workflow -> aws.batch: "only if unclaimed"
-aws.batch -> aws.api: "claim, upload, complete"
-aws.batch -> aws.audio
-aws.api -> aws.edge
-aws.edge -> site: "signed URL"
-aws.controls -> aws.batch: "can disable"
-aws.controls -> aws.api: "enforces limits"
+audio: {
+  label: "Private audio"
+  style.font-size: 34
+  style.bold: true
+}
+
+yours: {
+  label: "Your GPU\nclaims it first"
+  style.font-size: 34
+}
+
+batch: {
+  label: "AWS Batch\nonly if unclaimed"
+  style.font-size: 34
+  style.stroke-dash: 4
+}
+
+request -> claim
+claim -> yours
+yours -> batch: "no claim\nbefore the timeout" {style.font-size: 28; style.stroke-dash: 4}
+yours -> audio
+batch -> audio
+audio -> delivery {style.bold: true}

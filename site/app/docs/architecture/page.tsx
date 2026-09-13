@@ -77,9 +77,9 @@ export default function ArchitecturePage() {
         </div>
         <Image
           src="/diagrams/aws-deployment.svg"
-          alt="AWS deployment diagram with API, DynamoDB, Step Functions, AWS Batch, private audio delivery, site quotas, budget protection, and the optional local GPU path."
-          width={2803}
-          height={580}
+          alt="The page asks for audio. A single conditional claim means only one worker ever wins it. Your own GPU claims it first; AWS Batch renders it only if no claim arrives before the timeout. Either path produces private audio, returned to the page as a short-lived link."
+          width={1191}
+          height={390}
         />
       </section>
 
