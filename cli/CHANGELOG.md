@@ -2,6 +2,24 @@
 
 <!-- version list -->
 
+## v0.6.5 (2026-09-13)
+
+### Bug Fixes
+
+- Put example players above the article with visible chrome
+  ([`c595319`](https://github.com/AnthusAI/Auritus/commit/c595319ebb85d4d64e9661aa51056cb385f2d96f))
+
+### Chores
+
+- Stop tracking Playwright test-results
+  ([`75fa984`](https://github.com/AnthusAI/Auritus/commit/75fa984d08d24c6c5286b0b65adf62ade971fd32))
+
+### Testing
+
+- Attach-only locators for live example Playwright
+  ([`49028e3`](https://github.com/AnthusAI/Auritus/commit/49028e3dcecc0637bbd9f84a123d1cf312a8c4ef))
+
+
 ## v0.6.4 (2026-09-13)
 
 ### Bug Fixes
