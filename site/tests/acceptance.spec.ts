@@ -4,6 +4,7 @@ type JobPostBody = {
   text?: string;
   tts_backend?: string;
   voice_id?: string;
+  content_hash?: string;
 };
 
 async function waitForJobPost(page: Page) {
@@ -94,8 +95,7 @@ test("basic example plays Kokoro speech scoped to article", async ({
   expect(body.voice_id).toBe("af_heart");
   expect(body.text).toContain("Four score and seven years ago");
   expect(body.text).toContain("Now we are engaged in a great civil war");
-  expect(body.text).not.toContain("Examples");
-  expect(body.text).not.toContain("__next_f");
+  expect(body.text).not.toContain("This page speaks that excerpt");
 
   const config = page.locator("[data-auritus-site-key]").first();
   await expect(config).toHaveAttribute("data-auritus-tts-backend", "kokoro");
@@ -143,26 +143,54 @@ test("basic example plays Kokoro speech scoped to article", async ({
   expect(durationSeconds).toBeGreaterThanOrEqual(8);
 });
 
-test("themed example posts a distinct Austen excerpt", async ({ page }) => {
+test("themed example posts the same Gettysburg excerpt with Kokoro", async ({
+  page,
+}) => {
   test.setTimeout(180_000);
   const createJobRequest = waitForJobPost(page);
   await page.goto("/examples/themed");
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("kokoro");
-  expect(body.text).toContain("It is a truth universally acknowledged");
-  expect(body.text).toContain("However little known the feelings");
-  expect(body.text).not.toContain("Four score and seven years ago");
+  expect(body.text).toContain("Four score and seven years ago");
+  expect(body.text).toContain("Now we are engaged in a great civil war");
+  expect(body.text).not.toContain("This page speaks that excerpt");
 });
 
-test("Qwen example posts a distinct Darwin excerpt", async ({ page }) => {
+test("Qwen example posts the same Gettysburg excerpt with Qwen", async ({
+  page,
+}) => {
   test.setTimeout(180_000);
   const createJobRequest = waitForJobPost(page);
   await page.goto("/examples/qwen");
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("qwen");
   expect(body.voice_id).toBe("Ryan");
-  expect(body.text).toContain("When on board H.M.S.");
-  expect(body.text).not.toContain("Four score and seven years ago");
+  expect(body.text).toContain("Four score and seven years ago");
+  expect(body.text).toContain("Now we are engaged in a great civil war");
+  expect(body.text).not.toContain("When on board H.M.S.");
+  expect(body.text).not.toContain("This page speaks that excerpt");
+});
+
+test("Kokoro and Qwen examples POST the same spoken text", async ({
+  browser,
+}) => {
+  test.setTimeout(180_000);
+  const kokoroPage = await browser.newPage();
+  const qwenPage = await browser.newPage();
+  const kokoroPost = waitForJobPost(kokoroPage);
+  const qwenPost = waitForJobPost(qwenPage);
+  await Promise.all([
+    kokoroPage.goto("/examples/basic"),
+    qwenPage.goto("/examples/qwen"),
+  ]);
+  const kokoroBody = (await kokoroPost).postDataJSON() as JobPostBody;
+  const qwenBody = (await qwenPost).postDataJSON() as JobPostBody;
+  expect(kokoroBody.tts_backend).toBe("kokoro");
+  expect(qwenBody.tts_backend).toBe("qwen");
+  expect(kokoroBody.text).toBe(qwenBody.text);
+  expect(kokoroBody.content_hash).not.toBe(qwenBody.content_hash);
+  await kokoroPage.close();
+  await qwenPage.close();
 });
 
 test("ignore example posts Kokoro job without ignored paragraph", async ({

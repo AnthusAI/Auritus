@@ -4,49 +4,34 @@ from __future__ import annotations
 
 from behave import given, then
 
-
-@given("the basic example page article")
-def step_basic_article(context) -> None:
-    context.root_html = """
+GETTYSBURG_ARTICLE = """
 <article class="example-article">
-  <h1>Basic narration example</h1>
+  <h1>Gettysburg Address</h1>
   <p>Four score and seven years ago our fathers brought forth on this
   continent, a new nation, conceived in Liberty, and dedicated to the
   proposition that all men are created equal.</p>
   <p>Now we are engaged in a great civil war, testing whether that nation, or
   any nation so conceived and so dedicated, can long endure.</p>
+  <p data-auritus-ignore>This page speaks that excerpt with a TTS backend.</p>
 </article>
 """
+
+
+@given("the basic example page article")
+def step_basic_article(context) -> None:
+    context.root_html = GETTYSBURG_ARTICLE
     context.example_tts_backend = "kokoro"
 
 
 @given("the themed example page article")
 def step_themed_article(context) -> None:
-    context.root_html = """
-<article class="example-article">
-  <h1>Themed player example</h1>
-  <p>It is a truth universally acknowledged, that a single man in
-  possession of a good fortune, must be in want of a wife.</p>
-  <p>However little known the feelings or views of such a man may be on
-  his first entering a neighbourhood, this truth is so well fixed in the
-  minds of the surrounding families, that he is considered the rightful
-  property of some one or other of their daughters.</p>
-</article>
-"""
+    context.root_html = GETTYSBURG_ARTICLE
     context.example_tts_backend = "kokoro"
 
 
 @given("the Qwen example page article")
 def step_qwen_article(context) -> None:
-    context.root_html = """
-<article class="example-article">
-  <h1>Qwen narration example</h1>
-  <p>When on board H.M.S. Beagle, as naturalist, I was much struck with
-  certain facts in the distribution of the inhabitants of South America.</p>
-  <p>On my return home, it occurred to me, in 1837, that something might
-  perhaps be made out on this question.</p>
-</article>
-"""
+    context.root_html = GETTYSBURG_ARTICLE
     context.example_tts_backend = "qwen"
 
 
@@ -75,7 +60,7 @@ def step_basic_layout(context) -> None:
   <div class="auritus-player-host">
     <p class="auritus-player-placeholder">Loading player</p>
   </div>
-  <article class="example-article"><h1>Basic narration example</h1></article>
+  <article class="example-article"><h1>Gettysburg Address</h1></article>
 </main>
 """
 

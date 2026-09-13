@@ -1,0 +1,20 @@
+{
+  "id": "auritus-911c1e97-4b85-47a0-99b6-df026adce99d",
+  "title": "Same Gettysburg excerpt spoken by each real TTS on the public examples",
+  "description": "",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T13:33:52.070900Z",
+  "updated_at": "2026-09-13T13:34:31.909652Z",
+  "closed_at": null,
+  "right_now_summary": "Each real TTS on the public examples is speaking the same Gettysburg excerpt.",
+  "right_now_updated_at": "2026-09-13T13:34:34.654882Z",
+  "custom": {}
+}

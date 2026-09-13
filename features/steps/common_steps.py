@@ -16,8 +16,8 @@ def _normalize(text: str) -> str:
     return " ".join(text.split())
 
 
-def _hash(text: str, voice_id: str) -> str:
-    payload = f"{_normalize(text)}\0{voice_id}".encode()
+def _hash(text: str, voice_id: str, tts_backend: str = "kokoro") -> str:
+    payload = f"{_normalize(text)}\0{voice_id}\0{tts_backend}".encode()
     return hashlib.sha256(payload).hexdigest()
 
 
@@ -40,7 +40,7 @@ def step_backend(context, backend: str) -> None:
 
 @when("the content hash is computed")
 def step_compute(context) -> None:
-    context.hash = _hash(context.tts_text, context.voice_id)
+    context.hash = _hash(context.tts_text, context.voice_id, context.tts_backend)
 
 
 @when("the name and byline are changed")
@@ -52,12 +52,12 @@ def step_cosmetics(context) -> None:
 @when('tts_backend becomes "{backend}"')
 def step_backend_change(context, backend: str) -> None:
     context.tts_backend = backend
-    context.hash_after = _hash(context.tts_text, context.voice_id)
+    context.hash_after = _hash(context.tts_text, context.voice_id, context.tts_backend)
 
 
 @then("the content hash stays the same")
 def step_same(context) -> None:
-    again = _hash(context.tts_text, context.voice_id)
+    again = _hash(context.tts_text, context.voice_id, context.tts_backend)
     assert context.hash == again
 
 
