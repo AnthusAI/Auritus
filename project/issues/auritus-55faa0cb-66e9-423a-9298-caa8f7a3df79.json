@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-13T14:22:07.809264Z",
   "closed_at": null,
-  "right_now_summary": "Auritus runs in production with working TTS, while CI, playback fixes, and AWS verification continue.",
-  "right_now_updated_at": "2026-09-13T15:29:25.589182Z",
+  "right_now_summary": "Auritus is live with working TTS, while CI, player fixes, AWS checks, and docs are still being refined.",
+  "right_now_updated_at": "2026-09-13T15:44:46.694434Z",
   "custom": {}
 }

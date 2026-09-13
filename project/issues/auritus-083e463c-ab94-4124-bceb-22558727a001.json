@@ -1,0 +1,20 @@
+{
+  "id": "auritus-083e463c-ab94-4124-bceb-22558727a001",
+  "title": "Add the supplied Auritus logo and newsprint brand lockup",
+  "description": "Apply the supplied logo beside the Auritus wordmark, add the BE HEARD tagline, refine the landing-page palette for a readable newsprint direction, and retain automatic whole-page light and dark modes.",
+  "type": "chore",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T15:44:34.748244Z",
+  "updated_at": "2026-09-13T15:44:41.844765Z",
+  "closed_at": null,
+  "right_now_summary": "The Auritus logo lockup and newsprint palette are being refined while light and dark modes remain.",
+  "right_now_updated_at": "2026-09-13T15:44:44.139994Z",
+  "custom": {}
+}
