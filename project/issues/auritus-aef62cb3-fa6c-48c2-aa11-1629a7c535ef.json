@@ -1,0 +1,20 @@
+{
+  "id": "auritus-aef62cb3-fa6c-48c2-aa11-1629a7c535ef",
+  "title": "Land Kokoro demo fixes: default backend, skip scripts, continuous worker, Amplify publish",
+  "description": "",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-f3fac494-0495-4d18-a1e6-4a9755e1fe1a",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T00:13:07.728508Z",
+  "updated_at": "2026-09-13T00:13:56.906126Z",
+  "closed_at": null,
+  "right_now_summary": "The team is fixing the Kokoro demo’s backend, scripts, worker, and Amplify publishing.",
+  "right_now_updated_at": "2026-09-13T00:13:58.445260Z",
+  "custom": {}
+}

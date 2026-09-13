@@ -1,0 +1,35 @@
+{
+  "id": "auritus-77707172-9a39-4c14-9f6f-4d350255e4f5",
+  "title": "Fix demo: default TTS to Kokoro so examples play speech not tone",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-f3fac494-0495-4d18-a1e6-4a9755e1fe1a",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "eb76097d-796e-4001-b5ca-8327bab980fe",
+      "author": "ryan",
+      "text": "Root cause: embed and worker default to higgs stub (440Hz tone). Switching defaults to kokoro and regenerating demo audio.",
+      "created_at": "2026-09-13T00:00:20.488350Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "95088201-6894-4ba8-8e29-a67d72c69340",
+      "author": "ryan",
+      "text": "Demo verified: https://aurit.us/examples/basic now plays Kokoro speech (job 1abd4a3e, ~5.2s). Root cause was higgs tone stub default. Follow-ups: deploy embed with kokoro default + script skip; scope examples to article; Amplify publish.",
+      "created_at": "2026-09-13T00:08:26.101692Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-12T23:58:51.092905Z",
+  "updated_at": "2026-09-13T00:08:26.101719Z",
+  "closed_at": "2026-09-13T00:08:19.130470Z",
+  "right_now_summary": "The demo now plays Kokoro speech; deployment and example-scope follow-ups remain.",
+  "right_now_updated_at": "2026-09-13T00:08:27.673159Z",
+  "custom": {}
+}

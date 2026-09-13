@@ -2,9 +2,17 @@
 
 from __future__ import annotations
 
-from tts.base import TTSBackend
-from tts.higgs import HiggsBackend
-from tts.qwen import QwenBackend
-from tts.registry import get_backend
+from typing import TYPE_CHECKING
 
-__all__ = ["HiggsBackend", "QwenBackend", "TTSBackend", "get_backend"]
+if TYPE_CHECKING:
+    from tts.base import TTSBackend
+
+
+def get_backend(name: str) -> TTSBackend:
+    """Instantiate a TTS backend by name."""
+    from tts.registry import get_backend as _registry_get
+
+    return _registry_get(name)
+
+
+__all__ = ["get_backend"]
