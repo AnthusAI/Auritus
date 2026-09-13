@@ -10,11 +10,19 @@
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "21a89781-c3b3-4c62-b2a3-a228bc993a91",
+      "author": "ryan",
+      "text": "PR #3: Playwright Kokoro speech wiring. Review wait timeout 120s applied in 6af676c.",
+      "created_at": "2026-09-13T01:26:33.233816Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T01:21:39.149984Z",
-  "updated_at": "2026-09-13T01:21:39.150388Z",
+  "updated_at": "2026-09-13T01:26:33.234097Z",
   "closed_at": null,
-  "right_now_summary": "Playwright acceptance tests for Kokoro speech are being prepared.",
-  "right_now_updated_at": "2026-09-13T01:21:42.256818Z",
+  "right_now_summary": "PR #3 wires Playwright Kokoro speech and applies a 120-second review wait timeout.",
+  "right_now_updated_at": "2026-09-13T01:26:35.180199Z",
   "custom": {}
 }
