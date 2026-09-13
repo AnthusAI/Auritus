@@ -1,0 +1,20 @@
+{
+  "id": "auritus-b1fea654-e74e-4f02-8e5c-4be365acf8c5",
+  "title": "Play while waiting starts speech when audio arrives",
+  "description": "## Behavior\n\nHome copy says Press play, but Play is disabled until the job is done, so a click does nothing. After the embed boots, Play should accept the click and start the clip as soon as audio is ready.\n\n```gherkin\nFeature: Player playback restart\n  Scenario: Play while waiting starts when audio is ready\n    Given the player is waiting for audio\n    When the listener activates Play\n    And the clip becomes ready\n    Then playback starts\n```\n\n## Implementation brief\n\n1. `embed/src/player/index.ts` — keep Play clickable while waiting; set a pending flag; `audio.play()` when `done` + `audio_url`. Honor `data-auritus-play-intent` on the player host.\n2. `site/components/AuritusPlayerHost.tsx` — first-paint Play is clickable and sets that intent.\n3. `site/tests/acceptance.spec.ts` — `waitForPlayableClip` must require `audio.src`, not merely `!disabled`.\n4. Vitest for the pending-play path. Do not enable PyPI.",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T22:06:39.847142Z",
+  "updated_at": "2026-09-13T22:07:38.128900Z",
+  "closed_at": null,
+  "right_now_summary": "Play is disabled while audio loads, so clicks do not start playback when the clip becomes ready.",
+  "right_now_updated_at": "2026-09-13T22:07:40.231680Z",
+  "custom": {}
+}

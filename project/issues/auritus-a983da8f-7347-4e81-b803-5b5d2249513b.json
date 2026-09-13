@@ -57,7 +57,7 @@
   "created_at": "2026-09-11T21:38:50.679842Z",
   "updated_at": "2026-09-13T18:30:51.038984Z",
   "closed_at": null,
-  "right_now_summary": "The release is hardened, and only the trusted PyPI publisher setup remains.",
-  "right_now_updated_at": "2026-09-13T22:03:47.552618Z",
+  "right_now_summary": "The release is hardened and tested; only enabling the trusted PyPI publisher and making the first upload remains.",
+  "right_now_updated_at": "2026-09-13T22:07:43.387133Z",
   "custom": {}
 }
