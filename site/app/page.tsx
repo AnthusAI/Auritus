@@ -40,10 +40,10 @@ export default function HomePage() {
             priority
           />
           <span className="brand-lockup-copy">
-            <span className="wordmark">
-              Auritus<span>.</span>
+            <span className="wordmark">Auritus</span>
+            <span className="brand-tagline">
+              Be heard<span>.</span>
             </span>
-            <span className="brand-tagline">Be heard</span>
           </span>
         </Link>
         <nav aria-label="Main navigation">

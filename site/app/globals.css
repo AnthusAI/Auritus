@@ -10,6 +10,7 @@
   --signal: #6e4f2b;
   --signal-soft: #e6d5b6;
   --highlight: #b87925;
+  --alert: #c02617;
   --line: rgba(33, 24, 15, 0.2);
   --card: #fbf5e8;
 }
@@ -66,7 +67,7 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .brand-lockup-copy { display: grid; gap: 0.08rem; transform: translateY(-0.95rem) rotate(-7deg); transform-origin: 0 50%; }
 .wordmark { font-family: var(--font-display), serif; font-size: 3.4rem; font-weight: 700; letter-spacing: -0.06em; line-height: 0.9; text-decoration: none; }
 .wordmark span { color: var(--accent); }
-.brand-tagline { color: var(--accent); font-size: 1.9rem; font-weight: 850; letter-spacing: 0.14em; line-height: 1; text-transform: uppercase; }
+.brand-tagline { color: var(--alert); font-size: 1.9rem; font-weight: 850; letter-spacing: 0.14em; line-height: 1; text-transform: uppercase; }
 .brand-announcer { height: auto; margin-block: -1.2rem -2.4rem; width: 12.8rem; }
 
 .marketing-header nav,
@@ -90,7 +91,7 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 
 .kicker,
 .card-eyebrow { color: var(--accent); font-size: 0.76rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
-.hero-copy h1 { font-size: clamp(3.8rem, 7.6vw, 7.4rem); line-height: 0.9; margin-bottom: 1.6rem; max-width: 9ch; }
+.hero-copy h1 { font-size: clamp(2.9rem, 5.4vw, 5.2rem); line-height: 0.95; margin-bottom: 1.6rem; max-width: 11ch; }
 .hero-intro { color: var(--ink-muted); font-size: clamp(1.15rem, 1.6vw, 1.4rem); max-width: 34rem; }
 .hero-copy .auritus-player-host { margin: 1.5rem 0 0; }
 .home-spoken { color: var(--ink); font-size: 1.02rem; margin: 0.85rem 0 0; max-width: 34rem; }
@@ -266,6 +267,7 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
     --signal: #d7b57a;
     --signal-soft: #3a2d1f;
     --highlight: #efb85d;
+    --alert: #ff6f5c;
     --line: rgba(243, 230, 207, 0.22);
     --card: #2d231b;
   }
@@ -294,6 +296,6 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
   .marketing-header, .marketing-footer, .marketing-hero, .choice-section, .demo-section, .flow-section, .architecture-panel, .setup-section, .documentation-page { width: min(100% - 2rem, 1180px); }
   .marketing-header nav { font-size: 0.9rem; }
   .hero-proof { grid-template-columns: 1fr; }
-  .hero-copy h1 { font-size: clamp(3.1rem, 15vw, 4.6rem); }
+  .hero-copy h1 { font-size: clamp(2.6rem, 11vw, 3.6rem); }
   .architecture-panel { margin-bottom: 4rem; }
 }
