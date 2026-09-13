@@ -27,19 +27,21 @@ export interface EmbedScriptConfig {
   playerHost?: string;
 }
 
-function apiBaseFromScript(script: HTMLScriptElement): string {
-  const explicit = script.getAttribute("data-auritus-api")?.trim();
+function apiBaseFromElement(element: HTMLElement): string {
+  const explicit = element.getAttribute("data-auritus-api")?.trim();
   if (explicit) {
     return explicit.replace(/\/$/, "");
   }
-  try {
-    const src = script.src;
-    if (src) {
-      const url = new URL(src);
-      return url.origin;
+  if (element instanceof HTMLScriptElement) {
+    try {
+      const src = element.src;
+      if (src) {
+        const url = new URL(src);
+        return url.origin;
+      }
+    } catch {
+      /* use location */
     }
-  } catch {
-    /* use location */
   }
   return location.origin;
 }
@@ -55,61 +57,73 @@ function parseListAttribute(value: string | null): string[] {
 }
 
 /**
- * Read configuration from the embed script element.
+ * Read configuration from the embed script or config element.
  */
-export function readEmbedConfig(script: HTMLScriptElement): EmbedScriptConfig {
-  const siteKey = script.getAttribute("data-auritus-site-key")?.trim();
+export function readEmbedConfig(element: HTMLElement): EmbedScriptConfig {
+  const siteKey = element.getAttribute("data-auritus-site-key")?.trim();
   if (!siteKey) {
     throw new Error("Auritus embed: data-auritus-site-key is required");
   }
   return {
     siteKey,
-    apiBaseUrl: apiBaseFromScript(script),
-    voiceId: script.getAttribute("data-auritus-voice")?.trim() || "af_heart",
+    apiBaseUrl: apiBaseFromElement(element),
+    voiceId: element.getAttribute("data-auritus-voice")?.trim() || "af_heart",
     ttsBackend:
-      script.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro",
-    root: script.getAttribute("data-auritus-root")?.trim() || undefined,
+      element.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro",
+    root: element.getAttribute("data-auritus-root")?.trim() || undefined,
     ignoreSelectors: parseListAttribute(
-      script.getAttribute("data-auritus-ignore-selectors"),
+      element.getAttribute("data-auritus-ignore-selectors"),
     ),
-    playerHost: script.getAttribute("data-auritus-player-host")?.trim(),
+    playerHost: element.getAttribute("data-auritus-player-host")?.trim(),
   };
 }
 
 export interface BootOptions {
   script?: HTMLScriptElement;
+  element?: HTMLElement;
+}
+
+let bootGeneration = 0;
+
+/**
+ * Stop polling and remove every mounted Auritus player.
+ */
+export function disposePlayers(root: ParentNode = document): void {
+  for (const host of root.querySelectorAll(".auritus-root")) {
+    host.dispatchEvent(new Event("auritus-dispose"));
+    host.remove();
+  }
 }
 
 /**
  * Run generator, enqueue a job, and mount the player.
  */
 export async function boot(options: BootOptions = {}): Promise<HTMLElement> {
-  const script =
+  const generation = ++bootGeneration;
+  const element =
+    options.element ??
     options.script ??
-    (document.querySelector(
-      "script[data-auritus-site-key]",
-    ) as HTMLScriptElement | null);
-  if (!script) {
-    throw new Error("Auritus embed: script[data-auritus-site-key] not found");
+    (document.querySelector("[data-auritus-site-key]") as HTMLElement | null);
+  if (!element) {
+    throw new Error("Auritus embed: [data-auritus-site-key] not found");
   }
 
-  const config = readEmbedConfig(script);
-  const { name, byline } = readEmbedMetadata(script);
+  disposePlayers();
+
+  const config = readEmbedConfig(element);
+  const { name, byline } = readEmbedMetadata(element);
   const { text } = generateTtsText({
     root: config.root,
     ignoreSelectors: config.ignoreSelectors,
   });
-  const contentHash = computeContentHash(
-    text,
-    config.voiceId,
-  );
+  const contentHash = computeContentHash(text, config.voiceId);
 
   const api = new AuritusApiClient({
     baseUrl: config.apiBaseUrl,
     siteKey: config.siteKey,
   });
 
-  await api.createJob({
+  const created = await api.createJob({
     content_hash: contentHash,
     text,
     name,
@@ -118,9 +132,16 @@ export async function boot(options: BootOptions = {}): Promise<HTMLElement> {
     voice_id: config.voiceId,
   });
 
+  if (generation !== bootGeneration) {
+    const skipped = document.createElement("div");
+    skipped.setAttribute("data-auritus-boot-skipped", "true");
+    return skipped;
+  }
+
+  const resolvedHash = created.content_hash || contentHash;
   const host = document.createElement("div");
   host.className = "auritus-root";
-  host.setAttribute("data-auritus-hash", contentHash);
+  host.setAttribute("data-auritus-hash", resolvedHash);
 
   if (config.playerHost) {
     const mountPoint = document.querySelector(config.playerHost);
@@ -131,13 +152,13 @@ export async function boot(options: BootOptions = {}): Promise<HTMLElement> {
     }
     mountPoint.appendChild(host);
   } else {
-    script.insertAdjacentElement("afterend", host);
+    element.insertAdjacentElement("afterend", host);
   }
 
   return mountPlayer({
     host,
     api,
-    contentHash,
+    contentHash: resolvedHash,
     name,
     byline,
   });
@@ -170,5 +191,5 @@ if (typeof document !== "undefined" && shouldAutoBoot()) {
   }
 }
 
-const auritusGlobal = { boot };
+const auritusGlobal = { boot, disposePlayers };
 export default auritusGlobal;
