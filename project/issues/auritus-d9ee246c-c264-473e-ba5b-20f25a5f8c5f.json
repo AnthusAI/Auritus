@@ -10,11 +10,19 @@
   "parent": "auritus-f08aeaf4-3cec-484d-9557-2835c15c2fdb",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "2fba3434-dd90-4bc2-bfed-398d6488ad18",
+      "author": "ryan",
+      "text": "PR #11 merged: auritus login is Cognito email/password (USER_PASSWORD_AUTH). Google OAuth Gherkin removed. Token refresh runs in default CI. Live pool client already allowed password auth.",
+      "created_at": "2026-09-13T03:48:12.042482Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T03:25:47.303228Z",
-  "updated_at": "2026-09-13T03:25:47.303294Z",
+  "updated_at": "2026-09-13T03:48:12.042761Z",
   "closed_at": null,
-  "right_now_summary": "The CLI and specs are aligning around Cognito email/password login while Google OAuth remains a future option.",
-  "right_now_updated_at": "2026-09-13T03:25:49.760339Z",
+  "right_now_summary": "The CLI now uses Cognito email and password login, with JWTs stored securely for worker access.",
+  "right_now_updated_at": "2026-09-13T03:48:13.546558Z",
   "custom": {}
 }

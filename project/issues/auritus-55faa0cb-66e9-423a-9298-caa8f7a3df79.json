@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-11T21:38:21.475254Z",
   "closed_at": null,
-  "right_now_summary": "Core features are live while the team verifies AWS deployments and hardens CI and PyPI releases.",
-  "right_now_updated_at": "2026-09-13T03:37:28.988411Z",
+  "right_now_summary": "Core features work while the team adds CI, hardens releases, and completes real-AWS checks.",
+  "right_now_updated_at": "2026-09-13T03:48:17.966749Z",
   "custom": {}
 }
