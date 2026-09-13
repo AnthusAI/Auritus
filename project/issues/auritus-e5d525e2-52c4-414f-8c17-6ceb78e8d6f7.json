@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:43.348323Z",
   "updated_at": "2026-09-11T21:38:43.348346Z",
   "closed_at": null,
-  "right_now_summary": "Spend guardrails and fallback are deployed; a GPU proof job runs while the team checks AWS behavior.",
-  "right_now_updated_at": "2026-09-13T02:08:36.450592Z",
+  "right_now_summary": "The fallback works end to end, while the team verifies spend controls and deployment in real AWS.",
+  "right_now_updated_at": "2026-09-13T02:46:43.830314Z",
   "custom": {}
 }

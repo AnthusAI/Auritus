@@ -3,7 +3,7 @@
   "title": "Cloud Batch fallback generates real Kokoro speech end-to-end",
   "description": "",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -73,12 +73,19 @@
       "text": "AuritusBackend deployed. Live job def revision 2 is 2 vCPU / 8192 MiB. New compute env GpuComputeEnv-FoqcgRfVYqLG3HZB uses BEST_FIT_PROGRESSIVE. Submitted proof job 7513bf9d (hash 407fefa6) after stopping local workers.",
       "created_at": "2026-09-13T02:08:33.357667Z",
       "comment_type": "default"
+    },
+    {
+      "id": "acacc4bf-efd4-4e43-875a-dbf1342740e7",
+      "author": "ryan",
+      "text": "Live Batch Kokoro proof succeeded: job 22dc47b5 SUCCEEDED, DynamoDB status done, audio at audio/9b83f4e1....wav, tts_backend kokoro. Root causes before that: (1) 4 vCPU job on g4dn.xlarge, (2) GPU jobs need VCPU/MEMORY/GPU in resourceRequirements, (3) a FIFO queue of stale unschedulable jobs blocked new work. Stale RUNNABLE jobs were cancelled. Compute env min vCPUs reset to 0 after the proof.",
+      "created_at": "2026-09-13T02:46:32.300351Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T00:13:13.183742Z",
-  "updated_at": "2026-09-13T02:08:33.357936Z",
-  "closed_at": null,
-  "right_now_summary": "A new GPU Batch proof job is running with the updated 2-vCPU configuration and local workers stopped.",
-  "right_now_updated_at": "2026-09-13T02:08:34.695762Z",
+  "updated_at": "2026-09-13T02:46:40.251797Z",
+  "closed_at": "2026-09-13T02:46:40.251748Z",
+  "right_now_summary": "The Batch fallback now produces real Kokoro speech end to end.",
+  "right_now_updated_at": "2026-09-13T02:46:41.807992Z",
   "custom": {}
 }
