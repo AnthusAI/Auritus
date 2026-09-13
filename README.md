@@ -1,7 +1,7 @@
 # Auritus
 
 Open-source (MIT) drop-in web embed that just-in-time generates TTS audio of a
-page's content. An open clone of ElevenLabs Audio Native in capability.
+page's content.
 
 **Site:** [aurit.us](https://aurit.us)
 
@@ -24,11 +24,13 @@ and the milestones M0-M7 in the Initiative.
 
 ```bash
 pip install auritus
-auritus login
+auritus login --username you@example.com
 auritus deploy
 auritus site create --origin https://example.com
 auritus worker
 ```
+
+`auritus login` prompts for your Cognito password when `--password` is omitted.
 
 Embed snippet (after `auritus site create`):
 
