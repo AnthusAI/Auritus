@@ -260,6 +260,61 @@ test("basic example plays Kokoro speech scoped to article", async ({
   expect(durationSeconds).toBeGreaterThanOrEqual(8);
 });
 
+test("Play while waiting starts Kokoro when audio arrives", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  let releaseJobGets: () => void = () => {};
+  const jobGetsReady = new Promise<void>((resolve) => {
+    releaseJobGets = resolve;
+  });
+  await page.route("**/jobs/**", async (route) => {
+    const request = route.request();
+    const pathname = new URL(request.url()).pathname;
+    const isJobRecordGet =
+      request.method() === "GET" && /\/jobs\/[0-9a-f]+$/i.test(pathname);
+    if (!isJobRecordGet) {
+      await route.continue();
+      return;
+    }
+    await jobGetsReady;
+    await route.continue();
+  });
+  await page.goto("/examples/basic");
+  await page.waitForFunction(() => {
+    const play = document
+      .querySelector(".auritus-root")
+      ?.shadowRoot?.querySelector(".auritus-play");
+    return Boolean(play);
+  });
+  await page.locator(".auritus-root").evaluate((host) => {
+    const playBtn = host.shadowRoot?.querySelector(
+      ".auritus-play",
+    ) as HTMLButtonElement | null;
+    playBtn?.click();
+  });
+  const waitingStatus = await page.locator(".auritus-root").evaluate((host) => {
+    return host.shadowRoot?.querySelector(".auritus-status")?.textContent ?? "";
+  });
+  expect(waitingStatus).toContain("Starting when ready");
+  releaseJobGets();
+  await page.waitForFunction(
+    () => {
+      const host = document.querySelector(".auritus-root");
+      const audio = host?.shadowRoot?.querySelector("audio");
+      const playBtn = host?.shadowRoot?.querySelector(
+        ".auritus-play",
+      ) as HTMLButtonElement | null;
+      return Boolean(
+        audio &&
+        !audio.paused &&
+        playBtn?.getAttribute("aria-label") === "Pause",
+      );
+    },
+    { timeout: 120_000 },
+  );
+});
+
 test("Play after the clip ends starts Kokoro speech from the beginning", async ({
   page,
 }) => {

@@ -45,7 +45,7 @@ def step_home_layout(context) -> None:
         <p class="auritus-placeholder-name">What Auritus does</p>
         <p class="auritus-placeholder-byline">A 30-second introduction, narrated by Auritus</p>
         <div class="auritus-placeholder-controls">
-          <button type="button" disabled aria-label="Play">Play</button>
+          <button type="button" aria-label="Play">Play</button>
         </div>
       </div>
     </div>
@@ -100,7 +100,7 @@ def step_basic_layout(context) -> None:
       <p class="auritus-placeholder-name">Gettysburg Address</p>
       <p class="auritus-placeholder-byline">Abraham Lincoln, 1863 — Kokoro</p>
       <div class="auritus-placeholder-controls">
-        <button type="button" disabled aria-label="Play">Play</button>
+        <button type="button" aria-label="Play">Play</button>
       </div>
     </div>
   </div>
