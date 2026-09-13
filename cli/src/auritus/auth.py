@@ -14,12 +14,9 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-import keyring
 
 from auritus.config import config_dir, load_config
 
-SERVICE_NAME = "auritus"
-TOKEN_USERNAME = "cognito"
 REFRESH_SKEW_SECONDS = 10
 
 
@@ -33,23 +30,16 @@ def credentials_path() -> Path:
 
 
 def save_tokens(tokens: dict[str, Any]) -> None:
-    """Cache short-lived Cognito tokens in keyring (or file fallback)."""
+    """Cache short-lived Cognito tokens in a mode-0600 credentials file."""
     payload = json.dumps(tokens)
-    try:
-        keyring.set_password(SERVICE_NAME, TOKEN_USERNAME, payload)
-    except (OSError, ValueError, RuntimeError):
-        path = credentials_path()
-        config_dir().mkdir(parents=True, exist_ok=True)
-        path.write_text(payload, encoding="utf-8")
-        path.chmod(0o600)
+    path = credentials_path()
+    config_dir().mkdir(parents=True, exist_ok=True)
+    path.write_text(payload, encoding="utf-8")
+    path.chmod(0o600)
 
 
 def load_tokens() -> dict[str, Any] | None:
-    """Load cached Cognito tokens from the credentials file.
-
-    The file is the source of truth — the keyring is not used
-    to avoid stale-token issues on shared machines.
-    """
+    """Load cached Cognito tokens from the credentials file."""
     path = credentials_path()
     if path.exists():
         return json.loads(path.read_text(encoding="utf-8"))
@@ -58,10 +48,6 @@ def load_tokens() -> dict[str, Any] | None:
 
 def clear_tokens() -> None:
     """Remove cached tokens."""
-    try:
-        keyring.delete_password(SERVICE_NAME, TOKEN_USERNAME)
-    except (OSError, ValueError, RuntimeError):
-        pass
     path = credentials_path()
     if path.exists():
         path.unlink()
