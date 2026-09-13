@@ -17,12 +17,19 @@
       "text": "Invalid — my error. Withdrawing this.\n\nThe player *does* render. It mounts into a **shadow root** attached to\n`.auritus-root`, which auritus-e5075a already notes (\"Play exists in\nshadow DOM\"). My probe counted `root.children.length`, which only sees\nlight DOM, so a correctly-mounted player always read as zero.\n\nRe-probed via `root.shadowRoot`: 3 children, a working Play button, and\nstatus \"Ready\". Nothing is broken.\n\nFirst-paint chrome — the real concern in this area — is already tracked\nby auritus-e5075a (in_progress) and auritus-ab3214.",
       "created_at": "2026-09-13T17:21:08.844112Z",
       "comment_type": "default"
+    },
+    {
+      "id": "4d02aa65-dbcc-4417-bba2-a79ba258581d",
+      "author": "ryan",
+      "text": "Investigated after the withdrawal. Light-DOM childCount=0 is expected: controls live in the shadow root. Overlapping boot() still called disposePlayers() and could wipe a newer mount under React Strict Mode; that race is being fixed on a product branch. Production examples already show Play in shadowRoot.",
+      "created_at": "2026-09-13T17:35:53.270582Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T17:16:01.868197Z",
-  "updated_at": "2026-09-13T17:21:08.880261Z",
+  "updated_at": "2026-09-13T17:35:53.270934Z",
   "closed_at": "2026-09-13T17:21:08.880221Z",
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "The player renders correctly in the shadow root; the reported issue came from checking the wrong DOM level.",
+  "right_now_updated_at": "2026-09-13T17:35:54.747322Z",
   "custom": {}
 }
