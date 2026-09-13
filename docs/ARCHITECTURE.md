@@ -13,7 +13,7 @@ work, and AWS Batch runs only when nobody claims in time.
 | DynamoDB | Job mutex state, site registry |
 | Local worker (`auritus worker`) | Claim, synthesize, upload audio |
 | Step Functions + Batch | Wait for local claim window, then GPU fallback |
-| Cognito + Google | Operator CLI authentication |
+| Cognito | Operator CLI authentication (password auth; optional Google IdP) |
 | S3 + CloudFront | Private audio objects, short-lived signed playback URLs |
 
 ## Request flow
