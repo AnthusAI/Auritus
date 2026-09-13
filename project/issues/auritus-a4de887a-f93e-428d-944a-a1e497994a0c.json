@@ -14,7 +14,7 @@
   "created_at": "2026-09-12T12:31:18.123624Z",
   "updated_at": "2026-09-12T12:31:18.123671Z",
   "closed_at": null,
-  "right_now_summary": "Real TTS backends are being added, token refresh is being fixed, and end-to-end speech tests are underway.",
-  "right_now_updated_at": "2026-09-12T21:28:11.719625Z",
+  "right_now_summary": "Real TTS backends are being added and tested, with Kokoro working while Qwen CI and token refresh need fixes.",
+  "right_now_updated_at": "2026-09-13T01:40:01.769315Z",
   "custom": {}
 }
