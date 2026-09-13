@@ -116,7 +116,7 @@ test("Qwen example posts a distinct Darwin excerpt", async ({ page }) => {
   await page.goto("/examples/qwen");
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("qwen");
-  expect(body.voice_id).toBe("Chelsie");
+  expect(body.voice_id).toBe("Ryan");
   expect(body.text).toContain("When on board H.M.S.");
   expect(body.text).not.toContain("Four score and seven years ago");
 });
