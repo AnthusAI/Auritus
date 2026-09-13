@@ -38,12 +38,26 @@
       "text": "Home-page self-narrating demo (hash `2caf28aa`) is on develop via PR #34, with newsprint lockup. Next product step is promote develop to main so aurit.us serves it. PyPI (a01473) stays last.",
       "created_at": "2026-09-13T18:09:42.782475Z",
       "comment_type": "default"
+    },
+    {
+      "id": "ad8e32ba-2fa1-46ba-947f-fd8fdb08bde2",
+      "author": "ryan",
+      "text": "Promoted via PR #35. https://aurit.us/ now has Hear it for yourself (Kokoro `2caf28aa`); Playwright against aurit.us passed for the home pitch POST, Kokoro example speech, and Qwen example POST. Remaining on this epic: a01473 PyPI, still last.",
+      "created_at": "2026-09-13T18:13:45.705871Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "61ec9b51-28ef-4ca7-a6a6-1109b822a65a",
+      "author": "ryan",
+      "text": "CI now runs Gherkin and Playwright (PR #36 / 472d2c). Remaining specified work on this epic is still a01473 PyPI, last.",
+      "created_at": "2026-09-13T18:30:51.038957Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:38:50.679842Z",
-  "updated_at": "2026-09-13T18:09:42.782492Z",
+  "updated_at": "2026-09-13T18:30:51.038984Z",
   "closed_at": null,
-  "right_now_summary": "The home-page demo is ready, while the first PyPI release awaits trusted publishing setup.",
-  "right_now_updated_at": "2026-09-13T18:09:45.467473Z",
+  "right_now_summary": "Everything is shipped except the trusted PyPI publisher setup and first upload.",
+  "right_now_updated_at": "2026-09-13T18:43:37.801384Z",
   "custom": {}
 }

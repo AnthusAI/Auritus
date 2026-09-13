@@ -227,16 +227,21 @@ export default function HomePage() {
       </section>
 
       <section className="security-note" aria-labelledby="security-title">
-        <p className="kicker">Security architecture in progress</p>
-        <h2 id="security-title">
-          Clear boundaries now. Deeper control evidence next.
-        </h2>
+        <p className="kicker">Security architecture</p>
+        <h2 id="security-title">No IAM keys on the worker. None to leak.</h2>
         <p>
-          Auritus already uses private audio, short-lived delivery, conditional
-          job claims, and spend limits. The secure-by-design documentation is
-          being developed alongside the implementation, so the architecture page
-          distinguishes current behavior from planned controls such as origin
-          enforcement and complete JWT validation.
+          The usual way to let a machine call your service is a long-lived IAM
+          access key, scoped wider than anyone intended and rotated on a
+          schedule someone has to remember. Auritus issues none. An operator
+          signs in once &mdash; with a Cognito account, or your own identity
+          provider &mdash; and the worker then carries a one-hour token that
+          renews itself and cannot call AWS APIs at all. The risk is removed by
+          the architecture rather than managed by procedure.
+        </p>
+        <p>
+          The security page states plainly which parts are enforced today and
+          which are still being built, including the remaining JWT validation
+          work.
         </p>
         <Link href="/docs/security">
           Read the authentication and security design

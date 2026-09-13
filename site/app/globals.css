@@ -65,7 +65,7 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .brand-lockup-copy { display: grid; gap: 0.08rem; transform: translateY(-0.95rem) rotate(-7deg); transform-origin: 0 50%; }
 .wordmark { font-family: var(--font-display), serif; font-size: 1.7rem; font-weight: 700; letter-spacing: -0.06em; line-height: 0.9; text-decoration: none; }
 .wordmark span { color: var(--accent); }
-.brand-tagline { color: var(--accent); font-size: 0.53rem; font-weight: 850; letter-spacing: 0.22em; line-height: 1; text-transform: uppercase; }
+.brand-tagline { color: var(--accent); font-size: 0.95rem; font-weight: 850; letter-spacing: 0.14em; line-height: 1; text-transform: uppercase; }
 .brand-announcer { height: auto; margin-block: -0.7rem -1.5rem; width: 6.4rem; }
 
 .marketing-header nav,
@@ -111,6 +111,7 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .architecture-diagram img,
 .docs-diagram img,
 .docs-prose-grid img,
+.identity-option img,
 .identity-section > img { border-radius: 0.85rem; box-shadow: 0 24px 60px rgba(55, 36, 16, 0.18); display: block; height: auto; max-width: 100%; width: 100%; }
 .signal-orbit { border: 1px solid var(--accent); border-radius: 50%; opacity: 0.25; pointer-events: none; position: absolute; z-index: -1; }
 .orbit-one { height: 22rem; right: -5rem; top: -3rem; width: 22rem; }
@@ -195,6 +196,24 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .identity-grid p { color: var(--accent); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.06em; margin-bottom: 0.65rem; text-transform: uppercase; }
 .identity-grid h3 { font-size: 1.4rem; line-height: 1.05; margin-bottom: 0.5rem; }
 .identity-grid span { color: var(--ink-muted); font-size: 0.95rem; }
+/* A prose section with one child: docs-prose-grid would squeeze it into the
+   narrow 0.8fr column and leave the rest of the row empty. */
+.docs-prose-single { margin-bottom: 6rem; max-width: 46rem; }
+.docs-prose-single h2 { font-size: clamp(2.2rem, 4vw, 3.5rem); line-height: 1; margin-bottom: 1rem; }
+.docs-prose-single p:not(.kicker) { color: var(--ink-muted); font-size: 1.08rem; }
+.identity-option { margin-top: 3.5rem; }
+.identity-option h3 { font-size: clamp(1.6rem, 2.6vw, 2.2rem); line-height: 1.05; margin-bottom: 0.75rem; }
+.identity-option .docs-section-title > p:last-child { color: var(--ink-muted); font-size: 1.05rem; }
+.identity-option img { margin-top: 1.6rem; }
+
+/* Four guarantee cards: a plain block wrapper, not a nested identity-grid,
+   which would drop the cards into a one-third column and re-split them. */
+.guarantee-section { margin-bottom: 6rem; }
+.guarantee-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); margin-top: 2rem; }
+.guarantee-grid article { background: var(--card); border: 1px solid var(--line); border-radius: 0.55rem; padding: 1.25rem; }
+.guarantee-grid h3 { font-size: 1.3rem; line-height: 1.1; margin-bottom: 0.6rem; }
+.guarantee-grid span { color: var(--ink-muted); font-size: 0.95rem; }
+
 .docs-security { border-left: 4px solid var(--highlight); max-width: 52rem; padding-left: 1.5rem; }
 
 main.page { margin: 0 auto; max-width: 720px; padding: 3rem 1.25rem 5rem; }

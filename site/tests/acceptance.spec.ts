@@ -15,6 +15,46 @@ async function waitForJobPost(page: Page) {
   );
 }
 
+async function waitForPlayableClip(page: Page) {
+  await page.waitForFunction(
+    () => {
+      const host = document.querySelector(".auritus-root");
+      const playBtn = host?.shadowRoot?.querySelector(
+        ".auritus-play",
+      ) as HTMLButtonElement | null;
+      return Boolean(playBtn && !playBtn.disabled);
+    },
+    { timeout: 120_000 },
+  );
+}
+
+async function clipDurationSeconds(page: Page): Promise<number> {
+  return page.locator(".auritus-root").evaluate(
+    async (host) => {
+      const audio = host.shadowRoot?.querySelector("audio");
+      if (!audio?.src) {
+        return 0;
+      }
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        return audio.duration;
+      }
+      await new Promise<void>((resolve, reject) => {
+        audio.addEventListener("loadedmetadata", () => resolve(), {
+          once: true,
+        });
+        audio.addEventListener(
+          "error",
+          () => reject(new Error("audio metadata load failed")),
+          { once: true },
+        );
+        audio.load();
+      });
+      return audio.duration;
+    },
+    { timeout: 120_000 },
+  );
+}
+
 test("basic example shows player chrome without JavaScript", async ({
   browser,
 }) => {
@@ -94,14 +134,9 @@ test("landing page posts the Kokoro product pitch", async ({ page }) => {
   expect(body.text).toContain("What you hear is this page reading itself");
   expect(body.text).not.toContain("Narrated by Auritus with Kokoro");
   await expect(page.locator(".auritus-root")).toBeVisible({ timeout: 15_000 });
-  await page.waitForFunction(
-    () => {
-      const host = document.querySelector(".auritus-root");
-      const play = host?.shadowRoot?.querySelector(".auritus-play");
-      return Boolean(play);
-    },
-    { timeout: 15_000 },
-  );
+  await waitForPlayableClip(page);
+  const durationSeconds = await clipDurationSeconds(page);
+  expect(durationSeconds).toBeGreaterThanOrEqual(20);
 });
 
 test("landing page explains the local-first cloud fallback", async ({
@@ -156,11 +191,28 @@ test("security page documents unattended worker auth and is reachable from the h
   await page.goto("/docs/security");
   await expect(
     page.getByRole("heading", {
-      name: /Authentication that stays out of your way/i,
+      name: /The worker never holds a key worth stealing/i,
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: /Refresh-token rotation/i }),
+    page.getByRole("heading", { name: /Rotation happens on its own/i }),
+  ).toBeVisible();
+
+  // All three identity options are presented, each with its real status.
+  for (const name of [
+    /Native Cognito users/i,
+    /Google Workspace/i,
+    /AWS IAM Identity Center or any SAML provider/i,
+  ]) {
+    await expect(page.getByRole("heading", { name })).toBeVisible();
+  }
+
+  // The page must keep stating what is not enforced yet, not just the promises.
+  await expect(
+    page.getByRole("heading", { name: /What is not true yet/i }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/does not verify token signatures yet/i),
   ).toBeVisible();
 
   await expect(
@@ -195,43 +247,8 @@ test("basic example plays Kokoro speech scoped to article", async ({
 
   await expect(page.locator(".auritus-root")).toBeAttached();
 
-  await page.waitForFunction(
-    () => {
-      const host = document.querySelector(".auritus-root");
-      const shadow = host?.shadowRoot;
-      const playBtn = shadow?.querySelector(
-        ".auritus-play",
-      ) as HTMLButtonElement | null;
-      return Boolean(playBtn && !playBtn.disabled);
-    },
-    { timeout: 120_000 },
-  );
-
-  const durationSeconds = await page.locator(".auritus-root").evaluate(
-    async (host) => {
-      const audio = host.shadowRoot?.querySelector("audio");
-      if (!audio?.src) {
-        return 0;
-      }
-      if (Number.isFinite(audio.duration) && audio.duration > 0) {
-        return audio.duration;
-      }
-      await new Promise<void>((resolve, reject) => {
-        audio.addEventListener("loadedmetadata", () => resolve(), {
-          once: true,
-        });
-        audio.addEventListener(
-          "error",
-          () => reject(new Error("audio metadata load failed")),
-          { once: true },
-        );
-        audio.load();
-      });
-      return audio.duration;
-    },
-    { timeout: 120_000 },
-  );
-
+  await waitForPlayableClip(page);
+  const durationSeconds = await clipDurationSeconds(page);
   expect(durationSeconds).toBeGreaterThanOrEqual(8);
 });
 
