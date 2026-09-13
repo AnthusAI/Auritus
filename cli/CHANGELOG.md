@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.11.4 (2026-09-13)
+
+### Bug Fixes
+
+- **site**: Danger-red BE HEARD, period on the tagline, smaller headline
+  ([`9d62053`](https://github.com/AnthusAI/Auritus/commit/9d62053616596bcd5ac4f7cbbd79d1c5e8f3707c))
+
+
 ## v0.11.3 (2026-09-13)
 
 ### Bug Fixes
