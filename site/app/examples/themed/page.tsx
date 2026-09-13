@@ -29,6 +29,7 @@ export default function ThemedExamplePage() {
         apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
         name="Themed player example"
         byline="Design lab"
+        root=".example-article"
       />
     </main>
   );

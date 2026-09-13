@@ -2,43 +2,50 @@
 
 from __future__ import annotations
 
-from auritus.tts.bark import BarkBackend
-from auritus.tts.base import TTSBackend
-from auritus.tts.coqui import CoquiBackend
-from auritus.tts.fish import FishBackend
-from auritus.tts.higgs import HiggsBackend
-from auritus.tts.kokoro import KokoroBackend
-from auritus.tts.qwen import QwenBackend
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from auritus.tts.base import TTSBackend
 
 
 def get_backend(name: str) -> TTSBackend:
     """Instantiate a TTS backend by name.
 
-    :param name: Backend key (``higgs`` or ``qwen``).
+    :param name: Backend key (``higgs``, ``qwen``, ``kokoro``, …).
     :returns: Backend instance.
     :raises ValueError: If the name is unknown.
     """
-    backends: dict[str, type[TTSBackend]] = {
-        "higgs": HiggsBackend,
-        "qwen": QwenBackend,
-        "kokoro": KokoroBackend,
-        "fish": FishBackend,
-        "coqui": CoquiBackend,
-        "bark": BarkBackend,
-    }
     key = (name or "").strip().lower()
-    if key not in backends:
-        raise ValueError(f"Unknown TTS backend: {name!r}. Known: {sorted(backends)}")
-    return backends[key]()
+    if key == "higgs":
+        from auritus.tts.higgs import HiggsBackend
+
+        return HiggsBackend()
+    if key == "qwen":
+        from auritus.tts.qwen import QwenBackend
+
+        return QwenBackend()
+    if key == "kokoro":
+        from auritus.tts.kokoro import KokoroBackend
+
+        return KokoroBackend()
+    if key == "fish":
+        from auritus.tts.fish import FishBackend
+
+        return FishBackend()
+    if key == "coqui":
+        from auritus.tts.coqui import CoquiBackend
+
+        return CoquiBackend()
+    if key == "bark":
+        from auritus.tts.bark import BarkBackend
+
+        return BarkBackend()
+    raise ValueError(
+        f"Unknown TTS backend: {name!r}. "
+        "Known: ['bark', 'coqui', 'fish', 'higgs', 'kokoro', 'qwen']"
+    )
 
 
 __all__ = [
-    "BarkBackend",
-    "CoquiBackend",
-    "FishBackend",
-    "HiggsBackend",
-    "KokoroBackend",
-    "QwenBackend",
-    "TTSBackend",
     "get_backend",
 ]

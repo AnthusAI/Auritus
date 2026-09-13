@@ -44,4 +44,25 @@ describe("generateTtsText", () => {
     expect(text).not.toContain("Title");
     expect(text).toContain("First paragraph.");
   });
+
+  it("skips script, style, noscript, and template elements", () => {
+    dom = new JSDOM(
+      `<!DOCTYPE html><html><body>
+        <article id="content">
+          <p>Spoken line.</p>
+          <script>self.__next_f=self.__next_f||[]</script>
+          <style>.x{color:red}</style>
+          <noscript>Enable JS</noscript>
+          <template><p>Template copy</p></template>
+        </article>
+      </body></html>`,
+    );
+    globalThis.document = dom.window.document;
+    const { text } = generateTtsText({ root: "#content" });
+    expect(text).toContain("Spoken line.");
+    expect(text).not.toContain("__next_f");
+    expect(text).not.toContain("color:red");
+    expect(text).not.toContain("Enable JS");
+    expect(text).not.toContain("Template copy");
+  });
 });

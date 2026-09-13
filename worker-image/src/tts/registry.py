@@ -2,32 +2,44 @@
 
 from __future__ import annotations
 
-from tts.bark import BarkBackend
-from tts.base import TTSBackend
-from tts.coqui import CoquiBackend
-from tts.fish import FishBackend
-from tts.higgs import HiggsBackend
-from tts.kokoro import KokoroBackend
-from tts.qwen import QwenBackend
+from typing import TYPE_CHECKING
 
-_BACKENDS: dict[str, type[TTSBackend]] = {
-    "higgs": HiggsBackend,
-    "qwen": QwenBackend,
-    "kokoro": KokoroBackend,
-    "fish": FishBackend,
-    "coqui": CoquiBackend,
-    "bark": BarkBackend,
-}
+if TYPE_CHECKING:
+    from tts.base import TTSBackend
 
 
 def get_backend(name: str) -> TTSBackend:
     """Instantiate a backend by name.
 
-    :param name: Backend key (``higgs`` or ``qwen``).
+    :param name: Backend key (``higgs``, ``qwen``, ``kokoro``, …).
     :raises ValueError: If the name is unknown.
     """
     key = (name or "").strip().lower()
-    if key not in _BACKENDS:
-        known = ", ".join(sorted(_BACKENDS))
-        raise ValueError(f"Unknown TTS backend: {name!r}. Known: {known}")
-    return _BACKENDS[key]()
+    if key == "higgs":
+        from tts.higgs import HiggsBackend
+
+        return HiggsBackend()
+    if key == "qwen":
+        from tts.qwen import QwenBackend
+
+        return QwenBackend()
+    if key == "kokoro":
+        from tts.kokoro import KokoroBackend
+
+        return KokoroBackend()
+    if key == "fish":
+        from tts.fish import FishBackend
+
+        return FishBackend()
+    if key == "coqui":
+        from tts.coqui import CoquiBackend
+
+        return CoquiBackend()
+    if key == "bark":
+        from tts.bark import BarkBackend
+
+        return BarkBackend()
+    raise ValueError(
+        f"Unknown TTS backend: {name!r}. "
+        "Known: bark, coqui, fish, higgs, kokoro, qwen"
+    )

@@ -121,10 +121,10 @@ def run_worker(*, once: bool = False) -> None:
             client.mark_done(content_hash, audio_key=audio_key, owner=owner)
             typer.secho(f"Completed {content_hash}", fg=typer.colors.GREEN)
             processed = True
-            if once:
+            if once is True:
                 return
 
-        if once:
+        if once is True:
             if not processed:
                 typer.echo("No claimable jobs.")
             return

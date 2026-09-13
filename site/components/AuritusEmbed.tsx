@@ -8,6 +8,8 @@ type AuritusEmbedProps = {
   name?: string;
   byline?: string;
   origin?: string;
+  ttsBackend?: string;
+  root?: string;
 };
 
 export function AuritusEmbed({
@@ -16,6 +18,8 @@ export function AuritusEmbed({
   name,
   byline,
   origin,
+  ttsBackend = "kokoro",
+  root,
 }: AuritusEmbedProps) {
   return (
     <>
@@ -25,6 +29,8 @@ export function AuritusEmbed({
         data-auritus-name={name}
         data-auritus-byline={byline}
         data-auritus-origin={origin}
+        data-auritus-tts-backend={ttsBackend}
+        data-auritus-root={root}
       />
       <Script
         src="/embed.js"
@@ -34,6 +40,8 @@ export function AuritusEmbed({
         data-auritus-name={name}
         data-auritus-byline={byline}
         data-auritus-origin={origin}
+        data-auritus-tts-backend={ttsBackend}
+        data-auritus-root={root}
       />
     </>
   );
