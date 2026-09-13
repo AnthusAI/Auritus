@@ -22,13 +22,28 @@ export default function ThemedExamplePage() {
       </nav>
       <article className="example-article">
         <h1>Themed player example</h1>
-        <p>The player uses custom colors and shape variables.</p>
+        <p>
+          It is a truth universally acknowledged, that a single man in
+          possession of a good fortune, must be in want of a wife.
+        </p>
+        <p>
+          However little known the feelings or views of such a man may be on his
+          first entering a neighbourhood, this truth is so well fixed in the
+          minds of the surrounding families, that he is considered the rightful
+          property of some one or other of their daughters.
+        </p>
+        <p>
+          This page uses Kokoro with a custom player theme. The excerpt is from
+          Pride and Prejudice, which is in the public domain.
+        </p>
       </article>
       <AuritusEmbed
         siteKey="demo-site-key"
         apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
         name="Themed player example"
-        byline="Design lab"
+        byline="Jane Austen, 1813"
+        ttsBackend="kokoro"
+        voiceId="af_heart"
         root=".example-article"
       />
     </main>

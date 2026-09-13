@@ -26,6 +26,7 @@ var Auritus = (() => {
     boot: () => boot,
     computeContentHash: () => computeContentHash,
     default: () => src_default,
+    disposePlayers: () => disposePlayers,
     generateTtsText: () => generateTtsText,
     mountPlayer: () => mountPlayer,
     normalizeText: () => normalizeText,
@@ -102,9 +103,9 @@ var Auritus = (() => {
   }
 
   // src/generator/metadata.ts
-  function readEmbedMetadata(script) {
-    const name = script.getAttribute("data-auritus-name")?.trim() || document.title.trim() || "";
-    const byline = script.getAttribute("data-auritus-byline")?.trim() || location.hostname || "";
+  function readEmbedMetadata(element) {
+    const name = element.getAttribute("data-auritus-name")?.trim() || document.title.trim() || "";
+    const byline = element.getAttribute("data-auritus-byline")?.trim() || location.hostname || "";
     return { name, byline };
   }
 
@@ -394,18 +395,20 @@ var Auritus = (() => {
   }
 
   // src/index.ts
-  function apiBaseFromScript(script) {
-    const explicit = script.getAttribute("data-auritus-api")?.trim();
+  function apiBaseFromElement(element) {
+    const explicit = element.getAttribute("data-auritus-api")?.trim();
     if (explicit) {
       return explicit.replace(/\/$/, "");
     }
-    try {
-      const src = script.src;
-      if (src) {
-        const url = new URL(src);
-        return url.origin;
+    if (element instanceof HTMLScriptElement) {
+      try {
+        const src = element.src;
+        if (src) {
+          const url = new URL(src);
+          return url.origin;
+        }
+      } catch {
       }
-    } catch {
     }
     return location.origin;
   }
@@ -415,45 +418,49 @@ var Auritus = (() => {
     }
     return value.split(",").map((part) => part.trim()).filter(Boolean);
   }
-  function readEmbedConfig(script) {
-    const siteKey = script.getAttribute("data-auritus-site-key")?.trim();
+  function readEmbedConfig(element) {
+    const siteKey = element.getAttribute("data-auritus-site-key")?.trim();
     if (!siteKey) {
       throw new Error("Auritus embed: data-auritus-site-key is required");
     }
     return {
       siteKey,
-      apiBaseUrl: apiBaseFromScript(script),
-      voiceId: script.getAttribute("data-auritus-voice")?.trim() || "af_heart",
-      ttsBackend: script.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro",
-      root: script.getAttribute("data-auritus-root")?.trim() || void 0,
+      apiBaseUrl: apiBaseFromElement(element),
+      voiceId: element.getAttribute("data-auritus-voice")?.trim() || "af_heart",
+      ttsBackend: element.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro",
+      root: element.getAttribute("data-auritus-root")?.trim() || void 0,
       ignoreSelectors: parseListAttribute(
-        script.getAttribute("data-auritus-ignore-selectors")
+        element.getAttribute("data-auritus-ignore-selectors")
       ),
-      playerHost: script.getAttribute("data-auritus-player-host")?.trim()
+      playerHost: element.getAttribute("data-auritus-player-host")?.trim()
     };
   }
-  async function boot(options = {}) {
-    const script = options.script ?? document.querySelector(
-      "script[data-auritus-site-key]"
-    );
-    if (!script) {
-      throw new Error("Auritus embed: script[data-auritus-site-key] not found");
+  var bootGeneration = 0;
+  function disposePlayers(root = document) {
+    for (const host of root.querySelectorAll(".auritus-root")) {
+      host.dispatchEvent(new Event("auritus-dispose"));
+      host.remove();
     }
-    const config = readEmbedConfig(script);
-    const { name, byline } = readEmbedMetadata(script);
+  }
+  async function boot(options = {}) {
+    const generation = ++bootGeneration;
+    const element = options.element ?? options.script ?? document.querySelector("[data-auritus-site-key]");
+    if (!element) {
+      throw new Error("Auritus embed: [data-auritus-site-key] not found");
+    }
+    disposePlayers();
+    const config = readEmbedConfig(element);
+    const { name, byline } = readEmbedMetadata(element);
     const { text } = generateTtsText({
       root: config.root,
       ignoreSelectors: config.ignoreSelectors
     });
-    const contentHash = computeContentHash(
-      text,
-      config.voiceId
-    );
+    const contentHash = computeContentHash(text, config.voiceId);
     const api = new AuritusApiClient({
       baseUrl: config.apiBaseUrl,
       siteKey: config.siteKey
     });
-    await api.createJob({
+    const created = await api.createJob({
       content_hash: contentHash,
       text,
       name,
@@ -461,9 +468,15 @@ var Auritus = (() => {
       tts_backend: config.ttsBackend ?? "kokoro",
       voice_id: config.voiceId
     });
+    if (generation !== bootGeneration) {
+      const skipped = document.createElement("div");
+      skipped.setAttribute("data-auritus-boot-skipped", "true");
+      return skipped;
+    }
+    const resolvedHash = created.content_hash || contentHash;
     const host = document.createElement("div");
     host.className = "auritus-root";
-    host.setAttribute("data-auritus-hash", contentHash);
+    host.setAttribute("data-auritus-hash", resolvedHash);
     if (config.playerHost) {
       const mountPoint = document.querySelector(config.playerHost);
       if (!mountPoint) {
@@ -473,12 +486,12 @@ var Auritus = (() => {
       }
       mountPoint.appendChild(host);
     } else {
-      script.insertAdjacentElement("afterend", host);
+      element.insertAdjacentElement("afterend", host);
     }
     return mountPlayer({
       host,
       api,
-      contentHash,
+      contentHash: resolvedHash,
       name,
       byline
     });
@@ -504,7 +517,7 @@ var Auritus = (() => {
       autoBoot();
     }
   }
-  var auritusGlobal = { boot };
+  var auritusGlobal = { boot, disposePlayers };
   var src_default = auritusGlobal;
   return __toCommonJS(src_exports);
 })();

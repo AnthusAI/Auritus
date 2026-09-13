@@ -4,17 +4,23 @@ const examples = [
   {
     href: "/examples/basic",
     title: "Basic embed",
-    summary: "Script tag with site key, title, and byline on a sample article.",
+    summary: "Kokoro narration of the Gettysburg Address on a sample article.",
   },
   {
     href: "/examples/themed",
     title: "Themed player",
-    summary: "CSS variable overrides for background, type, and accent.",
+    summary: "Kokoro with CSS variable overrides, reading Pride and Prejudice.",
+  },
+  {
+    href: "/examples/qwen",
+    title: "Qwen backend",
+    summary:
+      "Qwen narration of an Origin of Species excerpt, distinct from Kokoro.",
   },
   {
     href: "/examples/ignore",
     title: "Ignore markup",
-    summary: "Promo aside and inline ignore/pronounce attributes.",
+    summary: "Kokoro reading On Liberty while skipping a promotional aside.",
   },
 ];
 

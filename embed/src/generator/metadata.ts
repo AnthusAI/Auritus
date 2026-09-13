@@ -1,16 +1,16 @@
 /**
- * Read display metadata from the embed script tag, with document fallbacks.
+ * Read display metadata from the embed config element, with document fallbacks.
  */
-export function readEmbedMetadata(script: HTMLScriptElement): {
+export function readEmbedMetadata(element: HTMLElement): {
   name: string;
   byline: string;
 } {
   const name =
-    script.getAttribute("data-auritus-name")?.trim() ||
+    element.getAttribute("data-auritus-name")?.trim() ||
     document.title.trim() ||
     "";
   const byline =
-    script.getAttribute("data-auritus-byline")?.trim() ||
+    element.getAttribute("data-auritus-byline")?.trim() ||
     location.hostname ||
     "";
   return { name, byline };
