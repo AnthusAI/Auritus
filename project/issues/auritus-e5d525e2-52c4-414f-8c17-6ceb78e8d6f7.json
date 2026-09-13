@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:43.348323Z",
   "updated_at": "2026-09-11T21:38:43.348346Z",
   "closed_at": null,
-  "right_now_summary": "Spend guardrails are deployed and being tested; the Kokoro fallback awaits live AWS Batch validation.",
-  "right_now_updated_at": "2026-09-13T00:38:22.376785Z",
+  "right_now_summary": "The fallback and spend guardrails are deployed, but real AWS checks await an image push and authorized job.",
+  "right_now_updated_at": "2026-09-13T00:48:24.816980Z",
   "custom": {}
 }
