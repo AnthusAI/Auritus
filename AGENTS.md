@@ -17,8 +17,10 @@ Auritus is an open-source (MIT) just-in-time TTS embed for the web: a generator
 that extracts page content (respecting ignore/pronounce markup), a player that
 plays the narrated audio, and an AWS CDK backend with a DynamoDB mutex, a local
 GPU worker race, and an AWS Batch fallback. TTS backends are pluggable (Higgs
-and Qwen 3 first). The operator CLI authenticates with Cognito + Google OAuth
-(`auritus login`); the browser embed uses deployer-issued site keys.
+and Qwen 3 first). The operator CLI authenticates with Cognito
+`USER_PASSWORD_AUTH` (`auritus login --username`); the browser embed uses
+deployer-issued site keys. Google remains an optional Cognito IdP, not the
+CLI login path.
 
 The product name is **Auritus**. The public site is **aurit.us**.
 

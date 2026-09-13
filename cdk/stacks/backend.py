@@ -218,9 +218,13 @@ class BackendStack(Stack):
                 ],
             ),
             supported_identity_providers=[
+                cognito.UserPoolClientIdentityProvider.COGNITO,
                 cognito.UserPoolClientIdentityProvider.GOOGLE,
             ],
-            auth_flows=cognito.AuthFlow(user_srp=True),
+            auth_flows=cognito.AuthFlow(
+                user_password=True,
+                user_srp=True,
+            ),
         )
         user_pool_client.node.add_dependency(google_idp)
 
@@ -355,6 +359,7 @@ class BackendStack(Stack):
                 minv_cpus=0,
                 desiredv_cpus=0,
                 instance_types=["g4dn.xlarge"],
+                allocation_strategy="BEST_FIT_PROGRESSIVE",
                 subnets=[subnet.subnet_id for subnet in vpc.private_subnets],
                 security_group_ids=[batch_sg.security_group_id],
                 instance_role=instance_profile.attr_arn,
@@ -396,13 +401,19 @@ class BackendStack(Stack):
             platform_capabilities=["EC2"],
             container_properties=batch.CfnJobDefinition.ContainerPropertiesProperty(
                 image=worker_image_uri,
-                vcpus=4,
-                memory=15360,
                 resource_requirements=[
+                    batch.CfnJobDefinition.ResourceRequirementProperty(
+                        type="VCPU",
+                        value="2",
+                    ),
+                    batch.CfnJobDefinition.ResourceRequirementProperty(
+                        type="MEMORY",
+                        value="8192",
+                    ),
                     batch.CfnJobDefinition.ResourceRequirementProperty(
                         type="GPU",
                         value="1",
-                    )
+                    ),
                 ],
                 job_role_arn=job_role.role_arn,
                 environment=[
@@ -413,6 +424,10 @@ class BackendStack(Stack):
                     batch.CfnJobDefinition.EnvironmentProperty(
                         name="AURITUS_JOBS_TABLE",
                         value=jobs.table_name,
+                    ),
+                    batch.CfnJobDefinition.EnvironmentProperty(
+                        name="AURITUS_TTS_BACKEND",
+                        value="kokoro",
                     ),
                 ],
                 log_configuration=batch.CfnJobDefinition.LogConfigurationProperty(

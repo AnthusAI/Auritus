@@ -21,7 +21,8 @@ export default function UsageDocsPage() {
   data-auritus-byline="By Author"
 ></script>`}</pre>
       <p>
-        Create site keys with the CLI after <code>auritus login</code>. Each key
+        Create site keys with the CLI after{" "}
+        <code>auritus login --username</code>. Each key
         is scoped to allowed origins and daily quotas on the router Lambda.
       </p>
       <h2>Content hash</h2>

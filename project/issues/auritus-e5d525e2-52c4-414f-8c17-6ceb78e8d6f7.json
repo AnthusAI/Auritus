@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:43.348323Z",
   "updated_at": "2026-09-11T21:38:43.348346Z",
   "closed_at": null,
-  "right_now_summary": "Spend guardrails are deployed and under AWS verification while the Cloud Batch fallback is being built and tested.",
-  "right_now_updated_at": "2026-09-13T00:13:15.692504Z",
+  "right_now_summary": "The fallback works end to end, while the team verifies spend controls and deployment in real AWS.",
+  "right_now_updated_at": "2026-09-13T02:46:43.830314Z",
   "custom": {}
 }

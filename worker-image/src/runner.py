@@ -53,7 +53,7 @@ def _install_backend(name: str) -> None:
         deps = packages.get(name, packages.get(name, ["torch", "soundfile"]))
         subprocess.run(
             [sys.executable, "-m", "pip", "install", *deps],
-            check=False,
+            check=True,
         )
 
 
@@ -105,7 +105,7 @@ def main() -> int:
     job_hash = _require_env("JOB_HASH", "AURITUS_CONTENT_HASH")
     job_token = _require_env("JOB_TOKEN", "AURITUS_JOB_TOKEN")
     default_backend = os.environ.get("TTS_BACKEND") or os.environ.get(
-        "AURITUS_TTS_BACKEND", "higgs"
+        "AURITUS_TTS_BACKEND", "kokoro"
     )
     owner = f"batch:{os.environ.get('AWS_BATCH_JOB_ID', 'unknown')}"
 
@@ -139,7 +139,7 @@ def main() -> int:
         audio = backend.generate(
             job_body.get("text") or "",
             {
-                "voice_id": job_body.get("voice_id") or "default",
+                "voice_id": job_body.get("voice_id"),
                 "name": job_body.get("name") or "",
                 "byline": job_body.get("byline") or "",
             },

@@ -1,0 +1,28 @@
+{
+  "id": "auritus-8234994e-06fc-4443-9afa-246bcc193766",
+  "title": "task Playwright Kokoro speech acceptance",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "21a89781-c3b3-4c62-b2a3-a228bc993a91",
+      "author": "ryan",
+      "text": "PR #3: Playwright Kokoro speech wiring. Review wait timeout 120s applied in 6af676c.",
+      "created_at": "2026-09-13T01:26:33.233816Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-13T01:21:39.149984Z",
+  "updated_at": "2026-09-13T01:32:50.607351Z",
+  "closed_at": "2026-09-13T01:32:50.607021Z",
+  "right_now_summary": "PR #3 wires Playwright Kokoro speech, with a 120-second review wait timeout applied.",
+  "right_now_updated_at": "2026-09-13T01:32:52.504773Z",
+  "custom": {}
+}

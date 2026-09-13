@@ -3,18 +3,26 @@
   "title": "Land Kokoro demo fixes: default backend, skip scripts, continuous worker, Amplify publish",
   "description": "",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-f3fac494-0495-4d18-a1e6-4a9755e1fe1a",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "7e1bc6a9-b9aa-4407-9f04-c8be5a2f6a66",
+      "author": "ryan",
+      "text": "Merged PR #1; promoting develop→main for Amplify aurit.us publish.",
+      "created_at": "2026-09-13T00:29:00.168168Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T00:13:07.728508Z",
-  "updated_at": "2026-09-13T00:13:56.906126Z",
-  "closed_at": null,
-  "right_now_summary": "The team is fixing the Kokoro demo’s backend, scripts, worker, and Amplify publishing.",
-  "right_now_updated_at": "2026-09-13T00:13:58.445260Z",
+  "updated_at": "2026-09-13T00:29:00.168189Z",
+  "closed_at": "2026-09-13T00:28:50.261616Z",
+  "right_now_summary": "PR #1 was merged, and develop is being promoted to main for the Amplify aurit.us release.",
+  "right_now_updated_at": "2026-09-13T00:29:01.757236Z",
   "custom": {}
 }

@@ -4,20 +4,32 @@ from __future__ import annotations
 
 import typer
 
-from auritus.auth import AuthError, login_interactive
+from auritus.auth import AuthError, login_with_password
 
-app = typer.Typer(help="Authenticate with Cognito (Google OAuth).")
+app = typer.Typer(
+    help="Authenticate with Cognito using email and password (not Google)."
+)
 
 
 @app.callback(invoke_without_command=True)
 def login(
-    no_browser: bool = typer.Option(
-        False, "--no-browser", help="Print the URL instead of opening a browser."
+    username: str = typer.Option(
+        ...,
+        "--username",
+        help="Cognito user email (native pool user, not Google sign-in).",
+    ),
+    password: str | None = typer.Option(
+        None,
+        "--password",
+        help="Cognito password; prompted securely when omitted.",
     ),
 ) -> None:
-    """Log in via Google through Cognito. Caches short-lived JWTs."""
+    """Log in with Cognito email and password. Caches short-lived JWTs."""
+    secret = password
+    if secret is None:
+        secret = typer.prompt("Password", hide_input=True)
     try:
-        tokens = login_interactive(open_browser=not no_browser)
+        tokens = login_with_password(username, secret)
     except AuthError as exc:
         typer.secho(str(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1) from exc
