@@ -7,8 +7,6 @@ import struct
 import wave
 from typing import Any
 
-import numpy as np
-
 from auritus.tts.base import TTSBackend
 
 
@@ -54,8 +52,7 @@ class QwenBackend(TTSBackend):
 
     def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
         """Generate via mlx-audio (Apple Silicon)."""
-        import mlx.core as mx
-        from mlx_audio.audio_io import write as audio_write
+        import numpy as np
         from mlx_audio.tts.utils import load_model
 
         if QwenBackend._model is None:
