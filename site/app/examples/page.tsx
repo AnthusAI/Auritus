@@ -3,19 +3,19 @@ import Link from "next/link";
 const examples = [
   {
     href: "/examples/basic",
-    title: "Basic embed",
-    summary: "Kokoro narration of the Gettysburg Address on a sample article.",
-  },
-  {
-    href: "/examples/themed",
-    title: "Themed player",
-    summary: "Kokoro with CSS variable overrides, reading Pride and Prejudice.",
+    title: "Kokoro — Gettysburg Address",
+    summary:
+      "The same two-paragraph Gettysburg excerpt, spoken with Kokoro af_heart.",
   },
   {
     href: "/examples/qwen",
-    title: "Qwen backend",
-    summary:
-      "Qwen narration of an Origin of Species excerpt, distinct from Kokoro.",
+    title: "Qwen — Gettysburg Address",
+    summary: "The same Gettysburg excerpt, spoken with Qwen (Ryan).",
+  },
+  {
+    href: "/examples/themed",
+    title: "Themed Kokoro player",
+    summary: "The same Gettysburg excerpt, Kokoro, with CSS variable chrome.",
   },
   {
     href: "/examples/ignore",
@@ -32,7 +32,11 @@ export default function ExamplesIndexPage() {
         <Link href="/docs">Docs</Link>
       </nav>
       <h1>Examples</h1>
-      <p>Acceptance fixtures for the marketing site and behave scenarios.</p>
+      <p>
+        Kokoro and Qwen are the speech backends. They narrate the same
+        Gettysburg excerpt so you can hear the difference. Higgs is a tone stub
+        and is not demoed here.
+      </p>
       <ul className="doc-index">
         {examples.map((example) => (
           <li key={example.href}>

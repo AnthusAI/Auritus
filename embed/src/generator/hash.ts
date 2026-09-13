@@ -21,14 +21,14 @@ function fnv1a32(input: string): string {
 }
 
 /**
- * Stable content hash from normalized text and voice only.
- * Name, byline, and tts_backend are intentionally excluded.
- * tts_backend is a job property, not part of content identity.
+ * Stable content hash from normalized text, voice, and TTS backend.
+ * Name and byline are cosmetics and must not affect the hash.
  */
 export function computeContentHash(
   text: string,
   voiceId: string,
+  ttsBackend: string,
 ): string {
-  const payload = `${normalizeText(text)}\0${voiceId}`;
+  const payload = `${normalizeText(text)}\0${voiceId}\0${ttsBackend}`;
   return fnv1a32(payload);
 }

@@ -117,11 +117,13 @@ def _resolve_voice_id(raw: str | None, tts_backend: str) -> str:
     return raw
 
 
-def _content_hash(normalized_text: str, voice_id: str) -> str:
+def _content_hash(normalized_text: str, voice_id: str, tts_backend: str) -> str:
     digest = hashlib.sha256()
     digest.update(normalized_text.encode("utf-8"))
     digest.update(b"\0")
     digest.update(voice_id.encode("utf-8"))
+    digest.update(b"\0")
+    digest.update(tts_backend.encode("utf-8"))
     return digest.hexdigest()
 
 
@@ -204,7 +206,9 @@ def _create_job(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]
         raise ValueError("text_required")
 
     normalized = _normalize_text(text)
-    content_hash = body.get("content_hash") or _content_hash(normalized, voice_id)
+    content_hash = body.get("content_hash") or _content_hash(
+        normalized, voice_id, tts_backend
+    )
     now = _utc_now_iso()
     job_token = secrets.token_urlsafe(32)
 

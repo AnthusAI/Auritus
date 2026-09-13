@@ -11,35 +11,37 @@ describe("normalizeText", () => {
 });
 
 describe("computeContentHash", () => {
-  it("is stable for the same text and voice", () => {
-    const a = computeContentHash(SAMPLE_TEXT, VOICE);
-    const b = computeContentHash("Hello   world.\nNew line.", VOICE);
+  it("is stable for the same text, voice, and backend", () => {
+    const a = computeContentHash(SAMPLE_TEXT, VOICE, "kokoro");
+    const b = computeContentHash("Hello   world.\nNew line.", VOICE, "kokoro");
     expect(a).toBe(b);
   });
 
   it("does not change when only name or byline would differ (hash ignores them)", () => {
-    const base = computeContentHash(SAMPLE_TEXT, VOICE);
-    const same = computeContentHash(SAMPLE_TEXT, VOICE);
+    const base = computeContentHash(SAMPLE_TEXT, VOICE, "kokoro");
+    const same = computeContentHash(SAMPLE_TEXT, VOICE, "kokoro");
     expect(base).toBe(same);
     expect(base).not.toBe(
-      computeContentHash("Different article body", VOICE),
+      computeContentHash("Different article body", VOICE, "kokoro"),
     );
   });
 
-  it("does not change when tts_backend changes (hash excludes backend)", () => {
-    const base = computeContentHash(SAMPLE_TEXT, VOICE);
-    expect(base).toBe(computeContentHash(SAMPLE_TEXT, VOICE));
+  it("changes when tts_backend changes", () => {
+    const base = computeContentHash(SAMPLE_TEXT, VOICE, "kokoro");
+    expect(base).not.toBe(computeContentHash(SAMPLE_TEXT, VOICE, "qwen"));
   });
 
   it("changes when normalized text changes", () => {
-    const base = computeContentHash(SAMPLE_TEXT, VOICE);
+    const base = computeContentHash(SAMPLE_TEXT, VOICE, "kokoro");
     expect(base).not.toBe(
-      computeContentHash("Hello world. New line!", VOICE),
+      computeContentHash("Hello world. New line!", VOICE, "kokoro"),
     );
   });
 
   it("changes when voice_id changes", () => {
-    const base = computeContentHash(SAMPLE_TEXT, VOICE);
-    expect(base).not.toBe(computeContentHash(SAMPLE_TEXT, "alt-voice"));
+    const base = computeContentHash(SAMPLE_TEXT, VOICE, "kokoro");
+    expect(base).not.toBe(
+      computeContentHash(SAMPLE_TEXT, "alt-voice", "kokoro"),
+    );
   });
 });
