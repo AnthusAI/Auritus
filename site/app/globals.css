@@ -242,6 +242,16 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
 
 /* The 2x lockup and the nav collide between about 820px and 950px, above the
    800px breakpoint where the header already stacks. Stack it sooner. */
+/* Wide viewports get the masthead at 1.5x. Kept out of the base rules so the
+   820-950px band, where the lockup and nav are already tight, is unaffected. */
+@media (min-width: 1180px) {
+  .brand-lockup { gap: 1.8rem; }
+  .brand-announcer { margin-block: -0.45rem -4.95rem; width: 19.2rem; }
+  .wordmark { font-size: 5.1rem; }
+  .brand-tagline { font-size: 2.85rem; }
+  .brand-lockup-copy { transform: translateY(-3.3rem) rotate(-7deg); }
+}
+
 @media (max-width: 950px) {
   .marketing-header { align-items: flex-start; flex-direction: column; gap: 1rem; }
 }
