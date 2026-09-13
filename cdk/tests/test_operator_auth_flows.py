@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from aws_cdk import App, Environment
 from aws_cdk.assertions import Match, Template
-from stacks.backend import OPERATOR_AUTH_FLOWS, BackendStack
+from stacks.backend import BackendStack
 
 
-def test_operator_clients_keep_refresh_and_password_auth() -> None:
-    """CLI and console clients must keep password, SRP, and refresh auth."""
+def test_operator_clients_use_password_and_srp_without_refresh_flow() -> None:
+    """Refresh-token rotation forbids ALLOW_REFRESH_TOKEN_AUTH on these clients."""
     app = App()
     stack = BackendStack(
         app,
@@ -20,16 +20,18 @@ def test_operator_clients_keep_refresh_and_password_auth() -> None:
         "AWS::Cognito::UserPoolClient",
         {
             "ExplicitAuthFlows": Match.array_with(
-                list(OPERATOR_AUTH_FLOWS),
-            )
+                [
+                    "ALLOW_USER_PASSWORD_AUTH",
+                    "ALLOW_USER_SRP_AUTH",
+                ]
+            ),
+            "RefreshTokenRotation": Match.object_like({"Feature": "ENABLED"}),
         },
     )
     clients = template.find_resources("AWS::Cognito::UserPoolClient")
-    operator_clients = [
-        props["Properties"]["ExplicitAuthFlows"]
-        for props in clients.values()
-        if "ExplicitAuthFlows" in props["Properties"]
-    ]
-    assert operator_clients
-    for flows in operator_clients:
-        assert set(OPERATOR_AUTH_FLOWS) <= set(flows)
+    for props in clients.values():
+        flows = set(props["Properties"].get("ExplicitAuthFlows") or [])
+        if not flows:
+            continue
+        assert "ALLOW_USER_PASSWORD_AUTH" in flows
+        assert "ALLOW_REFRESH_TOKEN_AUTH" not in flows
