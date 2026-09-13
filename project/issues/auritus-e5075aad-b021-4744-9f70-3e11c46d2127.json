@@ -3,7 +3,7 @@
   "title": "Example player chrome is missing until POST /jobs succeeds",
   "description": "",
   "type": "bug",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 0,
   "assignee": null,
   "creator": null,
@@ -24,12 +24,19 @@
       "text": "Live https://aurit.us/examples/basic and /examples/qwen show Play after boot and generated audio (Kokoro ~23s, Qwen ~48s). First paint still says Loading player, and Play at the end of a clip does not restart. Remaining chrome work is auritus-ab3214.",
       "created_at": "2026-09-13T15:09:15.228812Z",
       "comment_type": "default"
+    },
+    {
+      "id": "c9252888-f2e6-4167-bc92-216ed98a4cd4",
+      "author": "ryan",
+      "text": "Superseded by auritus-ab3214. Live aurit.us now SSRs Play chrome and mounts the player before POST /jobs. Closing with that proof.",
+      "created_at": "2026-09-13T15:50:00.916976Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T12:37:46.877410Z",
-  "updated_at": "2026-09-13T15:09:15.228837Z",
-  "closed_at": null,
-  "right_now_summary": "The player now shows Play after boot, but first paint still says Loading and Play cannot restart finished clips.",
-  "right_now_updated_at": "2026-09-13T15:09:17.340090Z",
+  "updated_at": "2026-09-13T15:50:08.331871Z",
+  "closed_at": "2026-09-13T15:50:08.331823Z",
+  "right_now_summary": "The player now shows its Play controls on first paint and mounts before job creation.",
+  "right_now_updated_at": "2026-09-13T15:50:10.019436Z",
   "custom": {}
 }

@@ -3,18 +3,26 @@
   "title": "Example first paint shows a Play control and Play restarts speech",
   "description": "## Behavior\n```gherkin\nFeature: Example player chrome and playback\n  Scenario: The player sits above the spoken article\n    Given the basic example page layout\n    Then the player host is above the example article\n    And the player host shows a Play control before the embed boots\n\n  Scenario: Play after the clip ends starts from the beginning\n    Given generated audio is ready\n    And playback is at the end of the clip\n    When the listener activates Play\n    Then playback starts from the beginning\n```\n\n## Implementation brief\n1. Change `features/example_pages.feature` so first paint is a Play control, not the text Loading player. Update `features/steps/example_pages_steps.py` layout HTML.\n2. `site/components/AuritusEmbed.tsx` `AuritusPlayerHost` renders disabled Play plus title/byline matching player chrome. Pass name/byline from example pages. Style in `site/app/globals.css`.\n3. Playwright: no-JS test expects a Play button, not Loading player. Add a test that clicks Play and asserts audio currentTime advances, including from the end of the clip.\n4. `embed/src/player/index.ts`: Play toggles pause; if ended or currentTime at duration, rewind to 0 then play. Export `rewindIfEnded` and unit-test in `embed/tests/player.test.ts`.",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 0,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "018ae476-0cab-40f4-ad70-5fe129832bcc",
+      "author": "ryan",
+      "text": "Proven on https://aurit.us/examples/basic after promoting develop to main (PR #29, Amplify job 72). First paint is a Play control (not Loading player). After boot, Play becomes Pause and Kokoro audio advances (~23s). Same first-paint Play on /examples/qwen.",
+      "created_at": "2026-09-13T15:49:57.779634Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-13T15:08:11.779541Z",
-  "updated_at": "2026-09-13T15:09:09.409222Z",
-  "closed_at": null,
-  "right_now_summary": "The example player is being updated to show Play first and restart playback after clips end.",
-  "right_now_updated_at": "2026-09-13T15:09:11.874345Z",
+  "updated_at": "2026-09-13T15:50:05.375873Z",
+  "closed_at": "2026-09-13T15:50:05.375827Z",
+  "right_now_summary": "The example player now shows Play first and restarts audio from the beginning after it ends.",
+  "right_now_updated_at": "2026-09-13T15:50:06.528128Z",
   "custom": {}
 }

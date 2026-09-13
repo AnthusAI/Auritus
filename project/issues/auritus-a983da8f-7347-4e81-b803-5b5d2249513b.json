@@ -10,11 +10,19 @@
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "b423986a-3061-4f4e-a46c-79695774259b",
+      "author": "ryan",
+      "text": "aurit.us examples now show Play chrome on first paint and speak Kokoro (~23s) and Qwen (~48s) after promoting develop to main (PR #29). Local worker and Batch (Kokoro + Qwen) were already proven. Remaining on this epic: CLI PyPI via trusted publishing (a01473), kept last.",
+      "created_at": "2026-09-13T15:51:07.978490Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:38:50.679842Z",
-  "updated_at": "2026-09-13T14:22:04.188943Z",
+  "updated_at": "2026-09-13T15:51:07.978500Z",
   "closed_at": null,
-  "right_now_summary": "The README is being updated, while PyPI publishing awaits proof of live examples and fallback paths.",
-  "right_now_updated_at": "2026-09-13T14:49:02.544273Z",
+  "right_now_summary": "Live examples and worker paths are proven; PyPI publishing and README updates remain.",
+  "right_now_updated_at": "2026-09-13T15:51:09.131562Z",
   "custom": {}
 }
