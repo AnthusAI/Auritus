@@ -14,7 +14,7 @@ import tomli_w
 
 DEFAULT_CLAIM_TIMEOUT_SECONDS = 900
 DEFAULT_POLL_INTERVAL_SECONDS = 5
-DEFAULT_TTS_BACKEND = "higgs"
+DEFAULT_TTS_BACKEND = "kokoro"
 
 
 def local_config_path() -> Path:

@@ -1,0 +1,84 @@
+"""Behave steps for DOM content extraction rules."""
+
+from __future__ import annotations
+
+from html.parser import HTMLParser
+
+from behave import given, then, when
+
+SKIP_TAGS = frozenset({"script", "style", "noscript", "template"})
+
+
+class _TextExtractor(HTMLParser):
+    """Extract visible text while skipping non-narratable tags."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.parts: list[str] = []
+        self._skip_depth = 0
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() in SKIP_TAGS:
+            self._skip_depth += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() in SKIP_TAGS and self._skip_depth > 0:
+            self._skip_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if self._skip_depth == 0 and data.strip():
+            self.parts.append(data)
+
+
+def _extract(html: str) -> str:
+    parser = _TextExtractor()
+    parser.feed(html)
+    return " ".join(" ".join(parser.parts).split())
+
+
+@given('a page root with visible text "{text}"')
+def step_root_text(context, text: str) -> None:
+    context.root_html = f"<div id='root'><p>{text}</p></div>"
+
+
+@given('the root also contains a script element with "{payload}"')
+def step_script(context, payload: str) -> None:
+    context.root_html = context.root_html.replace(
+        "</div>",
+        f"<script>{payload}</script></div>",
+    )
+
+
+@given('an example page with nav text "{nav}" and article text "{article}"')
+def step_example_page(context, nav: str, article: str) -> None:
+    context.full_html = (
+        f"<main><nav>{nav}</nav>"
+        f"<article class='example-article'><h1>{article}</h1></article></main>"
+    )
+    context.root_selector = None
+
+
+@given('the embed root selector is "{selector}"')
+def step_root_selector(context, selector: str) -> None:
+    context.root_selector = selector
+    if selector == ".example-article":
+        start = context.full_html.find("<article")
+        end = context.full_html.find("</article>") + len("</article>")
+        context.root_html = context.full_html[start:end]
+    else:
+        context.root_html = context.full_html
+
+
+@when("the generator extracts TTS text from that root")
+def step_extract(context) -> None:
+    context.tts_text = _extract(context.root_html)
+
+
+@then('the TTS text includes "{snippet}"')
+def step_includes(context, snippet: str) -> None:
+    assert snippet in context.tts_text, context.tts_text
+
+
+@then('the TTS text does not include "{snippet}"')
+def step_excludes(context, snippet: str) -> None:
+    assert snippet not in context.tts_text, context.tts_text

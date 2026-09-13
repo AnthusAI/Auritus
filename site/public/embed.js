@@ -140,6 +140,10 @@ var Auritus = (() => {
   function walkNode(node, ignoreSelectors, parts) {
     if (node.nodeType === Node.ELEMENT_NODE) {
       const el = node;
+      const tag = el.tagName.toLowerCase();
+      if (tag === "script" || tag === "style" || tag === "noscript" || tag === "template") {
+        return;
+      }
       if (elementMatchesIgnore(el, ignoreSelectors)) {
         return;
       }
@@ -420,7 +424,7 @@ var Auritus = (() => {
       siteKey,
       apiBaseUrl: apiBaseFromScript(script),
       voiceId: script.getAttribute("data-auritus-voice")?.trim() || "default",
-      ttsBackend: script.getAttribute("data-auritus-tts-backend")?.trim() || "higgs",
+      ttsBackend: script.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro",
       root: script.getAttribute("data-auritus-root")?.trim() || void 0,
       ignoreSelectors: parseListAttribute(
         script.getAttribute("data-auritus-ignore-selectors")

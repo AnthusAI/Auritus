@@ -17,6 +17,7 @@ export default function BasicExamplePage() {
         apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
         name="Basic narration example"
         byline="Auritus docs"
+        root=".example-article"
       />
     </main>
   );

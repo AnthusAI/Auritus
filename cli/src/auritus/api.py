@@ -75,7 +75,7 @@ class AuritusClient:
         site_key: str,
         name: str = "",
         byline: str = "",
-        tts_backend: str = "higgs",
+        tts_backend: str = "kokoro",
         voice_id: str = "default",
     ) -> dict[str, Any]:
         """Create a generation job."""

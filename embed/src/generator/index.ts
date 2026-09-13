@@ -48,6 +48,15 @@ function elementMatchesIgnore(el: Element, selectors: string[]): boolean {
 function walkNode(node: Node, ignoreSelectors: string[], parts: string[]): void {
   if (node.nodeType === Node.ELEMENT_NODE) {
     const el = node as Element;
+    const tag = el.tagName.toLowerCase();
+    if (
+      tag === "script" ||
+      tag === "style" ||
+      tag === "noscript" ||
+      tag === "template"
+    ) {
+      return;
+    }
     if (elementMatchesIgnore(el, ignoreSelectors)) {
       return;
     }
