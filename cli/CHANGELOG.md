@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.11.2 (2026-09-13)
+
+### Bug Fixes
+
+- **site**: Lead with the audio demo and let the diagrams fill the width
+  ([`4071aea`](https://github.com/AnthusAI/Auritus/commit/4071aeaa8c6604683b34dd02d668811788885189))
+
+
 ## v0.11.1 (2026-09-13)
 
 ### Bug Fixes
