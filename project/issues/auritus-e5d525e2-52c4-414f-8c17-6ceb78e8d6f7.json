@@ -10,11 +10,19 @@
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "55b064f3-2f82-4724-a19b-5b75898bfc5b",
+      "author": "ryan",
+      "text": "Batch Kokoro SUCCEEDED earlier; current AWS CLI session expired so spend/queue re-check is blocked. Leave M5 open until a fresh Batch job and budget path are confirmed.",
+      "created_at": "2026-09-13T12:13:26.487724Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:38:43.348323Z",
-  "updated_at": "2026-09-11T21:38:43.348346Z",
+  "updated_at": "2026-09-13T12:13:26.487764Z",
   "closed_at": null,
-  "right_now_summary": "The fallback works end to end, while the team verifies spend controls and deployment in real AWS.",
-  "right_now_updated_at": "2026-09-13T02:46:43.830314Z",
+  "right_now_summary": "The fallback works, but a fresh AWS check is needed to verify the budget path.",
+  "right_now_updated_at": "2026-09-13T12:13:28.429967Z",
   "custom": {}
 }

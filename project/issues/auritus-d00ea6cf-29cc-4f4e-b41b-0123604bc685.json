@@ -3,18 +3,26 @@
   "title": "M1 - Backend core (no fallback)",
   "description": "DynamoDB AuritusJobs; API Gateway direct DynamoDB conditional PutItem mutex; router Lambda routes; site-key + Origin auth; Cognito + Google IdP + JWT authorizer; S3 + CloudFront signed URLs scoped to site key (not public); stack outputs to .auritus/config.",
   "type": "epic",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "24ddcbe4-8fb4-4d79-be3b-1caaf9000a23",
+      "author": "ryan",
+      "text": "Proven on live AWS: POST /jobs with site key, Dynamo mutex, Cognito password JWT for claimable, signed audio URLs on example Play.",
+      "created_at": "2026-09-13T12:13:13.697602Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-11T21:38:27.631748Z",
-  "updated_at": "2026-09-11T21:38:27.631776Z",
-  "closed_at": null,
-  "right_now_summary": "Core backend features are deployed and tested, but real-AWS verification is still needed.",
-  "right_now_updated_at": "2026-09-12T00:52:42.867268Z",
+  "updated_at": "2026-09-13T12:13:17.710464Z",
+  "closed_at": "2026-09-13T12:13:17.710412Z",
+  "right_now_summary": "The backend works on live AWS, with authentication, routing, mutexes, and signed URLs verified.",
+  "right_now_updated_at": "2026-09-13T12:13:19.030824Z",
   "custom": {}
 }

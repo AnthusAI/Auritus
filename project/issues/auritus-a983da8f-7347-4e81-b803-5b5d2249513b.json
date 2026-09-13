@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:50.679842Z",
   "updated_at": "2026-09-11T21:38:50.679863Z",
   "closed_at": null,
-  "right_now_summary": "The PyPI release is being hardened, with trusted publishing setup and real-AWS checks still needed.",
-  "right_now_updated_at": "2026-09-12T00:53:44.132161Z",
+  "right_now_summary": "PyPI publishing awaits trusted publisher setup while release gates and hardening work continue.",
+  "right_now_updated_at": "2026-09-13T12:13:34.842741Z",
   "custom": {}
 }

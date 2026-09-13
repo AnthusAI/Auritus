@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-11T21:38:21.475254Z",
   "closed_at": null,
-  "right_now_summary": "The core system works locally and is deployed; CI, real-AWS checks, and PyPI release setup remain.",
-  "right_now_updated_at": "2026-09-13T12:09:50.844240Z",
+  "right_now_summary": "The live embed and backend work; AWS checks, CI hardening, and PyPI publishing still need attention.",
+  "right_now_updated_at": "2026-09-13T12:13:37.101437Z",
   "custom": {}
 }
