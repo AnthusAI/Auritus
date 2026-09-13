@@ -355,6 +355,7 @@ class BackendStack(Stack):
                 minv_cpus=0,
                 desiredv_cpus=0,
                 instance_types=["g4dn.xlarge"],
+                allocation_strategy="BEST_FIT_PROGRESSIVE",
                 subnets=[subnet.subnet_id for subnet in vpc.private_subnets],
                 security_group_ids=[batch_sg.security_group_id],
                 instance_role=instance_profile.attr_arn,
@@ -396,8 +397,8 @@ class BackendStack(Stack):
             platform_capabilities=["EC2"],
             container_properties=batch.CfnJobDefinition.ContainerPropertiesProperty(
                 image=worker_image_uri,
-                vcpus=4,
-                memory=15360,
+                vcpus=2,
+                memory=8192,
                 resource_requirements=[
                     batch.CfnJobDefinition.ResourceRequirementProperty(
                         type="GPU",

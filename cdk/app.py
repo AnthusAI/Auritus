@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import aws_cdk as cdk
+
 from stacks.backend import BackendStack
 
 app = cdk.App()
