@@ -315,7 +315,7 @@ var Auritus = (() => {
       <p class="auritus-byline"></p>
     </div>
     <div class="auritus-controls">
-      <button type="button" class="auritus-play" disabled aria-label="Play">Play</button>
+      <button type="button" class="auritus-play" aria-label="Play">Play</button>
       <div class="auritus-track" aria-hidden="true">
         <div class="auritus-track-fill"></div>
       </div>
@@ -339,6 +339,12 @@ var Auritus = (() => {
     audio.preload = "none";
     shadow.appendChild(audio);
     let pollTimer;
+    let pendingPlay = host.parentElement?.getAttribute("data-auritus-play-intent") === "true";
+    playBtn.disabled = false;
+    if (pendingPlay) {
+      statusEl.hidden = false;
+      statusEl.textContent = "Starting when ready\u2026";
+    }
     function setError(message) {
       errorEl.hidden = false;
       errorEl.textContent = message;
@@ -346,7 +352,7 @@ var Auritus = (() => {
     }
     function applyJob(job) {
       statusEl.hidden = false;
-      statusEl.textContent = statusLabel(job);
+      statusEl.textContent = pendingPlay ? "Starting when ready\u2026" : statusLabel(job);
       if (job.status === "failed") {
         setError("Audio could not be generated.");
         stopPolling();
@@ -357,6 +363,11 @@ var Auritus = (() => {
         audio.src = job.audio_url;
         playBtn.disabled = false;
         statusEl.hidden = true;
+        if (pendingPlay) {
+          pendingPlay = false;
+          rewindIfEnded(audio);
+          void audio.play();
+        }
       }
     }
     function stopPolling() {
@@ -373,7 +384,7 @@ var Auritus = (() => {
         const message = err instanceof Error ? err.message : String(err);
         if (/\b404\b/.test(message)) {
           statusEl.hidden = false;
-          statusEl.textContent = "Waiting for audio\u2026";
+          statusEl.textContent = pendingPlay ? "Starting when ready\u2026" : "Waiting for audio\u2026";
           return;
         }
         setError(message);
@@ -394,6 +405,12 @@ var Auritus = (() => {
     playBtn.addEventListener("click", () => {
       if (!audio.paused) {
         audio.pause();
+        return;
+      }
+      if (!audio.src) {
+        pendingPlay = true;
+        statusEl.hidden = false;
+        statusEl.textContent = "Starting when ready\u2026";
         return;
       }
       rewindIfEnded(audio);

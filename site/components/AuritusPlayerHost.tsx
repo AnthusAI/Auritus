@@ -1,3 +1,5 @@
+"use client";
+
 type AuritusPlayerHostProps = {
   name?: string;
   byline?: string;
@@ -11,7 +13,15 @@ export function AuritusPlayerHost({ name, byline }: AuritusPlayerHostProps) {
         {name ? <p className="auritus-placeholder-name">{name}</p> : null}
         {byline ? <p className="auritus-placeholder-byline">{byline}</p> : null}
         <div className="auritus-placeholder-controls">
-          <button type="button" disabled aria-label="Play">
+          <button
+            type="button"
+            aria-label="Play"
+            onClick={(event) => {
+              event.currentTarget
+                .closest(".auritus-player-host")
+                ?.setAttribute("data-auritus-play-intent", "true");
+            }}
+          >
             Play
           </button>
           <div className="auritus-placeholder-track" aria-hidden="true" />

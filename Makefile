@@ -1,4 +1,4 @@
-.PHONY: check lint-python test-python lint-embed test-embed synth-cdk sync-embed build-embed build-site diagrams help
+.PHONY: check lint-python test-python lint-embed test-embed lint-console test-console build-console synth-cdk sync-embed build-embed build-site diagrams help
 
 help:
 	@echo "Auritus make targets"
@@ -7,10 +7,13 @@ help:
 	@echo "  make test-python - pytest + behave"
 	@echo "  make lint-embed  - eslint"
 	@echo "  make test-embed  - vitest"
+	@echo "  make lint-console - eslint for console app"
+	@echo "  make test-console - tsc for console app"
+	@echo "  make build-console - next build for console app"
 	@echo "  make synth-cdk   - cdk synth"
 	@echo "  make diagrams    - render pinned D2 documentation diagrams"
 
-check: diagrams lint-python test-python lint-embed test-embed synth-cdk
+check: diagrams lint-python test-python lint-embed test-embed lint-console test-console build-console synth-cdk
 
 lint-python:
 	cd cli && python3 -m black --check src tests ../features/steps ../worker-image/src
@@ -25,6 +28,15 @@ lint-embed:
 
 test-embed:
 	cd embed && npm test
+
+lint-console:
+	cd console && npm run lint
+
+test-console:
+	cd console && npm test
+
+build-console:
+	cd console && npm run build
 
 sync-embed: build-embed
 	cp embed/dist/embed.js site/public/embed.js

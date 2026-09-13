@@ -59,6 +59,9 @@ def _claim(jobs: dict, content_hash: str, owner: str) -> dict:
     ):
         job["status"] = "claimed"
         job["claim_owner"] = owner
+        job["claimed_by"] = owner
+        job["worker_type"] = "batch" if owner.startswith("batch:") else "local"
+        job["claimed_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now))
         job["claim_deadline"] = now + 900
         return {"ok": True, "job": job}
     return {"ok": False, "job": job}

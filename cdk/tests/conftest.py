@@ -93,6 +93,7 @@ def router_resources() -> dict[str, Any]:
         )
         handler = importlib.import_module("handler")
         handler._sfn = Mock()
+        handler._batch = Mock()
 
         def event(
             method: str,
@@ -101,6 +102,7 @@ def router_resources() -> dict[str, Any]:
             body: dict[str, Any] | None = None,
             headers: dict[str, str] | None = None,
             path_parameters: dict[str, str] | None = None,
+            query_string_parameters: dict[str, str] | None = None,
         ) -> dict[str, Any]:
             """Build an API Gateway HTTP API v2 event."""
             return {
@@ -109,6 +111,7 @@ def router_resources() -> dict[str, Any]:
                 "headers": headers or {},
                 "body": json.dumps(body) if body is not None else None,
                 "pathParameters": path_parameters,
+                "queryStringParameters": query_string_parameters,
             }
 
         def response_body(response: dict[str, Any]) -> dict[str, Any]:

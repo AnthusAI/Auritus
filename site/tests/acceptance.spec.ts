@@ -22,7 +22,8 @@ async function waitForPlayableClip(page: Page) {
       const playBtn = host?.shadowRoot?.querySelector(
         ".auritus-play",
       ) as HTMLButtonElement | null;
-      return Boolean(playBtn && !playBtn.disabled);
+      const audio = host?.shadowRoot?.querySelector("audio");
+      return Boolean(playBtn && audio?.src);
     },
     { timeout: 120_000 },
   );
@@ -155,7 +156,9 @@ test("landing page explains the local-first cloud fallback", async ({
     page.getByRole("img", { name: /Your own GPU claims it first/i }),
   ).toBeVisible();
   await expect(
-    page.getByRole("img", { name: /only if no claim arrives before the timeout/i }),
+    page.getByRole("img", {
+      name: /only if no claim arrives before the timeout/i,
+    }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: /explore deployment options/i }),
@@ -329,6 +332,8 @@ test("themed example posts the same Gettysburg excerpt with Kokoro", async ({
   expect(body.text).toContain("Four score and seven years ago");
   expect(body.text).toContain("Now we are engaged in a great civil war");
   expect(body.text).not.toContain("This page speaks that excerpt");
+  await waitForPlayableClip(page);
+  expect(await clipDurationSeconds(page)).toBeGreaterThanOrEqual(8);
 });
 
 test("Qwen example posts the same Gettysburg excerpt with Qwen", async ({
@@ -344,6 +349,8 @@ test("Qwen example posts the same Gettysburg excerpt with Qwen", async ({
   expect(body.text).toContain("Now we are engaged in a great civil war");
   expect(body.text).not.toContain("When on board H.M.S.");
   expect(body.text).not.toContain("This page speaks that excerpt");
+  await waitForPlayableClip(page);
+  expect(await clipDurationSeconds(page)).toBeGreaterThanOrEqual(20);
 });
 
 test("Kokoro and Qwen examples POST the same spoken text", async ({
@@ -381,6 +388,8 @@ test("ignore example posts Kokoro job without ignored paragraph", async ({
   expect(body.voice_id).toBe("af_heart");
   expect(body.text).toContain("The only freedom which deserves the name");
   expect(body.text).not.toContain("This paragraph is ignored");
+  await waitForPlayableClip(page);
+  expect(await clipDurationSeconds(page)).toBeGreaterThanOrEqual(8);
 });
 
 test("client navigation boots a new job for the destination page", async ({
