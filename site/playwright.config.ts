@@ -6,6 +6,8 @@ const baseURL = process.env.AURITUS_E2E_BASE_URL || "http://localhost:3000";
 export default defineConfig({
   testDir: "./tests",
   testMatch: "acceptance.spec.ts",
+  fullyParallel: !process.env.CI,
+  workers: process.env.CI ? 1 : undefined,
   use: {
     baseURL,
   },
@@ -18,9 +20,9 @@ export default defineConfig({
   webServer: baseURL.includes("localhost")
     ? {
         command: "npm run dev",
-        timeout: 30000,
+        timeout: process.env.CI ? 120_000 : 30_000,
         url: baseURL,
-        reuseExistingServer: true,
+        reuseExistingServer: !process.env.CI,
       }
     : undefined,
 });
