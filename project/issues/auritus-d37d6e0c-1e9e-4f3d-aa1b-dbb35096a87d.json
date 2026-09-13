@@ -1,0 +1,20 @@
+{
+  "id": "auritus-d37d6e0c-1e9e-4f3d-aa1b-dbb35096a87d",
+  "title": "Qwen CustomVoice model generates real speech",
+  "description": "The Base Qwen checkpoint has no preset voices. Chelsie is invalid. Load mlx-community/Qwen3-TTS-12Hz-0.6B-CustomVoice-8bit and use an English speaker (Ryan). Prove generate() returns a real WAV, not a tone.",
+  "type": "story",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-0c0c9192-6f0c-483d-9e4c-8cf5a7e07a19",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T04:34:49.804045Z",
+  "updated_at": "2026-09-13T04:34:49.804087Z",
+  "closed_at": null,
+  "right_now_summary": "Testing Qwen CustomVoice with Ryan to confirm generate() produces real speech WAV audio.",
+  "right_now_updated_at": "2026-09-13T04:34:51.997917Z",
+  "custom": {}
+}
