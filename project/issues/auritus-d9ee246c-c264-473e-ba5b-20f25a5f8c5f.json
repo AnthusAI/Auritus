@@ -3,7 +3,7 @@
   "title": "CLI login uses Cognito email and password",
   "description": "Google OAuth is not available (no Google Cloud app). The local worker needs a Cognito JWT for GET /jobs/claimable.\n\n## Behavior\nOperators authenticate with Cognito USER_PASSWORD_AUTH (email + password). Short-lived JWTs are stored in ~/.auritus/credentials mode 0600. Google OAuth remains future/integration-only until a Google app exists.\n\nThe live user pool client already allows USER_PASSWORD_AUTH. CDK source currently advertises Google-only OAuth login; align CLI and specs with password auth as the one working operator path.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -17,12 +17,19 @@
       "text": "PR #11 merged: auritus login is Cognito email/password (USER_PASSWORD_AUTH). Google OAuth Gherkin removed. Token refresh runs in default CI. Live pool client already allowed password auth.",
       "created_at": "2026-09-13T03:48:12.042482Z",
       "comment_type": "default"
+    },
+    {
+      "id": "873e53e3-6a74-4572-9d04-2fcd74f6cc6d",
+      "author": "ryan",
+      "text": "Live proof: USER_PASSWORD_AUTH for test@aurit.us issued JWTs; GET /jobs/claimable succeeded; worker claimed and completed jobs.",
+      "created_at": "2026-09-13T05:12:47.109947Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T03:25:47.303228Z",
-  "updated_at": "2026-09-13T03:48:12.042761Z",
-  "closed_at": null,
-  "right_now_summary": "The CLI now uses Cognito email and password login, with JWTs stored securely for worker access.",
-  "right_now_updated_at": "2026-09-13T03:48:13.546558Z",
+  "updated_at": "2026-09-13T05:12:53.236573Z",
+  "closed_at": "2026-09-13T05:12:53.236533Z",
+  "right_now_summary": "CLI login now uses Cognito email and password, with JWTs stored locally for worker access.",
+  "right_now_updated_at": "2026-09-13T05:12:54.608222Z",
   "custom": {}
 }
