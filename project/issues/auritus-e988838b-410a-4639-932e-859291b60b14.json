@@ -17,12 +17,19 @@
       "text": "Invalid as written — my error. Withdrawing this.\n\nThe job did complete. Content hash `2caf28aa` now returns\n`{\"status\": \"done\"}` with a signed `audio_url`, and the home page player\nreports \"Ready\". The claim \"stays pending forever\" is wrong.\n\nWhat I actually observed was latency: the job sat `pending` for roughly\n40 minutes between submission and completion, which is why I mistook a\nslow path for a dead one. Whether that is the expected AWS Batch GPU cold\nstart or worth tuning is a separate judgement, and I have no basis for\ncalling it a defect.\n\nLeaving a note in case the latency is worth its own card: submitted\n~12:22, observed `done` ~13:20.",
       "created_at": "2026-09-13T17:21:16.936853Z",
       "comment_type": "default"
+    },
+    {
+      "id": "7ad88e2f-abfb-45e0-9bbb-8143fb33955b",
+      "author": "ryan",
+      "text": "Investigated after the withdrawal. Hash 2caf28aa is done. Step Functions AuritusFallback execution auritus-2caf28aa-* SUCCEEDED; DynamoDB updated ~18 minutes after create (claim window plus Batch). Not a dead queue. The home page on git/aurit.us still lacked the embed; adding that demo against this hash so the pitch is audible.",
+      "created_at": "2026-09-13T17:36:00.058908Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-13T17:16:14.621901Z",
-  "updated_at": "2026-09-13T17:21:16.973690Z",
+  "updated_at": "2026-09-13T17:36:00.058933Z",
   "closed_at": "2026-09-13T17:21:16.973660Z",
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "The job completed after a long delay, and the home page demo now has audio.",
+  "right_now_updated_at": "2026-09-13T17:36:02.190689Z",
   "custom": {}
 }

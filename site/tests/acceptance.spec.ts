@@ -82,12 +82,36 @@ test("embed script is loaded", async ({ page }) => {
   await expect(page.locator('script[src*="embed.js"]')).toBeAttached();
 });
 
-test("landing page explains the local-first cloud fallback", async ({ page }) => {
+test("landing page posts the Kokoro product pitch", async ({ page }) => {
+  test.setTimeout(180_000);
+  const createJobRequest = waitForJobPost(page);
+  await page.goto("/");
+  const body = (await createJobRequest).postDataJSON() as JobPostBody;
+  expect(body.tts_backend).toBe("kokoro");
+  expect(body.voice_id).toBe("af_heart");
+  expect(body.content_hash).toBe("2caf28aa");
+  expect(body.text).toContain("Press play");
+  expect(body.text).toContain("What you hear is this page reading itself");
+  expect(body.text).not.toContain("Narrated by Auritus with Kokoro");
+  await expect(page.locator(".auritus-root")).toBeVisible({ timeout: 15_000 });
+  await page.waitForFunction(
+    () => {
+      const host = document.querySelector(".auritus-root");
+      const play = host?.shadowRoot?.querySelector(".auritus-play");
+      return Boolean(play);
+    },
+    { timeout: 15_000 },
+  );
+});
+
+test("landing page explains the local-first cloud fallback", async ({
+  page,
+}) => {
   await page.goto("/");
 
   await expect(
     page.getByRole("heading", {
-      name: "Let every article speak. Keep the choices that matter.",
+      name: "Let every article speak.",
     }),
   ).toBeVisible();
   await expect(
@@ -261,11 +285,11 @@ test("Play after the clip ends starts Kokoro speech from the beginning", async (
       ) as HTMLButtonElement | null;
       return Boolean(
         audio &&
-          playBtn &&
-          !audio.paused &&
-          audio.currentTime > 0 &&
-          audio.currentTime < 8 &&
-          playBtn.getAttribute("aria-label") === "Pause",
+        playBtn &&
+        !audio.paused &&
+        audio.currentTime > 0 &&
+        audio.currentTime < 8 &&
+        playBtn.getAttribute("aria-label") === "Pause",
       );
     },
     { timeout: 15_000 },

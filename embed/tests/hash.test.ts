@@ -26,6 +26,12 @@ describe("computeContentHash", () => {
     );
   });
 
+  it("matches the live home-page Kokoro pitch hash", () => {
+    const pitch =
+      "Press play. What you hear is this page reading itself. Auritus turns any article into audio on demand, from a single script tag — no pre-recording, no studio, no per-article cost. You choose the voice model. You decide where the text goes. Your own GPU does the work, and AWS picks up the slack when it cannot. It's open source, and every article on your site can speak, with the choices that matter still yours.";
+    expect(computeContentHash(pitch, VOICE, "kokoro")).toBe("2caf28aa");
+  });
+
   it("changes when tts_backend changes", () => {
     const base = computeContentHash(SAMPLE_TEXT, VOICE, "kokoro");
     expect(base).not.toBe(computeContentHash(SAMPLE_TEXT, VOICE, "qwen"));

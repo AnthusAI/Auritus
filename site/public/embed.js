@@ -302,7 +302,8 @@ var Auritus = (() => {
       byline,
       pollIntervalMs = DEFAULT_POLL_MS
     } = options;
-    const shadow = host.attachShadow({ mode: "open" });
+    const shadow = host.shadowRoot ?? host.attachShadow({ mode: "open" });
+    shadow.replaceChildren();
     const style = document.createElement("style");
     style.textContent = PLAYER_STYLES;
     shadow.appendChild(style);
@@ -476,7 +477,17 @@ var Auritus = (() => {
     if (!element) {
       throw new Error("Auritus embed: [data-auritus-site-key] not found");
     }
+    if (generation !== bootGeneration) {
+      const skipped = document.createElement("div");
+      skipped.setAttribute("data-auritus-boot-skipped", "true");
+      return skipped;
+    }
     disposePlayers();
+    if (generation !== bootGeneration) {
+      const skipped = document.createElement("div");
+      skipped.setAttribute("data-auritus-boot-skipped", "true");
+      return skipped;
+    }
     const config = readEmbedConfig(element);
     const { name, byline } = readEmbedMetadata(element);
     const { text } = generateTtsText({
