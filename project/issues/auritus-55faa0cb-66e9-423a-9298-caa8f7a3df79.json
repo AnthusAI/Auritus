@@ -14,7 +14,7 @@
   "created_at": "2026-09-11T21:38:21.475165Z",
   "updated_at": "2026-09-11T21:38:21.475254Z",
   "closed_at": null,
-  "right_now_summary": "Auritus has core features working, while AWS checks, CI, releases, and the Batch fallback still need finishing.",
-  "right_now_updated_at": "2026-09-13T00:14:07.326563Z",
+  "right_now_summary": "The core system works while CI, AWS verification, and the cloud fallback are still being built and tested.",
+  "right_now_updated_at": "2026-09-13T00:29:05.292678Z",
   "custom": {}
 }

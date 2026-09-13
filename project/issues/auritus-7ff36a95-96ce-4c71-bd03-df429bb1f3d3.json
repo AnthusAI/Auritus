@@ -3,7 +3,7 @@
   "title": "Scope example pages to article root so nav is not narrated",
   "description": "",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -12,9 +12,9 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-09-13T00:13:17.575545Z",
-  "updated_at": "2026-09-13T00:14:02.289603Z",
-  "closed_at": null,
+  "updated_at": "2026-09-13T00:28:55.813606Z",
+  "closed_at": "2026-09-13T00:28:55.813563Z",
   "right_now_summary": "Example pages are being scoped to the article root so navigation is not narrated.",
-  "right_now_updated_at": "2026-09-13T00:14:03.611421Z",
+  "right_now_updated_at": "2026-09-13T00:28:57.172203Z",
   "custom": {}
 }
