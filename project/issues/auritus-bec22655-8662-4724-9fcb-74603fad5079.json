@@ -1,0 +1,20 @@
+{
+  "id": "auritus-bec22655-8662-4724-9fcb-74603fad5079",
+  "title": "Production router is missing worker_type telemetry",
+  "description": "## Behaviour\n\nM8 closed with claim/complete writing `worker_type` (`local` / `batch`). Live DynamoDB has **no** items with `worker_type`. The production router Lambda `AuritusBackend-RouterFnDA4EF4F3-jclSBvAjL2tV` was last modified **2026-09-13T03:37:47Z**, before PR #40.\n\nThe operator console race split cannot be true on AWS until that Lambda is redeployed from current `develop`.\n\n## Fix\n\n`cdk deploy AuritusBackend` (or `auritus deploy`) from current develop so the live API matches git. Then a newly claimed job must store `worker_type`.",
+  "type": "bug",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a72acda0-dc7b-44d5-9629-18edc0458fdc",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-13T22:42:11.372797Z",
+  "updated_at": "2026-09-13T22:44:02.658178Z",
+  "closed_at": null,
+  "right_now_summary": "The production router needs redeployment so new claims record `worker_type` in DynamoDB.",
+  "right_now_updated_at": "2026-09-13T22:44:04.681568Z",
+  "custom": {}
+}
