@@ -11,7 +11,7 @@ def test_default_config_has_worker_defaults(tmp_path: Path, monkeypatch) -> None
     monkeypatch.setattr("auritus.config.config_dir", lambda: tmp_path)
     cfg = default_config()
     assert cfg["worker"]["claim_timeout"] == 900
-    assert cfg["worker"]["tts_backend"] == "higgs"
+    assert cfg["worker"]["tts_backend"] == "kokoro"
 
 
 def test_save_and_load_roundtrip(tmp_path: Path, monkeypatch) -> None:
