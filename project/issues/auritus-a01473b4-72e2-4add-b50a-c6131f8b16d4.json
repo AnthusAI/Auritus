@@ -45,12 +45,19 @@
       "text": "PyPI stays last. Do not publish until live examples, local worker, and Batch fallback (Kokoro and Qwen) are proven. No trusted-publisher work until then.\n",
       "created_at": "2026-09-13T14:48:56.950969Z",
       "comment_type": "default"
+    },
+    {
+      "id": "b8005892-9220-45de-89e0-95ac85965971",
+      "author": "ryan",
+      "text": "Live examples, local worker, and Batch Kokoro/Qwen are proven. Release workflow now skips PyPI unless AURITUS_PUBLISH_PYPI is true (PR #30). Do not configure the trusted publisher or publish until that variable is set on purpose. GitHub releases on main still run via semantic-release.",
+      "created_at": "2026-09-13T16:06:45.288244Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-11T21:47:49.015523Z",
-  "updated_at": "2026-09-13T14:48:56.951009Z",
+  "updated_at": "2026-09-13T16:06:45.288288Z",
   "closed_at": null,
-  "right_now_summary": "PyPI publishing awaits proof of live examples, the local worker, and Batch fallback paths.",
-  "right_now_updated_at": "2026-09-13T14:49:00.015654Z",
+  "right_now_summary": "GitHub releases run, but PyPI publishing waits until AURITUS_PUBLISH_PYPI is enabled.",
+  "right_now_updated_at": "2026-09-13T16:06:47.636867Z",
   "custom": {}
 }

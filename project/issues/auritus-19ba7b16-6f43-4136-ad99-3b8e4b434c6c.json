@@ -10,11 +10,19 @@
   "parent": "auritus-a4de887a-f93e-428d-944a-a1e497994a0c",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "c0d9741a-5fe6-4be9-91d5-63d71998c41e",
+      "author": "ryan",
+      "text": "Not started. v0 speech demos are Kokoro and Qwen only. Additional backends (Fish, Higgs, XTTS, Kokoro variants) stay open until each is specified and proven.",
+      "created_at": "2026-09-13T16:06:52.740366Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-12T12:31:28.849919Z",
-  "updated_at": "2026-09-12T12:31:28.849948Z",
+  "updated_at": "2026-09-13T16:06:52.740392Z",
   "closed_at": null,
-  "right_now_summary": "The team is adding Fish, Higgs, XTTS, Bark, and other TTS backends.",
-  "right_now_updated_at": "2026-09-12T12:31:30.334251Z",
+  "right_now_summary": "Fish, Higgs, XTTS, Bark, and Kokoro variants still need specifications and working demos.",
+  "right_now_updated_at": "2026-09-13T16:06:54.331020Z",
   "custom": {}
 }
