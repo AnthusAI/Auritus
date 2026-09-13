@@ -1,4 +1,4 @@
-.PHONY: check lint-python test-python lint-embed test-embed synth-cdk sync-embed build-embed build-site help
+.PHONY: check lint-python test-python lint-embed test-embed synth-cdk sync-embed build-embed build-site diagrams help
 
 help:
 	@echo "Auritus make targets"
@@ -8,8 +8,9 @@ help:
 	@echo "  make lint-embed  - eslint"
 	@echo "  make test-embed  - vitest"
 	@echo "  make synth-cdk   - cdk synth"
+	@echo "  make diagrams    - render pinned D2 documentation diagrams"
 
-check: lint-python test-python lint-embed test-embed synth-cdk
+check: diagrams lint-python test-python lint-embed test-embed synth-cdk
 
 lint-python:
 	cd cli && python3 -m black --check src tests ../features/steps ../worker-image/src
@@ -29,6 +30,9 @@ sync-embed: build-embed
 	cp embed/dist/embed.js site/public/embed.js
 
 build-site: sync-embed
+
+diagrams:
+	./scripts/render-diagrams.sh
 
 synth-cdk:
 	cd cdk && python3 -m pip install -q -r requirements.txt && npx --yes aws-cdk@2 synth --quiet
