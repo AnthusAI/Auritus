@@ -66,8 +66,16 @@ export default function ExamplesIndexPage() {
         <ul className="doc-index" style={{ marginTop: "1rem" }}>
           {modelExamples.map((example) => (
             <li key={example.href}>
-              <Link href={example.href}>
+              <Link
+                href={example.href}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.6rem",
+                }}
+              >
                 <strong>{example.title}</strong>
+                <span className="badge-pill">{example.badge}</span>
               </Link>
               <span>{example.summary}</span>
             </li>
@@ -85,8 +93,16 @@ export default function ExamplesIndexPage() {
         <ul className="doc-index" style={{ marginTop: "1rem" }}>
           {featureExamples.map((example) => (
             <li key={example.href}>
-              <Link href={example.href}>
+              <Link
+                href={example.href}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.6rem",
+                }}
+              >
                 <strong>{example.title}</strong>
+                <span className="badge-pill">{example.badge}</span>
               </Link>
               <span>{example.summary}</span>
             </li>
