@@ -17,6 +17,11 @@ const sections = [
     summary: "Operator authentication, refresh-token rotation, unattended workers, revocation, and notification.",
   },
   {
+    href: "/docs/security/google-workspace",
+    title: "Google Workspace SSO",
+    summary: "Step-by-step setup for Google OAuth 2.0 federation with Cognito, authorized redirect URIs, JavaScript origins, and Secrets Manager.",
+  },
+  {
     href: "/docs/usage",
     title: "Usage",
     summary: "Embed script, site keys, and how jobs flow from browser to audio.",

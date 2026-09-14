@@ -42,6 +42,7 @@ const options = [
     status: "Supported (SSO)",
     title: "Google Workspace.",
     body: "The stack wires a Google OAuth identity provider into the Cognito user pool. Operators authenticate with their Google account via the web console or CLI browser sign-in (`auritus login --sso google`), inheriting your Google directory MFA, password policies, and immediate offboarding controls.",
+    guideHref: "/docs/security/google-workspace",
     src: "/diagrams/auth-google-workspace.svg",
     width: 2675,
     height: 403,
@@ -208,6 +209,13 @@ export default function SecurityPage() {
               </p>
               <h3 id={`${option.id}-heading`}>{option.title}</h3>
               <p>{option.body}</p>
+              {option.guideHref && (
+                <p style={{ marginTop: "0.75rem" }}>
+                  <Link href={option.guideHref} className="text-link" style={{ fontWeight: 700 }}>
+                    View complete setup guide &amp; OAuth endpoints &rarr;
+                  </Link>
+                </p>
+              )}
             </div>
             <Image
               src={option.src}
@@ -238,7 +246,7 @@ export default function SecurityPage() {
         <p className="kicker">Boundaries</p>
         <h2 id="boundaries-heading">What is not true yet.</h2>
         <p>
-          Everything above describes the architecture. Two parts of it are not
+          Everything above describes the architecture. One part of it is not
           fully enforced in the current implementation, and we would rather say
           so here than have you discover it in the source.
         </p>
@@ -254,12 +262,6 @@ export default function SecurityPage() {
           it is the next piece of this work. Until it lands, treat the operator
           API as protected by obscurity of the endpoint rather than by the
           token.
-        </p>
-        <p>
-          <strong>Two of the three identity options are not shipped.</strong>{" "}
-          Native Cognito login works end to end. Google federation is configured
-          in the user pool but the CLI has no browser sign-in flow. SAML and IAM
-          Identity Center are design intent with no implementation in the stack.
         </p>
         <p>
           The claims that do hold today are the ones about what is absent: the

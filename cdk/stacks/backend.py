@@ -268,6 +268,8 @@ class BackendStack(Stack):
                 callback_urls=[
                     "http://127.0.0.1/callback",
                     "http://localhost/callback",
+                    "http://localhost:8080/callback",
+                    "http://127.0.0.1:8080/callback",
                 ],
             ),
             supported_identity_providers=supported_idps,

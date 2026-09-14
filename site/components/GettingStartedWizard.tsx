@@ -59,13 +59,14 @@ const AUTH_OPTIONS: AuthOption[] = [
       'Inherits corporate Google MFA & password rules',
       'Immediate offboarding upon Google account suspension',
     ],
-    docLink: '/docs/security#google',
+    docLink: '/docs/security/google-workspace',
     cliCommand: 'auritus login --sso google',
     setupSteps: [
       'In Google Cloud Console, create an OAuth 2.0 Client ID (Web Application).',
-      'Set Authorized Redirect URI to `https://<cognito-domain>.auth.<region>.amazoncognito.com/oauth2/idpresponse`.',
-      'Store client_id and client_secret in AWS Secrets Manager under GoogleOAuthSecret.',
-      'Sign in via Web Console or run `auritus login --sso google`.',
+      'Authorized JavaScript origins: `https://<cognito-domain-prefix>.auth.<region>.amazoncognito.com` and `http://localhost:3000`.',
+      'Authorized redirect URIs: `https://<cognito-domain-prefix>.auth.<region>.amazoncognito.com/oauth2/idpresponse` (exact path required).',
+      'Store client_id and client_secret in AWS Secrets Manager under auritus/google-oauth.',
+      'Authenticate with `auritus login --sso google` or through the Web Console.',
     ],
   },
   {
@@ -251,6 +252,27 @@ auritus deploy --region us-east-1`}</code>
                 </div>
               </div>
             </div>
+
+            {activeAuth.id === 'google' && (
+              <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--line)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+                  <div className="code-card">
+                    <div className="code-header">Authorized JavaScript origins</div>
+                    <pre className="code-body">
+                      <code>{`https://<cognito-domain-prefix>.auth.<region>.amazoncognito.com\nhttp://localhost:3000`}</code>
+                    </pre>
+                  </div>
+                  <div className="code-card" style={{ border: '1px solid var(--highlight)' }}>
+                    <div className="code-header" style={{ color: 'var(--highlight)', fontWeight: 700 }}>
+                      Authorized redirect URIs (Required)
+                    </div>
+                    <pre className="code-body">
+                      <code>{`https://<cognito-domain-prefix>.auth.<region>.amazoncognito.com/oauth2/idpresponse`}</code>
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
