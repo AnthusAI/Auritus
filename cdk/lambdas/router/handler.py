@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import os
@@ -758,28 +759,61 @@ def _get_admin_overview(headers: dict[str, str]) -> dict[str, Any]:
     )
 
 
+def _encode_cursor(key: dict[str, Any] | None) -> str | None:
+    """Encode a DynamoDB LastEvaluatedKey to a URL-safe base64 string."""
+    if not key:
+        return None
+    raw = json.dumps(key, default=_json_default).encode("utf-8")
+    return base64.urlsafe_b64encode(raw).decode("ascii")
+
+
+def _decode_cursor(token: str | None) -> dict[str, Any] | None:
+    """Decode a URL-safe base64 pagination cursor to a DynamoDB key dict."""
+    if not token:
+        return None
+    try:
+        raw = base64.urlsafe_b64decode(token.encode("ascii"))
+        data = json.loads(raw.decode("utf-8"))
+        if isinstance(data, dict):
+            return data
+    except Exception:
+        pass
+    return None
+
+
 def _list_admin_jobs(
     headers: dict[str, str], query_params: dict[str, str]
 ) -> dict[str, Any]:
-    """Return a list of generation jobs with full telemetry metadata."""
+    """Return a list of generation jobs with full telemetry metadata and pagination."""
     _require_operator(headers)
     status_filter = query_params.get("status")
-    limit = min(100, int(query_params.get("limit") or 50))
+    limit = min(100, max(1, int(query_params.get("limit") or 25)))
+    start_key = _decode_cursor(query_params.get("next_token"))
+
+    query_kwargs: dict[str, Any] = {"Limit": limit}
+    if start_key:
+        query_kwargs["ExclusiveStartKey"] = start_key
 
     if status_filter:
-        res = _jobs.query(
-            IndexName="status-created_at-index",
-            KeyConditionExpression="#s = :status",
-            ExpressionAttributeNames={"#s": "status"},
-            ExpressionAttributeValues={":status": status_filter},
-            ScanIndexForward=False,
-            Limit=limit,
+        query_kwargs.update(
+            {
+                "IndexName": "status-created_at-index",
+                "KeyConditionExpression": "#s = :status",
+                "ExpressionAttributeNames": {"#s": "status"},
+                "ExpressionAttributeValues": {":status": status_filter},
+                "ScanIndexForward": False,
+            }
         )
+        res = _jobs.query(**query_kwargs)
     else:
-        res = _jobs.scan(Limit=limit)
+        res = _jobs.scan(**query_kwargs)
 
     items = res.get("Items") or []
-    items.sort(key=lambda x: str(x.get("created_at", "")), reverse=True)
+    if not status_filter:
+        items.sort(key=lambda x: str(x.get("created_at", "")), reverse=True)
+
+    last_evaluated = res.get("LastEvaluatedKey")
+    next_token = _encode_cursor(last_evaluated)
 
     formatted_jobs = []
     for item in items:
@@ -806,7 +840,7 @@ def _list_admin_jobs(
             }
         )
 
-    return _response(200, {"jobs": formatted_jobs})
+    return _response(200, {"jobs": formatted_jobs, "next_token": next_token})
 
 
 def _get_admin_job(content_hash: str, headers: dict[str, str]) -> dict[str, Any]:

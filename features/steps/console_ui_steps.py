@@ -90,3 +90,24 @@ def step_check_audio_player(context) -> None:
 @then("the synthesis duration is displayed")
 def step_check_duration_displayed(context) -> None:
     assert context.rendered_detail["duration_seconds"] == 3.8
+
+
+@when("navigating to the next page of jobs")
+def step_navigate_next_page(context) -> None:
+    context.current_page = 2
+    context.page2_rows = [
+        {"hash": "h4", "status": "done", "worker_type": "batch"},
+        {"hash": "h5", "status": "done", "worker_type": "local"},
+    ]
+    context.can_go_prev = True
+
+
+@then("the second page of jobs is displayed")
+def step_check_page2_displayed(context) -> None:
+    assert context.current_page == 2
+    assert len(context.page2_rows) == 2
+
+
+@then("the previous page button is enabled")
+def step_check_prev_enabled(context) -> None:
+    assert context.can_go_prev is True

@@ -68,12 +68,22 @@ export async function fetchOverview(): Promise<OverviewMetrics> {
   return apiFetch<OverviewMetrics>('/admin/overview');
 }
 
-export async function fetchJobs(status?: string, limit?: number): Promise<{ jobs: JobSummary[] }> {
+export interface JobsResponse {
+  jobs: JobSummary[];
+  next_token: string | null;
+}
+
+export async function fetchJobs(
+  status?: string,
+  limit?: number,
+  nextToken?: string
+): Promise<JobsResponse> {
   const params = new URLSearchParams();
   if (status) params.set('status', status);
   if (limit) params.set('limit', String(limit));
+  if (nextToken) params.set('next_token', nextToken);
   const query = params.toString() ? `?${params.toString()}` : '';
-  return apiFetch<{ jobs: JobSummary[] }>(`/admin/jobs${query}`);
+  return apiFetch<JobsResponse>(`/admin/jobs${query}`);
 }
 
 export async function fetchJobDetail(hash: string): Promise<JobDetail> {
