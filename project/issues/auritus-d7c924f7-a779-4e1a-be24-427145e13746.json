@@ -1,0 +1,20 @@
+{
+  "id": "auritus-d7c924f7-a779-4e1a-be24-427145e13746",
+  "title": "Implement F5-TTS backend with MLX support",
+  "description": "Implement F5-TTS pluggable backend with native MLX on Apple Silicon and PyTorch fallback, add Gherkin scenarios, worker-image registry, and tests.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-19ba7b16-6f43-4136-ad99-3b8e4b434c6c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-14T23:03:29.231635Z",
+  "updated_at": "2026-09-14T23:03:30.863924Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
