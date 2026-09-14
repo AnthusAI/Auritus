@@ -1,0 +1,20 @@
+{
+  "id": "auritus-1804be1b-aa66-4622-a07f-de188702cbb1",
+  "title": "M9 - Workforce Identity: Google & AWS IAM Identity Center",
+  "description": "Support Google Workspace and AWS IAM Identity Center (SAML 2.0) SSO federation alongside native Cognito User Pools across CLI, web console, docs, and architecture.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-14T19:47:08.701494Z",
+  "updated_at": "2026-09-14T19:47:08.701527Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
