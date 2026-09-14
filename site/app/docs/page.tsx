@@ -2,6 +2,11 @@ import Link from "next/link";
 
 const sections = [
   {
+    href: "/docs/getting-started",
+    title: "Getting started",
+    summary: "Interactive, animated setup guide with side-by-side identity choices, TTS model audio previews, and dynamic embed builder.",
+  },
+  {
     href: "/docs/architecture",
     title: "Architecture",
     summary: "Visual guide to the local-first worker, AWS fallback, identity choices, and secure-design status.",
