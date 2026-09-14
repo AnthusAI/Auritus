@@ -1,0 +1,20 @@
+{
+  "id": "auritus-09195d80-de18-4690-80f6-3c88d5208f26",
+  "title": "Fix Cognito email attribute immutability causing 'user.email: Attribute cannot be updated' on federated SSO logins",
+  "description": "",
+  "type": "bug",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-1804be1b-aa66-4622-a07f-de188702cbb1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-14T21:51:50.261614Z",
+  "updated_at": "2026-09-14T21:51:51.883793Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
