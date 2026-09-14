@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.14.1 (2026-09-14)
+
+### Bug Fixes
+
+- **site**: Stop the wordmark clipping off the top on mobile
+  ([`7206550`](https://github.com/AnthusAI/Auritus/commit/7206550fd994f6242ff723fea983d1a192df7d97))
+
+
 ## v0.14.0 (2026-09-13)
 
 ### Bug Fixes
