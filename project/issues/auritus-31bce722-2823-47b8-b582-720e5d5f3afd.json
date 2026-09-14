@@ -1,0 +1,20 @@
+{
+  "id": "auritus-31bce722-2823-47b8-b582-720e5d5f3afd",
+  "title": "Verify Google Workspace SSO login flow end-to-end for CLI and Web Console",
+  "description": "",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-1804be1b-aa66-4622-a07f-de188702cbb1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-14T20:46:38.132448Z",
+  "updated_at": "2026-09-14T20:46:41.490988Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
