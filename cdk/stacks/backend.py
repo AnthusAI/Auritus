@@ -190,13 +190,13 @@ class BackendStack(Stack):
 
         user_pool = cognito.UserPool(
             self,
-            "AuritusUsers",
+            "AuritusUserPool",
             self_sign_up_enabled=False,
             sign_in_aliases=cognito.SignInAliases(email=True),
             standard_attributes=cognito.StandardAttributes(
-                email=cognito.StandardAttribute(required=True, mutable=False)
+                email=cognito.StandardAttribute(required=True, mutable=True)
             ),
-            removal_policy=RemovalPolicy.RETAIN,
+            removal_policy=RemovalPolicy.DESTROY,
         )
 
         cognito_domain_prefix = (
