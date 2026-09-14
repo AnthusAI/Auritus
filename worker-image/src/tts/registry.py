@@ -39,7 +39,11 @@ def get_backend(name: str) -> TTSBackend:
         from tts.bark import BarkBackend
 
         return BarkBackend()
+    if key in ("f5", "f5-tts"):
+        from tts.f5 import F5Backend
+
+        return F5Backend()
     raise ValueError(
         f"Unknown TTS backend: {name!r}. "
-        "Known: bark, coqui, fish, higgs, kokoro, qwen"
+        "Known: bark, coqui, f5, fish, higgs, kokoro, qwen"
     )
