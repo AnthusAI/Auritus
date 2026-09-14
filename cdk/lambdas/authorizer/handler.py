@@ -19,6 +19,9 @@ from typing import Any
 
 USER_POOL_ID = os.environ.get("USER_POOL_ID", "")
 CLIENT_ID = os.environ.get("CLIENT_ID", "")
+ALLOWED_CLIENT_IDS: list[str] = [
+    c.strip() for c in os.environ.get("ALLOWED_CLIENT_IDS", "").split(",") if c.strip()
+]
 
 
 def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
@@ -56,7 +59,10 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         return _deny("issuer_mismatch")
 
     audience = payload.get("aud") or payload.get("client_id")
-    if CLIENT_ID and audience != CLIENT_ID:
+    valid_audiences = (
+        ALLOWED_CLIENT_IDS if ALLOWED_CLIENT_IDS else ([CLIENT_ID] if CLIENT_ID else [])
+    )
+    if valid_audiences and audience not in valid_audiences:
         return _deny("audience_mismatch")
 
     route_arn = event.get("routeArn") or event.get("methodArn") or "*"

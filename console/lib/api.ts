@@ -68,8 +68,11 @@ export async function fetchOverview(): Promise<OverviewMetrics> {
   return apiFetch<OverviewMetrics>('/admin/overview');
 }
 
-export async function fetchJobs(status?: string): Promise<{ jobs: JobSummary[] }> {
-  const query = status ? `?status=${encodeURIComponent(status)}` : '';
+export async function fetchJobs(status?: string, limit?: number): Promise<{ jobs: JobSummary[] }> {
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+  if (limit) params.set('limit', String(limit));
+  const query = params.toString() ? `?${params.toString()}` : '';
   return apiFetch<{ jobs: JobSummary[] }>(`/admin/jobs${query}`);
 }
 

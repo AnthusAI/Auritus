@@ -381,6 +381,7 @@ class BackendStack(Stack):
             environment={
                 "USER_POOL_ID": user_pool.user_pool_id,
                 "CLIENT_ID": user_pool_client.user_pool_client_id,
+                "ALLOWED_CLIENT_IDS": f"{user_pool_client.user_pool_client_id},{web_console_client.user_pool_client_id}",
             },
         )
 

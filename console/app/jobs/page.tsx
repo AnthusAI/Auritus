@@ -9,43 +9,19 @@ export default function JobExplorerPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadJobs() {
       setLoading(true);
+      setError(null);
       try {
-        const data = await fetchJobs(statusFilter === 'all' ? undefined : statusFilter).catch(() => ({
-          jobs: [
-            {
-              content_hash: '1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d',
-              status: 'done',
-              worker_type: 'local',
-              tts_backend: 'kokoro',
-              voice_id: 'af_heart',
-              text: 'Four score and seven years ago our fathers brought forth on this continent a new nation...',
-              duration_seconds: 4.2,
-              created_at: '2026-09-13T14:10:00Z',
-            },
-            {
-              content_hash: '8f9e0d1c2b3a4f5e6d7c8b9a0f1e2d3c',
-              status: 'done',
-              worker_type: 'batch',
-              tts_backend: 'qwen',
-              voice_id: 'Ryan',
-              text: 'The brave men, living and dead, who struggled here, have consecrated it, far above our poor power...',
-              duration_seconds: 7.9,
-              created_at: '2026-09-13T14:15:00Z',
-            },
-            {
-              content_hash: '9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d',
-              status: 'pending',
-              tts_backend: 'kokoro',
-              text: 'Incoming TTS request waiting for available worker.',
-              created_at: '2026-09-13T14:20:00Z',
-            },
-          ] as JobSummary[],
-        }));
+        const data = await fetchJobs(statusFilter === 'all' ? undefined : statusFilter, 100);
         setJobs(data.jobs || []);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Failed to load jobs';
+        setError(message);
+        setJobs([]);
       } finally {
         setLoading(false);
       }
@@ -116,7 +92,13 @@ export default function JobExplorerPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {error ? (
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem', color: '#cf1322' }}>
+                  Error loading jobs: {error}
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--ink-muted)' }}>
                   {loading ? 'Loading jobs...' : 'No matching jobs found.'}
