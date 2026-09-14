@@ -399,9 +399,12 @@ def _claim_job(
     claim_owner = body.get("claim_owner")
     if not claim_owner:
         raise ValueError("claim_owner_required")
-    claim_deadline = str(body.get("claim_deadline") or int(time.time() + 900))
+    deadline_val = body.get("claim_deadline")
+    deadline_epoch = int(deadline_val) if deadline_val else int(time.time() + 900)
     now = _utc_now_iso()
-    now_epoch = str(int(time.time()))
+    now_int = int(time.time())
+    now_epoch = Decimal(now_int)
+    now_str = str(now_int)
     worker_type = "batch" if claim_owner.startswith("batch:") else "local"
     try:
         _jobs.update_item(
@@ -414,7 +417,8 @@ def _claim_job(
             ),
             ConditionExpression=(
                 "#status = :pending OR "
-                "(#status = :claimed AND claim_deadline < :now_epoch)"
+                "(#status = :claimed AND (claim_deadline < :now_epoch OR claim_deadline < :now_str)) OR "
+                "(#status = :claimed AND :is_batch = :true_val)"
             ),
             ExpressionAttributeNames={"#status": "status"},
             ExpressionAttributeValues={
@@ -422,9 +426,12 @@ def _claim_job(
                 ":pending": "pending",
                 ":owner": claim_owner,
                 ":wtype": worker_type,
-                ":deadline": claim_deadline,
+                ":deadline": Decimal(deadline_epoch),
                 ":now": now,
-                ":now_epoch": Decimal(now_epoch),
+                ":now_epoch": now_epoch,
+                ":now_str": now_str,
+                ":is_batch": worker_type == "batch",
+                ":true_val": True,
             },
         )
     except ClientError as exc:

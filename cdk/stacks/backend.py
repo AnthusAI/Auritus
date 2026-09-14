@@ -81,6 +81,8 @@ from constructs import Construct
 
 LAMBDA_ROOT = Path(__file__).resolve().parents[1] / "lambdas"
 DEFAULT_CLAIM_TIMEOUT_SECONDS = 900
+DEFAULT_RACE_SECONDS = 900
+DEFAULT_DELIVERY_GRACE_SECONDS = 300
 
 
 class BackendStack(Stack):
@@ -92,6 +94,13 @@ class BackendStack(Stack):
         claim_timeout_seconds = int(
             self.node.try_get_context("claim_timeout_seconds")
             or DEFAULT_CLAIM_TIMEOUT_SECONDS
+        )
+        race_seconds = int(
+            self.node.try_get_context("race_seconds") or DEFAULT_RACE_SECONDS
+        )
+        delivery_grace_seconds = int(
+            self.node.try_get_context("delivery_grace_seconds")
+            or DEFAULT_DELIVERY_GRACE_SECONDS
         )
 
         google_secret_arn = self.node.try_get_context("google_oauth_secret_arn")
@@ -563,15 +572,15 @@ class BackendStack(Stack):
             ),
         )
 
-        wait = sfn.Wait(
+        wait_race = sfn.Wait(
             self,
-            "WaitForLocalWorker",
-            time=sfn.WaitTime.duration(Duration.seconds(claim_timeout_seconds)),
+            "WaitForLocalWorkerRace",
+            time=sfn.WaitTime.duration(Duration.seconds(race_seconds)),
         )
 
-        get_job = sfn_tasks.DynamoGetItem(
+        get_job_initial = sfn_tasks.DynamoGetItem(
             self,
-            "GetJobStatus",
+            "GetJobStatusInitial",
             table=jobs,
             key={
                 "content_hash": sfn_tasks.DynamoAttributeValue.from_string(
@@ -581,16 +590,22 @@ class BackendStack(Stack):
             result_path="$.job",
         )
 
-        estimate_now = sfn.Pass(
+        wait_delivery = sfn.Wait(
             self,
-            "EstimateNowEpoch",
-            parameters={
-                "content_hash.$": "$.content_hash",
-                "job_token.$": "$.job_token",
-                "tts_backend.$": "$.tts_backend",
-                "job.$": "$.job",
-                "now_epoch.$": "States.Format('{}', States.MathAdd($.baseline_epoch, $.fallback_seconds))",
+            "WaitForClaimedDeliveryGrace",
+            time=sfn.WaitTime.duration(Duration.seconds(delivery_grace_seconds)),
+        )
+
+        get_job_after_grace = sfn_tasks.DynamoGetItem(
+            self,
+            "GetJobStatusAfterGrace",
+            table=jobs,
+            key={
+                "content_hash": sfn_tasks.DynamoAttributeValue.from_string(
+                    sfn.JsonPath.string_at("$.content_hash")
+                )
             },
+            result_path="$.job",
         )
 
         submit_batch = sfn_tasks.BatchSubmitJob(
@@ -612,30 +627,31 @@ class BackendStack(Stack):
             result_path="$.batch",
         )
 
-        still_open = sfn.Choice(self, "PendingOrStale")
-        succeed = sfn.Succeed(self, "LocalWorkerOwnsJob")
+        local_delivered = sfn.Succeed(self, "LocalWorkerDelivered")
 
-        definition = (
-            wait.next(get_job)
-            .next(estimate_now)
-            .next(
-                still_open.when(
-                    sfn.Condition.string_equals("$.job.Item.status.S", "pending"),
-                    submit_batch,
-                )
-                .when(
-                    sfn.Condition.and_(
-                        sfn.Condition.string_equals("$.job.Item.status.S", "claimed"),
-                        sfn.Condition.string_less_than(
-                            "$.job.Item.claim_deadline.N",
-                            sfn.JsonPath.string_at("$.now_epoch"),
-                        ),
-                    ),
-                    submit_batch,
-                )
-                .otherwise(succeed)
-            )
+        check_delivery_after_grace = sfn.Choice(self, "CheckDeliveryAfterGrace")
+        check_delivery_after_grace.when(
+            sfn.Condition.string_equals("$.job.Item.status.S", "done"),
+            local_delivered,
+        ).otherwise(submit_batch)
+
+        wait_delivery.next(get_job_after_grace).next(check_delivery_after_grace)
+
+        check_initial_status = sfn.Choice(self, "CheckInitialStatus")
+        check_initial_status.when(
+            sfn.Condition.string_equals("$.job.Item.status.S", "done"),
+            local_delivered,
+        ).when(
+            sfn.Condition.string_equals("$.job.Item.status.S", "pending"),
+            submit_batch,
+        ).when(
+            sfn.Condition.string_equals("$.job.Item.status.S", "claimed"),
+            wait_delivery,
+        ).otherwise(
+            submit_batch
         )
+
+        definition = wait_race.next(get_job_initial).next(check_initial_status)
 
         fallback = sfn.StateMachine(
             self,
