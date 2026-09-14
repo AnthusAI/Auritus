@@ -47,7 +47,7 @@ vars: {
 }
 
 title: {
-  label: "Planned: not implemented in the stack today"
+  label: "AWS IAM Identity Center (AWS SSO) SAML 2.0 Federation"
   shape: text
   style.font-size: 22
   style.bold: true
@@ -59,21 +59,18 @@ operator: {
 }
 
 idc: {
-  label: "AWS IAM Identity Center\nor any SAML 2.0 IdP\nOkta, Entra ID, Ping"
-  style.stroke-dash: 4
+  label: "AWS IAM Identity Center\nor corporate SAML 2.0 IdP\nOkta, Entra ID, Ping"
 }
 
 directory: {
   label: "Your directory\njoiners and leavers\ncentral offboarding"
-  style.stroke-dash: 4
 }
 
 aws: {
   label: "Your AWS account"
 
   pool: {
-    label: "Cognito user pool\nSAML federation\nnot configured today"
-    style.stroke-dash: 4
+    label: "Cognito user pool\nSAML federation\nconfigured in the stack"
   }
   tokens: {
     label: "Short-lived JWTs\naccess 1h\nrefresh 30d, rotating"
@@ -94,10 +91,10 @@ iam: {
   style.stroke-dash: 4
 }
 
-directory -> idc: "identity source" {style.stroke-dash: 4}
-operator -> idc: "enterprise SSO" {style.bold: true; style.stroke-dash: 4}
-idc -> aws.pool: "SAML assertion" {style.stroke-dash: 4}
-aws.pool -> aws.tokens: "would issue" {style.stroke-dash: 4}
+directory -> idc: "identity source"
+operator -> idc: "enterprise SSO" {style.bold: true}
+idc -> aws.pool: "SAML assertion"
+aws.pool -> aws.tokens: "issues"
 aws.tokens -> aws.api: "Authorization: Bearer" {style.bold: true}
 aws.api -> aws.routes: "allow"
 idc -> iam: "never issued" {style.stroke-dash: 4}

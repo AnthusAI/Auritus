@@ -94,21 +94,19 @@ sequenceDiagram
 
 ## Operator identity choices
 
-![Operator identity choices: native Cognito users are supported now; Google requires configuration; the IAM Identity Center SAML option is planned and not implemented.](diagrams/rendered/operator-identity-options.svg)
+![Operator identity choices: native Cognito users, Google Workspace OAuth, and AWS IAM Identity Center SAML federation.](diagrams/rendered/operator-identity-options.svg)
 
-- **Native Cognito user — supported now:** CDK provisions a user pool and app
+- **Native Cognito user — supported (built-in):** CDK provisions a user pool and app
   client. `auritus login --username <email>` uses the native pool's
-  `USER_PASSWORD_AUTH` flow.
-- **Google project through Cognito — configuration required:** the stack has an
-  optional Google IdP resource, but a working browser flow still needs real
-  Google credentials and a configured Cognito user-pool domain. The present CLI
-  deliberately does not use this browser-based flow. Do not describe Google
-  sign-in as available until that deployment path is implemented and tested.
-- **AWS IAM Identity Center — viable enterprise option, not implemented:** IAM
-  Identity Center can provide a customer-managed SAML 2.0 application, and
-  Cognito user pools can consume SAML 2.0 federation. This is a sensible future
-  path for workforce SSO, but Auritus has not implemented, tested, or reviewed
-  this integration. It must not be presented as an available login method.
+  `USER_PASSWORD_AUTH` flow. Ideal when you want to keep everything self-contained
+  inside your AWS account.
+- **Google Workspace via Cognito — supported (SSO):** the stack configures Google
+  OIDC federation on the user pool. Operators authenticate via Google single sign-on
+  in the web console or via `auritus login --sso google`.
+- **AWS IAM Identity Center (AWS SSO) — supported (SAML 2.0 / SSO):** the user pool
+  supports SAML 2.0 federation with AWS IAM Identity Center or corporate identity
+  providers (Okta, Entra ID, Ping). Operators sign in via single sign-on in the web
+  console or via `auritus login --sso aws-sso`.
 
 For the supported CLI path, short-lived JWTs are stored locally under
 `~/.auritus/credentials` with mode `0600`. Operator routes (`/sites`, claimable

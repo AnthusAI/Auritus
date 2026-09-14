@@ -10,7 +10,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [authorized, setAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (pathname === '/login') {
+    if (pathname === '/login' || pathname === '/callback') {
       setAuthorized(true);
       return;
     }

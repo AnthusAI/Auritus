@@ -91,6 +91,74 @@ export async function loginWithCognito(email: string, password: string): Promise
   return session;
 }
 
+export function getSsoAuthorizeUrl(provider: 'Google' | 'IdentityCenter'): string {
+  const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'auritus-auth';
+  const region = process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1';
+  const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '';
+  const redirectUri =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/callback`
+      : 'http://localhost:3001/callback';
+
+  return `https://${domain}.auth.${region}.amazoncognito.com/oauth2/authorize?identity_provider=${encodeURIComponent(
+    provider
+  )}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&client_id=${encodeURIComponent(
+    clientId
+  )}&scope=openid+email+profile`;
+}
+
+export async function exchangeSsoCode(code: string): Promise<Session> {
+  const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'auritus-auth';
+  const region = process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1';
+  const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '';
+  const redirectUri =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/callback`
+      : 'http://localhost:3001/callback';
+
+  const tokenUrl = `https://${domain}.auth.${region}.amazoncognito.com/oauth2/token`;
+  const params = new URLSearchParams({
+    grant_type: 'authorization_code',
+    client_id: clientId,
+    code,
+    redirect_uri: redirectUri,
+  });
+
+  const response = await fetch(tokenUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params.toString(),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error_description || data.error || 'Failed to exchange authorization code.');
+  }
+
+  let email = 'operator@sso';
+  if (data.id_token) {
+    try {
+      const payloadBase64 = data.id_token.split('.')[1];
+      const decoded = JSON.parse(atob(payloadBase64));
+      if (decoded.email) email = decoded.email;
+    } catch {
+      // fallback to placeholder
+    }
+  }
+
+  const session: Session = {
+    email,
+    accessToken: data.access_token,
+    idToken: data.id_token || '',
+    expiresAt: Date.now() + (data.expires_in || 3600) * 1000,
+  };
+
+  saveSession(session);
+  return session;
+}
+
 export function getAuthorizationHeader(): Record<string, string> {
   const session = getStoredSession();
   if (session?.accessToken) {

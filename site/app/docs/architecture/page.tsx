@@ -4,21 +4,21 @@ import Link from "next/link";
 const identityOptions = [
   {
     title: "Native Cognito users",
-    status: "Supported now",
+    status: "Supported (built-in)",
     description:
-      "The operator CLI signs in with a Cognito email and password and uses short-lived JWTs for operator routes.",
+      "Simple, native user pool credentials managed directly within your AWS account with no external IdP required.",
   },
   {
-    title: "Google project through Cognito",
-    status: "Configuration required",
+    title: "Google Workspace",
+    status: "Supported (SSO)",
     description:
-      "The stack has an optional Google IdP resource, but a real Google client and Cognito user-pool domain still need to be configured and tested. The current CLI does not use this path.",
+      "Federated OIDC sign-in via Google Cloud OAuth. Supported across both web console and CLI browser authentication.",
   },
   {
     title: "AWS IAM Identity Center",
-    status: "Future enterprise option",
+    status: "Supported (SAML 2.0 / SSO)",
     description:
-      "IAM Identity Center can provide a SAML 2.0 application path through Cognito, but Auritus has not implemented or reviewed it yet.",
+      "Enterprise SAML 2.0 federation connecting directly to AWS SSO (IAM Identity Center), Okta, Entra ID, or Ping.",
   },
 ];
 

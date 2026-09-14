@@ -199,6 +199,16 @@ class BackendStack(Stack):
             removal_policy=RemovalPolicy.RETAIN,
         )
 
+        cognito_domain_prefix = (
+            self.node.try_get_context("cognito_domain_prefix") or "auritus-auth"
+        )
+        user_pool.add_domain(
+            "CognitoDomain",
+            cognito_domain=cognito.CognitoDomainOptions(
+                domain_prefix=cognito_domain_prefix,
+            ),
+        )
+
         google_idp = cognito.UserPoolIdentityProviderGoogle(
             self,
             "GoogleIdP",
@@ -211,6 +221,32 @@ class BackendStack(Stack):
                 fullname=cognito.ProviderAttribute.GOOGLE_NAME,
             ),
         )
+
+        # AWS IAM Identity Center or corporate SAML 2.0 Identity Provider
+        saml_metadata_url = self.node.try_get_context("saml_metadata_url")
+        saml_idp = None
+        supported_idps = [
+            cognito.UserPoolClientIdentityProvider.COGNITO,
+            cognito.UserPoolClientIdentityProvider.GOOGLE,
+        ]
+
+        if saml_metadata_url:
+            saml_idp = cognito.UserPoolIdentityProviderSaml(
+                self,
+                "IdentityCenterSamlIdP",
+                user_pool=user_pool,
+                name="IdentityCenter",
+                metadata=cognito.UserPoolIdentityProviderSamlMetadata.url(
+                    saml_metadata_url
+                ),
+                attribute_mapping=cognito.AttributeMapping(
+                    email=cognito.ProviderAttribute.other("email"),
+                    fullname=cognito.ProviderAttribute.other("name"),
+                ),
+            )
+            supported_idps.append(
+                cognito.UserPoolClientIdentityProvider.custom("IdentityCenter")
+            )
 
         user_pool_client = cognito.UserPoolClient(
             self,
@@ -234,16 +270,15 @@ class BackendStack(Stack):
                     "http://localhost/callback",
                 ],
             ),
-            supported_identity_providers=[
-                cognito.UserPoolClientIdentityProvider.COGNITO,
-                cognito.UserPoolClientIdentityProvider.GOOGLE,
-            ],
+            supported_identity_providers=supported_idps,
             auth_flows=cognito.AuthFlow(
                 user_password=True,
                 user_srp=True,
             ),
         )
         user_pool_client.node.add_dependency(google_idp)
+        if saml_idp:
+            user_pool_client.node.add_dependency(saml_idp)
 
         web_console_client = cognito.UserPoolClient(
             self,
@@ -265,26 +300,28 @@ class BackendStack(Stack):
                 callback_urls=[
                     "http://localhost:3000/callback",
                     "http://localhost:3000",
+                    "http://localhost:3001/callback",
+                    "http://localhost:3001",
                     "https://console.aurit.us/callback",
                     "https://console.aurit.us",
                     "https://aurit.us/console/callback",
                 ],
                 logout_urls=[
                     "http://localhost:3000/login",
+                    "http://localhost:3001/login",
                     "https://console.aurit.us/login",
                     "https://aurit.us/console/login",
                 ],
             ),
-            supported_identity_providers=[
-                cognito.UserPoolClientIdentityProvider.COGNITO,
-                cognito.UserPoolClientIdentityProvider.GOOGLE,
-            ],
+            supported_identity_providers=supported_idps,
             auth_flows=cognito.AuthFlow(
                 user_password=True,
                 user_srp=True,
             ),
         )
         web_console_client.node.add_dependency(google_idp)
+        if saml_idp:
+            web_console_client.node.add_dependency(saml_idp)
 
         router_fn = lambda_.Function(
             self,
