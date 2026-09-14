@@ -1,0 +1,20 @@
+{
+  "id": "auritus-0190315a-1d65-4dd0-8590-e682098b75e9",
+  "title": "Reorganize demo pages with three-model comparison and F5-TTS example",
+  "description": "Reorganize /examples into two categories: Model Comparison (Kokoro, Qwen, F5) and Feature Demos. Add /examples/f5, add shared ModelCompareNav, update Gherkin and tests.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-f3fac494-0495-4d18-a1e6-4a9755e1fe1a",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-14T23:24:58.747031Z",
+  "updated_at": "2026-09-14T23:25:00.714677Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
