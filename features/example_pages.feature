@@ -1,5 +1,5 @@
 Feature: Example pages demonstrate distinct speech
-  Kokoro and Qwen speak the same Gettysburg excerpt so listeners can compare
+  Kokoro, Qwen, and F5 speak the same Gettysburg excerpt so listeners can compare
   backends. Spoken copy is at least two paragraphs. Ignore markup is a separate
   fixture. Playwright requires a playable clip of spoken length on each
   example so a tone stub cannot pass.
@@ -26,6 +26,14 @@ Feature: Example pages demonstrate distinct speech
     And the TTS text includes "Now we are engaged in a great civil war"
     And the TTS text does not include "When on board H.M.S."
     And the example embed requests tts_backend "qwen"
+
+  Scenario: F5 example speaks the same Gettysburg excerpt
+    Given the F5 example page article
+    When the generator extracts TTS text from that root
+    Then the TTS text includes "Four score and seven years ago"
+    And the TTS text includes "Now we are engaged in a great civil war"
+    And the TTS text does not include "This page speaks that excerpt"
+    And the example embed requests tts_backend "f5"
 
   Scenario: Ignore example omits ignored copy from a longer article
     Given the ignore example page article

@@ -1,16 +1,12 @@
-import Link from "next/link";
 import { AuritusEmbed } from "@/components/AuritusEmbed";
 import { AuritusPlayerHost } from "@/components/AuritusPlayerHost";
 import { GettysburgExcerpt } from "@/components/GettysburgExcerpt";
+import { ModelCompareNav } from "@/components/ModelCompareNav";
 
 export default function QwenExamplePage() {
   return (
     <main className="page">
-      <nav className="site">
-        <Link href="/examples">Examples</Link>
-        <Link href="/examples/basic">Same excerpt in Kokoro</Link>
-        <Link href="/docs/usage">Usage</Link>
-      </nav>
+      <ModelCompareNav currentBackend="qwen" />
       <AuritusPlayerHost
         name="Gettysburg Address"
         byline="Abraham Lincoln, 1863 — Qwen"

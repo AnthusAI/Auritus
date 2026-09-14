@@ -73,6 +73,12 @@ def step_qwen_article(context) -> None:
     context.example_tts_backend = "qwen"
 
 
+@given("the F5 example page article")
+def step_f5_article(context) -> None:
+    context.root_html = GETTYSBURG_ARTICLE
+    context.example_tts_backend = "f5"
+
+
 @given("the ignore example page article")
 def step_ignore_article(context) -> None:
     context.root_html = """

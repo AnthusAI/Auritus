@@ -406,26 +406,48 @@ test("Qwen example posts the same Gettysburg excerpt with Qwen", async ({
   expect(await clipDurationSeconds(page)).toBeGreaterThanOrEqual(20);
 });
 
-test("Kokoro and Qwen examples POST the same spoken text", async ({
+test("F5 example posts the same Gettysburg excerpt with F5", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  const createJobRequest = waitForJobPost(page);
+  await page.goto("/examples/f5");
+  const body = (await createJobRequest).postDataJSON() as JobPostBody;
+  expect(body.tts_backend).toBe("f5");
+  expect(body.voice_id).toBe("default");
+  expect(body.text).toContain("Four score and seven years ago");
+  expect(body.text).toContain("Now we are engaged in a great civil war");
+  expect(body.text).not.toContain("This page speaks that excerpt");
+});
+
+test("Kokoro, Qwen, and F5 examples POST the same spoken text", async ({
   browser,
 }) => {
   test.setTimeout(180_000);
   const kokoroPage = await browser.newPage();
   const qwenPage = await browser.newPage();
+  const f5Page = await browser.newPage();
   const kokoroPost = waitForJobPost(kokoroPage);
   const qwenPost = waitForJobPost(qwenPage);
+  const f5Post = waitForJobPost(f5Page);
   await Promise.all([
     kokoroPage.goto("/examples/basic"),
     qwenPage.goto("/examples/qwen"),
+    f5Page.goto("/examples/f5"),
   ]);
   const kokoroBody = (await kokoroPost).postDataJSON() as JobPostBody;
   const qwenBody = (await qwenPost).postDataJSON() as JobPostBody;
+  const f5Body = (await f5Post).postDataJSON() as JobPostBody;
   expect(kokoroBody.tts_backend).toBe("kokoro");
   expect(qwenBody.tts_backend).toBe("qwen");
+  expect(f5Body.tts_backend).toBe("f5");
   expect(kokoroBody.text).toBe(qwenBody.text);
+  expect(f5Body.text).toBe(kokoroBody.text);
   expect(kokoroBody.content_hash).not.toBe(qwenBody.content_hash);
+  expect(f5Body.content_hash).not.toBe(kokoroBody.content_hash);
   await kokoroPage.close();
   await qwenPage.close();
+  await f5Page.close();
 });
 
 test("ignore example posts Kokoro job without ignored paragraph", async ({
