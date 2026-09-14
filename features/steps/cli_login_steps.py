@@ -15,7 +15,6 @@ from auritus.auth import (
     load_tokens,
     login_with_password,
     maybe_warn_near_expiry,
-    notify_session_state,
     refresh_tokens,
     revoke_tokens,
     save_tokens,
@@ -352,7 +351,6 @@ def step_warning_posted(context) -> None:
 
 @then("the warning is throttled to once per day")
 def step_warning_throttled(context) -> None:
-    import time as _time
 
     mock_config = {
         "api_endpoint": "https://api.test",

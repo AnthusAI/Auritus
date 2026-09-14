@@ -1,38 +1,57 @@
 'use client';
 
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { exchangeSsoCode } from '../../lib/auth';
+import { exchangeSsoCode, getStoredSession } from '../../lib/auth';
 
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
+  const isExchanging = useRef<boolean>(false);
 
   useEffect(() => {
-    async function processCode() {
-      const code = searchParams ? searchParams.get('code') : null;
-      const urlError = searchParams ? searchParams.get('error') : null;
+    // If a valid session is already present, transition directly to dashboard
+    const existing = getStoredSession();
+    if (existing?.accessToken) {
+      router.replace('/');
+      return;
+    }
 
-      if (urlError) {
-        setError(searchParams ? searchParams.get('error_description') || urlError : urlError);
-        return;
-      }
+    const code = searchParams ? searchParams.get('code') : null;
+    const urlError = searchParams ? searchParams.get('error') : null;
 
-      if (!code) {
-        setError('No authorization code received from identity provider.');
-        return;
-      }
+    if (urlError) {
+      setError(searchParams ? searchParams.get('error_description') || urlError : urlError);
+      return;
+    }
 
+    if (!code) {
+      setError('No authorization code received from identity provider.');
+      return;
+    }
+
+    // In React 18 / Next.js dev StrictMode, effects execute twice. Prevent duplicate code exchange.
+    if (isExchanging.current) {
+      return;
+    }
+    isExchanging.current = true;
+
+    async function processCode(authCode: string) {
       try {
-        await exchangeSsoCode(code);
-        router.push('/');
+        await exchangeSsoCode(authCode);
+        router.replace('/');
       } catch (err: any) {
+        // If an active session was already stored, do not flash error
+        if (getStoredSession()?.accessToken) {
+          router.replace('/');
+          return;
+        }
         setError(err.message || 'Failed to complete SSO authentication.');
       }
     }
 
-    processCode();
+    processCode(code);
   }, [searchParams, router]);
 
   if (error) {

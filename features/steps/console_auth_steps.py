@@ -114,7 +114,9 @@ def step_selects_sso(context, provider: str) -> None:
     context.selected_provider = provider
 
 
-@then('the browser initiates OAuth authorization against the Cognito Hosted UI for provider "{provider}"')
+@then(
+    'the browser initiates OAuth authorization against the Cognito Hosted UI for provider "{provider}"'
+)
 def step_verify_oauth_redirect(context, provider: str) -> None:
     assert context.oauth_redirect_url is not None
     assert f"identity_provider={provider}" in context.oauth_redirect_url
