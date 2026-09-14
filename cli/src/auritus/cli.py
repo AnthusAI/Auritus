@@ -27,6 +27,19 @@ def _compat_make_metavar(
 
 click.core.Parameter.make_metavar = _compat_make_metavar  # type: ignore[method-assign]
 
+# Compatibility bridge for Click 8.4+ UNSET flag_value with Typer
+if hasattr(click.core, "UNSET"):
+    _orig_option_init = click.Option.__init__
+
+    def _compat_option_init(
+        self: click.Option, *args: object, **kwargs: object
+    ) -> None:
+        if kwargs.get("flag_value") is None and kwargs.get("is_flag") is None:
+            kwargs["flag_value"] = click.core.UNSET
+        _orig_option_init(self, *args, **kwargs)  # type: ignore[arg-type]
+
+    click.Option.__init__ = _compat_option_init  # type: ignore[method-assign]
+
 app = typer.Typer(
     name="auritus",
     help="Auritus: open just-in-time TTS embed for web pages.",
