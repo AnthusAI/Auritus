@@ -177,7 +177,7 @@ test("landing page does not overflow a narrow viewport", async ({ page }) => {
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
 });
 
-test("architecture documentation labels future identity work as planned", async ({
+test("architecture documentation showcases identity options", async ({
   page,
 }) => {
   await page.goto("/docs/architecture");
@@ -187,10 +187,8 @@ test("architecture documentation labels future identity work as planned", async 
       name: "Choose the login experience your team needs.",
     }),
   ).toBeVisible();
-  await expect(page.getByText("Future enterprise option")).toBeVisible();
-  await expect(
-    page.getByText(/has not implemented or reviewed it yet/i),
-  ).toBeVisible();
+  await expect(page.getByText("AWS IAM Identity Center")).toBeVisible();
+  await expect(page.getByText("Supported (SAML 2.0 / SSO)")).toBeVisible();
 });
 
 test("security page documents unattended worker auth and is reachable from the home nav", async ({

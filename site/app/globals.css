@@ -236,7 +236,8 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
 .auritus-placeholder-name { font-size: 1rem; font-weight: 600; line-height: 1.3; margin: 0; }
 .auritus-placeholder-byline { font-size: 0.875rem; margin: 4px 0 0; opacity: 0.85; }
 .auritus-placeholder-controls { align-items: center; display: flex; gap: 12px; margin-top: 10px; }
-.auritus-placeholder-controls button { appearance: none; background: var(--auritus-accent, #2d5f3f); border: none; border-radius: 50%; color: var(--auritus-play-fg, #ffffff); cursor: pointer; flex-shrink: 0; font-size: 0.75rem; font-weight: 700; height: 40px; width: 40px; }
+.auritus-placeholder-controls button { appearance: none; background: var(--auritus-accent, #2d5f3f); border: none; border-radius: 50%; color: var(--auritus-play-fg, #ffffff); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.75rem; font-weight: 700; height: 40px; width: 40px; }
+.auritus-placeholder-controls button svg { margin-left: 2px; }
 .auritus-placeholder-track { background: var(--auritus-track, color-mix(in srgb, currentColor 25%, transparent)); border-radius: 999px; flex: 1; height: 4px; }
 .auritus-player-host:has(.auritus-root) .auritus-player-placeholder { display: none; }
 

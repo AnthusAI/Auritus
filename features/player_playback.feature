@@ -14,3 +14,18 @@ Feature: Player playback
     When the listener activates Play
     And the clip becomes ready
     Then playback starts
+
+  Scenario: Player displays play icon when idle and pause icon while playing
+    Given the player is mounted with ready audio
+    When playback is idle
+    Then the play button shows a play icon
+    And the play button has label "Play"
+    When playback is active
+    Then the play button shows a pause icon
+    And the play button has label "Pause"
+
+  Scenario: Player formats clip duration and playback progress
+    Given an audio clip with duration 143 seconds
+    When 25 seconds of the clip have played
+    Then the elapsed time displays "0:25"
+    And the total duration displays "2:23"

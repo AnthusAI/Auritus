@@ -52,14 +52,62 @@ export const PLAYER_STYLES = `
   border-radius: 50%;
   background: var(--auritus-accent, #2d5f3f);
   color: var(--auritus-play-fg, #ffffff);
-  font-size: 0.75rem;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  transition: transform 0.1s ease, opacity 0.15s ease;
+}
+
+.auritus-play:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: scale(1.04);
+}
+
+.auritus-play:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.auritus-play:focus-visible {
+  outline: 2px solid var(--auritus-accent, #2d5f3f);
+  outline-offset: 2px;
 }
 
 .auritus-play:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.auritus-play .auritus-icon-play {
+  margin-left: 2px;
+}
+
+.auritus-play .auritus-icon-pause {
+  display: none;
+}
+
+.auritus-play[data-playing="true"] .auritus-icon-play {
+  display: none;
+}
+
+.auritus-play[data-playing="true"] .auritus-icon-pause {
+  display: block;
+}
+
+.auritus-time {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+  white-space: nowrap;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.auritus-time[hidden] {
+  display: none;
 }
 
 .auritus-status {

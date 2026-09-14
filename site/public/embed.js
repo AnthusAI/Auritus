@@ -235,14 +235,62 @@ var Auritus = (() => {
   border-radius: 50%;
   background: var(--auritus-accent, #2d5f3f);
   color: var(--auritus-play-fg, #ffffff);
-  font-size: 0.75rem;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  transition: transform 0.1s ease, opacity 0.15s ease;
+}
+
+.auritus-play:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: scale(1.04);
+}
+
+.auritus-play:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.auritus-play:focus-visible {
+  outline: 2px solid var(--auritus-accent, #2d5f3f);
+  outline-offset: 2px;
 }
 
 .auritus-play:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.auritus-play .auritus-icon-play {
+  margin-left: 2px;
+}
+
+.auritus-play .auritus-icon-pause {
+  display: none;
+}
+
+.auritus-play[data-playing="true"] .auritus-icon-play {
+  display: none;
+}
+
+.auritus-play[data-playing="true"] .auritus-icon-pause {
+  display: block;
+}
+
+.auritus-time {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+  white-space: nowrap;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.auritus-time[hidden] {
+  display: none;
 }
 
 .auritus-status {
@@ -281,6 +329,21 @@ var Auritus = (() => {
       media.currentTime = 0;
     }
   }
+  function formatDuration(seconds) {
+    if (!Number.isFinite(seconds) || seconds < 0) {
+      return "0:00";
+    }
+    const totalSeconds = Math.floor(seconds);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor(totalSeconds % 3600 / 60);
+    const remainingSeconds = totalSeconds % 60;
+    const paddedSeconds = remainingSeconds.toString().padStart(2, "0");
+    if (hours > 0) {
+      const paddedMinutes = minutes.toString().padStart(2, "0");
+      return `${hours}:${paddedMinutes}:${paddedSeconds}`;
+    }
+    return `${minutes}:${paddedSeconds}`;
+  }
   function statusLabel(job) {
     switch (job.status) {
       case "done":
@@ -315,10 +378,22 @@ var Auritus = (() => {
       <p class="auritus-byline"></p>
     </div>
     <div class="auritus-controls">
-      <button type="button" class="auritus-play" aria-label="Play">Play</button>
+      <button type="button" class="auritus-play" aria-label="Play" data-playing="false">
+        <svg class="auritus-icon-play" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86a1 1 0 0 0-1.5.86z"/>
+        </svg>
+        <svg class="auritus-icon-pause" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+        </svg>
+      </button>
       <div class="auritus-track" aria-hidden="true">
         <div class="auritus-track-fill"></div>
       </div>
+      <span class="auritus-time" aria-label="Audio duration" hidden>
+        <span class="auritus-time-current">0:00</span>
+        <span class="auritus-time-separator">/</span>
+        <span class="auritus-time-duration">0:00</span>
+      </span>
       <span class="auritus-status"></span>
     </div>
     <p class="auritus-error" hidden></p>
@@ -330,6 +405,13 @@ var Auritus = (() => {
     const statusEl = root.querySelector(".auritus-status");
     const trackFill = root.querySelector(".auritus-track-fill");
     const errorEl = root.querySelector(".auritus-error");
+    const timeEl = root.querySelector(".auritus-time");
+    const timeCurrentEl = root.querySelector(
+      ".auritus-time-current"
+    );
+    const timeDurationEl = root.querySelector(
+      ".auritus-time-duration"
+    );
     nameEl.textContent = name;
     bylineEl.textContent = byline;
     if (!byline) {
@@ -350,6 +432,12 @@ var Auritus = (() => {
       errorEl.textContent = message;
       playBtn.disabled = true;
     }
+    function updateTimeDisplay() {
+      timeCurrentEl.textContent = formatDuration(audio.currentTime);
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        timeDurationEl.textContent = formatDuration(audio.duration);
+      }
+    }
     function applyJob(job) {
       statusEl.hidden = false;
       statusEl.textContent = pendingPlay ? "Starting when ready\u2026" : statusLabel(job);
@@ -363,6 +451,8 @@ var Auritus = (() => {
         audio.src = job.audio_url;
         playBtn.disabled = false;
         statusEl.hidden = true;
+        timeEl.hidden = false;
+        updateTimeDisplay();
         if (pendingPlay) {
           pendingPlay = false;
           rewindIfEnded(audio);
@@ -399,7 +489,7 @@ var Auritus = (() => {
     }
     function syncPlayLabel() {
       const playing = !audio.paused && !audio.ended;
-      playBtn.textContent = playing ? "Pause" : "Play";
+      playBtn.setAttribute("data-playing", playing ? "true" : "false");
       playBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
     }
     playBtn.addEventListener("click", () => {
@@ -418,8 +508,20 @@ var Auritus = (() => {
     });
     audio.addEventListener("play", syncPlayLabel);
     audio.addEventListener("pause", syncPlayLabel);
-    audio.addEventListener("ended", syncPlayLabel);
+    audio.addEventListener("ended", () => {
+      syncPlayLabel();
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        timeCurrentEl.textContent = formatDuration(audio.duration);
+        trackFill.style.width = "100%";
+      }
+    });
+    audio.addEventListener("loadedmetadata", () => {
+      updateTimeDisplay();
+      timeEl.hidden = false;
+    });
+    audio.addEventListener("durationchange", updateTimeDisplay);
     audio.addEventListener("timeupdate", () => {
+      updateTimeDisplay();
       if (!audio.duration || !Number.isFinite(audio.duration)) {
         trackFill.style.width = "0%";
         return;
