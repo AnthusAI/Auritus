@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveSession } from '../../lib/auth';
+import { loginWithCognito } from '../../lib/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,15 +17,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // Authenticate against Cognito User Pool via API or simulated login
-      // Session expires in 1 hour
-      const mockSession = {
-        email,
-        accessToken: `jwt-${btoa(email)}-${Date.now()}`,
-        idToken: `id-${btoa(email)}-${Date.now()}`,
-        expiresAt: Date.now() + 3600 * 1000,
-      };
-      saveSession(mockSession);
+      await loginWithCognito(email, password);
       router.push('/');
     } catch (err: any) {
       setError(err.message || 'Login failed');

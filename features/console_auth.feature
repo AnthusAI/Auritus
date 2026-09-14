@@ -17,3 +17,8 @@ Feature: Web console operator authentication
     Given an authenticated web console session
     When the operator logs out
     Then the session tokens are cleared
+
+  Scenario: Unauthenticated visitor accessing protected route is redirected to login
+    Given an unauthenticated visitor
+    When the visitor attempts to navigate to "/jobs"
+    Then the visitor is redirected to "/login"

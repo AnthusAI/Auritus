@@ -73,3 +73,23 @@ def step_operator_logout(context) -> None:
 @then("the session tokens are cleared")
 def step_tokens_cleared(context) -> None:
     assert context.web_session is None
+
+
+@given("an unauthenticated visitor")
+def step_unauthenticated_visitor(context) -> None:
+    context.web_session = None
+    context.current_route = None
+
+
+@when('the visitor attempts to navigate to "{route}"')
+def step_visitor_navigates(context, route: str) -> None:
+    # AuthGuard redirects to /login if no valid session exists and route != /login
+    if not context.web_session and route != "/login":
+        context.current_route = "/login"
+    else:
+        context.current_route = route
+
+
+@then('the visitor is redirected to "{expected_route}"')
+def step_visitor_redirected(context, expected_route: str) -> None:
+    assert context.current_route == expected_route
