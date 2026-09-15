@@ -1,0 +1,20 @@
+{
+  "id": "auritus-6df2acb7-a316-4402-af61-96610779b524",
+  "title": "embed.js cached at CDN edges for up to a year with no invalidation step -- deploys don't propagate",
+  "description": "Discovered chasing an apparently-inconsistent deploy while integrating and then\niterating on Pilobol.us's Auritus embed (2026-09-14/15). Across several\nconsecutive fixes and deploys to aurit.us/embed.js this session, different\nrequests -- sometimes even from the same browser tab, sometimes a fresh tab\n-- returned DIFFERENT versions of the file, days-to-minutes apart in what\nthey contained. Root cause:\n\ncurl -sI https://aurit.us/embed.js\n  cache-control: public, max-age=0, s-maxage=31536000\n  x-cache: Hit from cloudfront\n  x-amz-cf-pop: MIA50-P7\n  age: 329\n\ns-maxage=31536000 is ONE YEAR. This is Amplify Hosting's own default\nbehavior for static assets served from a Next.js app's public/ directory --\nnothing in this repo's CDK/Amplify config sets it explicitly (checked; no\nCache-Control override anywhere for site/public/embed.js). Once any given\nCloudFront edge/POP has cached a response, it will keep serving that exact\nbyte-for-byte snapshot to every request that lands on it for up to a year,\nregardless of how many times the origin is redeployed -- there is no build\nstep or deploy hook in this repo that issues a CloudFront invalidation.\nDifferent edges around the world end up permanently (well, for up to a\nyear) stuck at whatever snapshot they individually had cached at their own\nlast cache-miss, which can be from any point in the deploy history.\n\nThis means: every deploy of embed.js is, in practice, only reliably visible\nto *new* edges that haven't cached anything yet. Any edge already primed\nbefore your change goes out keeps serving the old file indefinitely. For a\ncomponent that literally IS the product being distributed to every\nintegrating site, that's serious -- it means bug fixes and feature\nships to the embed don't actually reach existing readers/sites reliably,\nwith no error, no warning, and no way for an integrator to tell they're\nrunning a stale copy short of diffing the file's contents by hand (which is\nhow this was found).\n\nTwo independent fixes, either meaningfully improves this, ideally both:\n\n1. Version the filename with a content hash (e.g. embed.abc123.js) and have\n   the published snippet's default src point at that, OR keep embed.js as a\n   stable alias that's explicitly configured with a SHORT s-maxage (seconds\n   to low minutes, not a year) so ordinary CDN cache expiry does the right\n   thing without any deploy-time action needed.\n2. Add a CloudFront invalidation step to the site's deploy pipeline (a\n   simple `aws cloudfront create-invalidation --paths /embed.js` after\n   the Amplify build completes) so existing edges pick up new bytes\n   immediately on every deploy, regardless of the cache-control policy.\n\nFiled at P1 because this isn't cosmetic -- it means recent fixes (including\nsome from this same session: the data-auritus-api default, the auto-boot\ncurrentScript bug, the native-controls swap, the automatic pause markers)\nmay currently be invisible to some fraction of real traffic depending on\nwhich CloudFront edge they land on, with no way to know from the outside.",
+  "type": "bug",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-15T11:26:39.388971Z",
+  "updated_at": "2026-09-15T11:27:02.427391Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
