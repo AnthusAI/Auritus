@@ -92,6 +92,83 @@ describe("formatDuration", () => {
   });
 });
 
+describe("mountPlayer duration from job record", () => {
+  afterEach(() => {
+    document.body.replaceChildren();
+    vi.restoreAllMocks();
+  });
+
+  it("shows the server-computed duration before playback, without waiting on <audio> metadata", async () => {
+    // preload="none" means the browser never fetches audio.duration until
+    // playback starts -- this must come from the job record alone. No
+    // loadedmetadata/durationchange event is dispatched anywhere in this
+    // test, matching a real preload="none" element that's never been played.
+    const job: JobRecord = {
+      content_hash: "long-hash",
+      status: "done",
+      audio_url: "https://example.test/long.wav",
+      duration_seconds: 549,
+    };
+    const api = {
+      getJob: async () => job,
+    } as unknown as AuritusApiClient;
+
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    mountPlayer({
+      host,
+      api,
+      contentHash: "long-hash",
+      name: "Long Article",
+      byline: "Author",
+      pollIntervalMs: 15,
+    });
+
+    const timeDurationEl = host.shadowRoot?.querySelector(
+      ".auritus-time-duration",
+    ) as HTMLSpanElement;
+    const timeEl = host.shadowRoot?.querySelector(
+      ".auritus-time",
+    ) as HTMLSpanElement;
+
+    await vi.waitFor(() => {
+      expect(timeDurationEl.textContent).toBe("9:09");
+    });
+    expect(timeEl.hidden).toBe(false);
+  });
+
+  it("leaves the placeholder duration when the job record has none", async () => {
+    const job: JobRecord = {
+      content_hash: "no-duration-hash",
+      status: "done",
+      audio_url: "https://example.test/clip.wav",
+    };
+    const api = {
+      getJob: async () => job,
+    } as unknown as AuritusApiClient;
+
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    mountPlayer({
+      host,
+      api,
+      contentHash: "no-duration-hash",
+      name: "Clip",
+      byline: "Author",
+      pollIntervalMs: 15,
+    });
+
+    const audio = host.shadowRoot?.querySelector("audio") as HTMLAudioElement;
+    await vi.waitFor(() => {
+      expect(audio.src).toContain("clip.wav");
+    });
+    const timeDurationEl = host.shadowRoot?.querySelector(
+      ".auritus-time-duration",
+    ) as HTMLSpanElement;
+    expect(timeDurationEl.textContent).toBe("0:00");
+  });
+});
+
 describe("mountPlayer controls and duration", () => {
   afterEach(() => {
     document.body.replaceChildren();

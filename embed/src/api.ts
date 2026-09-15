@@ -8,6 +8,10 @@ export interface JobRecord {
   audio_url?: string;
   name?: string;
   byline?: string;
+  /** Server-computed clip length. Lets the player show a duration the
+   * instant the job is done, without waiting on the <audio> element's own
+   * metadata fetch (which preload="none" defers until playback starts). */
+  duration_seconds?: number;
 }
 
 export interface CreateJobBody {
