@@ -10,9 +10,17 @@
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "4f6eb16d-6c32-4fcd-b9fc-28dc7d84ec21",
+      "author": "home",
+      "text": "Corroborating evidence this is still an open, real gap: Ryan independently hit the same thing on 2026-09-11/12 wiring the Auritus demo site's own examples (commits 2f70678, 640a535 -- adding data-auritus-api to site/components/AuritusEmbed.tsx and each example page). That fixed the demo site's own instances but never touched apiBaseFromElement()'s default or the README quick-start snippet, so the underlying trap is still live for the next integrator who copies the README as written. Recommendation #1 (fix the README snippet) is the cheap, high-leverage half of this; recommendation #2 (fail loudly instead of silently) is still undone anywhere.",
+      "created_at": "2026-09-15T11:02:22.505668Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-15T01:50:28.922648Z",
-  "updated_at": "2026-09-15T01:50:53.133479Z",
+  "updated_at": "2026-09-15T11:02:22.505922Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

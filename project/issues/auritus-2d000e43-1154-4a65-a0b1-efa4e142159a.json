@@ -1,0 +1,20 @@
+{
+  "id": "auritus-2d000e43-1154-4a65-a0b1-efa4e142159a",
+  "title": "Kokoro backend discarded all but the first generated audio segment",
+  "description": "Both KokoroBackend._generate_mlx and ._generate_torch call generators that\nyield one result per *segment* -- Kokoro's pipeline splits long text into\nspeakable chunks internally due to a model sequence-length limit (not by\nparagraph). Both backends took only the first yielded result\n(next(iter(gen)) / results[0]), silently discarding every subsequent\nsegment. Any text needing more than one segment was truncated to just its\nfirst chunk, with no error, no warning -- the job completed normally and\nreported 'done'.\n\nReproduced live via Pilobol.us: a ~9400-character article produced a 26-\nsecond clip (the first paragraph) before the fix, 549 seconds (the full\narticle) after. Short inputs were unaffected, single segment either way --\nthis is why Auritus's own demo clips, all short, never surfaced it.\n\nFixed: cli/src/auritus/tts/kokoro.py, commit b294650 -- concatenate every\nyielded segment's audio before building the WAV.\n\nThe already-published broken audio for one already-'done' job\n(Pilobol.us's own first real article) had to be manually regenerated with\nthe fixed backend and its S3 object overwritten directly, since the job API\nhas no way to reset a 'done' job back to pending/claimable for\nreprocessing -- a gap worth its own ticket if this happens again at any\nscale (right now it's a one-off manual fix, not a real backlog).",
+  "type": "bug",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-15T11:02:27.787191Z",
+  "updated_at": "2026-09-15T11:02:43.056426Z",
+  "closed_at": "2026-09-15T11:02:43.056404Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

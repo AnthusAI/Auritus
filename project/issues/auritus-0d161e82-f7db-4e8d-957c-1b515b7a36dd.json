@@ -1,0 +1,20 @@
+{
+  "id": "auritus-0d161e82-f7db-4e8d-957c-1b515b7a36dd",
+  "title": "Player showed 0:00/0:00 until Play was pressed, even when audio was ready",
+  "description": "The player's <audio> element used preload=\"none\", so the browser never\nfetched metadata (including duration) until playback actually started. The\ntime display stayed 0:00 / 0:00 until the reader pressed Play, even once\nthe audio was fully generated and its URL known -- reported live on\nPilobol.us for a 9:09 clip.\n\nFirst attempt at a fix was wrong and briefly shipped (commit 39fa5d0, since\ncorrected): it read the job record's duration_seconds field and displayed\nthat as clip length. That field is actually claim-to-completion\n*processing* time (now_epoch - claimed_epoch in the router's _mark_done,\nalso surfaced as avg_duration_seconds in the admin overview as a perf\nmetric) -- unrelated in magnitude to how long the resulting audio runs. For\nthe 9:09 clip above it showed '0:07', a confident wrong number, worse than\nthe 0:00 placeholder it replaced. Caught and corrected within the same\nsession before it was reported as fixed.\n\nActual fix (commit 55bae3d): there is no field anywhere that carries real\nclip length; the only correct source is the audio file's own header.\nSwitched <audio> to preload=\"metadata\" (fetches just the header via a small\nrange request) and added an explicit .load() call once src is set, since\nsome browsers don't start that fetch on their own for an element that\nalready existed before src changed. Self-contained to the embed, no\nbackend/CDK changes. Covered by a new test in embed/tests/player.test.ts.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-15T11:02:48.418960Z",
+  "updated_at": "2026-09-15T11:02:57.927298Z",
+  "closed_at": "2026-09-15T11:02:57.927273Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
