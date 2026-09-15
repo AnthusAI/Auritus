@@ -3,31 +3,58 @@ import Link from "next/link";
 const modelExamples = [
   {
     href: "/examples/basic",
-    title: "Kokoro-82M — Gettysburg Address",
-    badge: "af_heart voice",
+    title: "Kokoro-82M",
+    badge: "82M params",
+    creator: "Hexgrad",
+    architecture: "StyleTTS 2 + ISTFTNet",
+    sampleRate: "24 kHz",
+    license: "Apache-2.0",
     summary:
       "The two-paragraph Gettysburg excerpt, spoken with Kokoro-82M on Apple Silicon (MLX) or PyTorch (~23s).",
   },
   {
     href: "/examples/qwen",
-    title: "Qwen3-TTS — Gettysburg Address",
-    badge: "Ryan voice",
+    title: "Qwen3-TTS",
+    badge: "0.6B params",
+    creator: "Alibaba Qwen",
+    architecture: "CustomVoice 12Hz Transformer",
+    sampleRate: "24 kHz",
+    license: "Apache-2.0",
     summary:
-      "The same Gettysburg excerpt, spoken with Qwen3-TTS 0.6B CustomVoice (~48s).",
+      "The same Gettysburg excerpt, spoken with Qwen3-TTS 0.6B CustomVoice with the Ryan preset (~48s).",
   },
   {
     href: "/examples/f5",
-    title: "F5-TTS — Gettysburg Address",
+    title: "F5-TTS",
     badge: "Flow matching",
+    creator: "SWivid",
+    architecture: "Non-autoregressive Flow Matching",
+    sampleRate: "24 kHz",
+    license: "MIT",
     summary:
       "The same Gettysburg excerpt, spoken with non-autoregressive F5-TTS via MLX on Apple Silicon.",
   },
   {
     href: "/examples/higgs",
-    title: "Higgs Audio v3 — Gettysburg Address",
+    title: "Higgs Audio v3",
     badge: "Boson AI 4B",
+    creator: "Boson AI",
+    architecture: "Higgs Audio 4B Transformer",
+    sampleRate: "24 kHz",
+    license: "Research / Non-Commercial",
     summary:
-      "The same Gettysburg excerpt, spoken with Boson AI's Higgs Audio v3 via MLX on Apple Silicon or Transformers.",
+      "The same Gettysburg excerpt, spoken with Boson AI's expressive 4B Higgs Audio v3 via MLX on Apple Silicon.",
+  },
+  {
+    href: "/examples/chatterbox",
+    title: "Chatterbox-TTS",
+    badge: "520M Hybrid",
+    creator: "Resemble AI",
+    architecture: "LLaMA-520M + Matcha-TTS Flow",
+    sampleRate: "24 kHz",
+    license: "Apache-2.0",
+    summary:
+      "The same Gettysburg excerpt, spoken with Resemble AI's hybrid LLaMA-520M and Matcha-TTS flow matching.",
   },
 ];
 
@@ -56,41 +83,50 @@ export default function ExamplesIndexPage() {
         <Link href="/docs">Docs</Link>
         <Link href="/docs/usage">Usage</Link>
       </nav>
-      <h1>Examples</h1>
+      <h1>Examples &amp; Models</h1>
       <p>
-        Kokoro, Qwen, F5, and Higgs are the speech backends. They narrate the identical
-        two-paragraph Gettysburg excerpt so you can directly compare audio
-        timbre, pacing, and quality.
+        Kokoro, Qwen, F5, Higgs, and Chatterbox are the supported speech backends.
+        Each model narrates the identical two-paragraph Gettysburg excerpt so you
+        can directly compare audio timbre, pacing, pronunciation, and latency.
       </p>
 
       <section style={{ marginTop: "2.5rem" }}>
         <h2 style={{ fontSize: "1.4rem", marginBottom: "0.5rem" }}>
-          Model Comparison
+          Speech Model Comparison
         </h2>
         <p style={{ color: "var(--ink-muted)", fontSize: "0.95rem" }}>
-          The same excerpt spoken by four open model architectures:
+          Compare five open model architectures running on Apple Silicon (MLX) and AWS Batch:
         </p>
-        <ul className="doc-index" style={{ marginTop: "1rem" }}>
+
+        <div className="model-cards-grid" style={{ marginTop: "1.25rem" }}>
           {modelExamples.map((example) => (
-            <li key={example.href}>
-              <Link
-                href={example.href}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.6rem",
-                }}
-              >
-                <strong>{example.title}</strong>
+            <article key={example.href} className="model-showcase-card">
+              <div className="model-card-header">
+                <div>
+                  <h3 className="model-card-title">{example.title}</h3>
+                  <span className="model-card-creator">by {example.creator}</span>
+                </div>
                 <span className="badge-pill">{example.badge}</span>
-              </Link>
-              <span>{example.summary}</span>
-            </li>
+              </div>
+              <p className="model-card-summary">{example.summary}</p>
+              <div className="model-card-meta">
+                <span>{example.architecture}</span>
+                <span>•</span>
+                <span>{example.sampleRate}</span>
+                <span>•</span>
+                <span>{example.license}</span>
+              </div>
+              <div className="model-card-actions">
+                <Link href={example.href} className="button button-primary">
+                  Listen &amp; Compare →
+                </Link>
+              </div>
+            </article>
           ))}
-        </ul>
+        </div>
       </section>
 
-      <section style={{ marginTop: "3rem" }}>
+      <section style={{ marginTop: "3.5rem" }}>
         <h2 style={{ fontSize: "1.4rem", marginBottom: "0.5rem" }}>
           Embed Features &amp; Theming
         </h2>
@@ -119,4 +155,3 @@ export default function ExamplesIndexPage() {
     </main>
   );
 }
-

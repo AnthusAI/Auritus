@@ -621,3 +621,240 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
   font-size: 0.85rem;
   line-height: 1.5;
 }
+
+/* --- Model Comparison Switcher & Specs --- */
+
+.model-compare-shell {
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.15rem;
+}
+
+.model-compare-topbar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.model-nav-back,
+.model-nav-docs {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.model-nav-back:hover,
+.model-nav-docs:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.model-nav-stepper {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.model-stepper-btn {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.28rem 0.65rem;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.model-stepper-btn:hover {
+  background: var(--panel);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.model-stepper-indicator {
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.model-switcher-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.model-pills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.model-pill {
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  display: inline-flex;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.model-pill:hover {
+  background: var(--panel);
+  border-color: var(--ink-muted);
+}
+
+.model-pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.model-pill-badge {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.08rem 0.4rem;
+}
+
+.model-pill.active .model-pill-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.model-select-wrapper {
+  display: none;
+}
+
+.model-select-dropdown {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+}
+
+.model-spec-strip {
+  background: rgba(0, 0, 0, 0.035);
+  border-radius: 6px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+}
+
+.model-spec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.spec-label {
+  color: var(--ink-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.spec-value {
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+/* --- Model Showcase Cards Grid (Examples Index) --- */
+
+.model-cards-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+}
+
+.model-showcase-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  transition: border-color 0.15s ease;
+}
+
+.model-showcase-card:hover {
+  border-color: var(--accent);
+}
+
+.model-card-header {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.model-card-title {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.model-card-creator {
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+}
+
+.model-card-summary {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.model-card-meta {
+  color: var(--ink-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.model-card-actions {
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 680px) {
+  .model-pills-container {
+    display: none;
+  }
+  .model-select-wrapper {
+    display: block;
+  }
+  .model-compare-topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .model-nav-stepper {
+    justify-content: space-between;
+  }
+}

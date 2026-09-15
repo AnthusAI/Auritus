@@ -42,10 +42,18 @@ Recorded 13 September 2026 against the backends Auritus actually ships.
 - Platform policy: `mlx-audio` native on Apple Silicon; `f5-tts` fallback on
   NVIDIA/CPU. Model weights fetched at runtime.
 
+## Chatterbox (Resemble AI)
+
+- Checkpoint: [ResembleAI/chatterbox](https://huggingface.co/ResembleAI/chatterbox) and [mlx-community/chatterbox-fp16](https://huggingface.co/mlx-community/chatterbox-fp16)
+- Code: `mlx-audio` on Apple Silicon, `chatterbox` / PyTorch on Linux/CUDA
+- Architecture: LLaMA-520M semantic planner (T3) + Matcha-TTS flow matching (S3Gen)
+- Weights license: **Apache-2.0**
+- Platform policy: `mlx-audio` native on Apple Silicon; PyTorch on CUDA. Model weights fetched at runtime.
+
 
 ## Decision for the current ship
 
-- Public examples and Batch jobs support **Kokoro**, **Qwen**, **F5**, and **Higgs**.
+- Public examples and Batch jobs support **Kokoro**, **Qwen**, **F5**, **Higgs**, and **Chatterbox**.
 - The Batch image may install open pip packages. It must not COPY large
   third-party weight blobs from the repository.
 - PyPI publish of the Auritus CLI remains a separate story (`a01473`) and is

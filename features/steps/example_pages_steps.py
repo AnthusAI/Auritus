@@ -79,6 +79,12 @@ def step_f5_article(context) -> None:
     context.example_tts_backend = "f5"
 
 
+@given("the Chatterbox example page article")
+def step_chatterbox_article(context) -> None:
+    context.root_html = GETTYSBURG_ARTICLE
+    context.example_tts_backend = "chatterbox"
+
+
 @given("the ignore example page article")
 def step_ignore_article(context) -> None:
     context.root_html = """

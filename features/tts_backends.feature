@@ -53,3 +53,13 @@ Feature: Pluggable TTS backends
     When the Higgs voice is resolved for synthesis
     Then the Higgs voice_id is "default"
 
+  Scenario: Chatterbox uses default when voice_id is omitted
+    Given a Chatterbox job without an explicit voice_id
+    When the Chatterbox voice is resolved for synthesis
+    Then the Chatterbox voice_id is "default"
+
+  Scenario: Chatterbox maps empty voice_id to default
+    Given a Chatterbox job with voice_id ""
+    When the Chatterbox voice is resolved for synthesis
+    Then the Chatterbox voice_id is "default"
+

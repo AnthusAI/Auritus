@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 from auritus.tts import get_backend
+from auritus.tts.chatterbox import resolve_chatterbox_voice
 from auritus.tts.f5 import resolve_f5_voice
+from auritus.tts.higgs import resolve_higgs_voice
 from auritus.tts.kokoro import resolve_kokoro_voice
 from auritus.tts.qwen import resolve_qwen_voice
-
-
-from auritus.tts.higgs import resolve_higgs_voice
 
 
 def test_higgs_backend_name_and_generate() -> None:
@@ -68,6 +67,28 @@ def test_f5_resolve_voice_defaults_to_default() -> None:
     assert resolve_f5_voice({"voice_id": ""}) == "default"
     assert resolve_f5_voice({"voice_id": "default"}) == "default"
     assert resolve_f5_voice({"voice_id": "custom_voice"}) == "custom_voice"
+
+
+def test_chatterbox_backend_resolves_without_generate() -> None:
+    chatterbox = get_backend("chatterbox")
+    assert chatterbox.name == "chatterbox"
+    alias = get_backend("chatterbox-tts")
+    assert alias.name == "chatterbox"
+
+
+def test_chatterbox_resolve_voice_defaults_to_default() -> None:
+    assert resolve_chatterbox_voice({}) == "default"
+    assert resolve_chatterbox_voice({"voice_id": ""}) == "default"
+    assert resolve_chatterbox_voice({"voice_id": "default"}) == "default"
+    assert resolve_chatterbox_voice({"voice_id": "ref_voice"}) == "ref_voice"
+
+
+def test_chatterbox_backend_empty_text_raises() -> None:
+    import pytest
+
+    chatterbox = get_backend("chatterbox")
+    with pytest.raises(ValueError, match="Cannot generate audio for empty text"):
+        chatterbox.generate("", {})
 
 
 def test_unknown_backend_raises() -> None:

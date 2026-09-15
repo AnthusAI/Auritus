@@ -35,6 +35,14 @@ Feature: Example pages demonstrate distinct speech
     And the TTS text does not include "This page speaks that excerpt"
     And the example embed requests tts_backend "f5"
 
+  Scenario: Chatterbox example speaks the same Gettysburg excerpt
+    Given the Chatterbox example page article
+    When the generator extracts TTS text from that root
+    Then the TTS text includes "Four score and seven years ago"
+    And the TTS text includes "Now we are engaged in a great civil war"
+    And the TTS text does not include "This page speaks that excerpt"
+    And the example embed requests tts_backend "chatterbox"
+
   Scenario: Ignore example omits ignored copy from a longer article
     Given the ignore example page article
     When the generator extracts TTS text from that root

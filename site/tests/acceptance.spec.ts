@@ -420,6 +420,20 @@ test("F5 example posts the same Gettysburg excerpt with F5", async ({
   expect(body.text).not.toContain("This page speaks that excerpt");
 });
 
+test("Chatterbox example posts the same Gettysburg excerpt with Chatterbox", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  const createJobRequest = waitForJobPost(page);
+  await page.goto("/examples/chatterbox");
+  const body = (await createJobRequest).postDataJSON() as JobPostBody;
+  expect(body.tts_backend).toBe("chatterbox");
+  expect(body.voice_id).toBe("default");
+  expect(body.text).toContain("Four score and seven years ago");
+  expect(body.text).toContain("Now we are engaged in a great civil war");
+  expect(body.text).not.toContain("This page speaks that excerpt");
+});
+
 test("Kokoro, Qwen, and F5 examples POST the same spoken text", async ({
   browser,
 }) => {
@@ -485,3 +499,59 @@ test("client navigation boots a new job for the destination page", async ({
     "The only freedom which deserves the name",
   );
 });
+
+test("ModelCompareNav renders all models and active states", async ({
+  page,
+}) => {
+  await page.goto("/examples/chatterbox");
+
+  // Check topbar
+  await expect(page.locator(".model-nav-back")).toHaveText("← All Examples");
+  await expect(page.locator(".model-nav-docs")).toHaveText("Usage →");
+
+  // Check stepper
+  const prevBtn = page.locator(".model-stepper-btn").first();
+  const nextBtn = page.locator(".model-stepper-btn").last();
+  await expect(prevBtn).toHaveText("‹ Higgs-v3");
+  await expect(nextBtn).toHaveText("Kokoro-82M ›");
+  await expect(page.locator(".model-stepper-indicator")).toHaveText("5 of 5");
+
+  // Check model pills
+  const pills = page.locator(".model-pill");
+  await expect(pills).toHaveCount(5);
+
+  const activePill = page.locator(".model-pill.active");
+  await expect(activePill).toContainText("Chatterbox");
+  await expect(activePill).toContainText("520M");
+
+  // Check spec strip
+  const specStrip = page.locator(".model-spec-strip");
+  await expect(specStrip).toBeVisible();
+  await expect(specStrip).toContainText("LLaMA-520M + Matcha-TTS Flow");
+  await expect(specStrip).toContainText("Resemble AI");
+  await expect(specStrip).toContainText("24 kHz Mono");
+  await expect(specStrip).toContainText("Apache-2.0");
+
+  // Click Prev model (Higgs)
+  await prevBtn.click();
+  await expect(page).toHaveURL("/examples/higgs");
+  await expect(page.locator(".model-pill.active")).toContainText("Higgs-v3");
+  await expect(page.locator(".model-stepper-indicator")).toHaveText("4 of 5");
+});
+
+test("ModelCompareNav dropdown is present for responsive viewports", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 480, height: 800 });
+  await page.goto("/examples/basic");
+
+  const dropdown = page.locator(".model-select-dropdown");
+  await expect(dropdown).toBeVisible();
+  await expect(dropdown).toHaveValue("/examples/basic");
+
+  // Change dropdown to Chatterbox
+  await dropdown.selectOption("/examples/chatterbox");
+  await expect(page).toHaveURL("/examples/chatterbox");
+  await expect(dropdown).toHaveValue("/examples/chatterbox");
+});
+

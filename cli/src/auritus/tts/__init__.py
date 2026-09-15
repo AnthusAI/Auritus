@@ -44,9 +44,13 @@ def get_backend(name: str) -> TTSBackend:
         from auritus.tts.f5 import F5Backend
 
         return F5Backend()
+    if key in ("chatterbox", "chatterbox-tts"):
+        from auritus.tts.chatterbox import ChatterboxBackend
+
+        return ChatterboxBackend()
     raise ValueError(
         f"Unknown TTS backend: {name!r}. "
-        "Known: ['bark', 'coqui', 'f5', 'fish', 'higgs', 'kokoro', 'qwen']"
+        "Known: ['bark', 'chatterbox', 'coqui', 'f5', 'fish', 'higgs', 'kokoro', 'qwen']"
     )
 
 
