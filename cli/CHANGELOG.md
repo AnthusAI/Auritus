@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v0.16.0 (2026-09-15)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`c8e5d75`](https://github.com/AnthusAI/Auritus/commit/c8e5d75fb38c0e4434b7aca0b300935c1f3d840e))
+
+- **kanbus**: Commit board state (issues)
+  ([`ca5a827`](https://github.com/AnthusAI/Auritus/commit/ca5a827738937a7643d0e7d9813ea6b986dad225))
+
+### Features
+
+- **tts**: Add Higgs Audio v3 backend with MLX and AWS Batch support
+  ([`f3495cf`](https://github.com/AnthusAI/Auritus/commit/f3495cf677a717f46ad988b3037087eccf398ee6))
+
+
 ## v0.15.0 (2026-09-15)
 
 ### Bug Fixes
