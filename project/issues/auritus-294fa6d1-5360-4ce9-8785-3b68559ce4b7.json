@@ -1,0 +1,20 @@
+{
+  "id": "auritus-294fa6d1-5360-4ce9-8785-3b68559ce4b7",
+  "title": "Local worker leaves jobs stuck in 'claimed' on crash; /admin/jobs list misses newest jobs",
+  "description": "Discovered testing 'auritus worker --once' against the real production API\nwhile integrating Auritus into Pilobol.us (2026-09-14/15).\n\n1) Worker crash leaves the job permanently stuck in 'claimed', never\n   released or marked failed.\n\n   The local worker (cli/src/auritus/worker/daemon.py) claims a job, then\n   runs TTS generation. If generation raises (e.g. a missing optional\n   dependency -- see below), the process crashes with an unhandled\n   traceback and exits. Nothing in that path calls PUT /jobs/{hash}/failed\n   or otherwise releases the claim. The job is left in status=claimed\n   forever: GET /jobs/claimable correctly excludes it (it's not pending),\n   so no worker -- local or the AWS Batch fallback -- will ever pick it up\n   again. This happened to me three times in a row (missing misaki, then\n   num2words/phonemizer-fork, then spacy, then espeakng-loader -- Kokoro's\n   dependency chain is not fully captured by 'kokoro==0.9.4' alone on\n   Apple Silicon, which routes through mlx_audio's kokoro pipeline instead\n   of the plain PyPI kokoro package the worker-image Dockerfile installs\n   for Linux/GPU) each orphaning a different job. I had to manually PUT\n   .../failed with an operator Cognito bearer token (job_token alone in the\n   body was rejected with {\"message\":\"operator_auth_required\"} -- also\n   worth documenting, since it's not obvious from the route surface which\n   auth mode /failed expects from a worker vs. an operator).\n\n   Fix: wrap the generation call in worker/daemon.py in a try/except that\n   calls the failed endpoint (with the job_token the claim already holds)\n   before letting the process exit, on ANY exception -- not just TTS\n   backend errors.\n\n2) GET /admin/jobs appears to be an unsorted/size-limited scan, not a\n   query by recency -- it silently omits the newest jobs in the system.\n\n   After creating a job (confirmed via its own GET /jobs/{hash} lookup,\n   which is authoritative and correctly showed status=pending), it did not\n   appear anywhere in GET /admin/jobs's returned list of 25 jobs, even\n   though every job that list DID return was strictly older by\n   created_at than the missing one. This is what the user saw as 'nothing\n   in the console at localhost:3001/jobs' for their own newly-created job.\n   Looks like a DynamoDB Scan without a GSI on created_at, returning\n   whatever page the scan happens to hit rather than truly-most-recent-N.\n\n   Fix: query/scan with an index on created_at (or a sort key that\n   supports it) and return true most-recent-first, or at minimum increase\n   the scanned page size enough that a newly created job is guaranteed to\n   appear.\n\nFiled alongside auritus-0ae6d0 (data-auritus-api default) from the same\nintegration session.",
+  "type": "bug",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-15T01:50:39.523259Z",
+  "updated_at": "2026-09-15T01:51:07.389435Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
