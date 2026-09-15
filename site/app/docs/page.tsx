@@ -2,6 +2,11 @@ import Link from "next/link";
 
 const sections = [
   {
+    href: "/docs/getting-started",
+    title: "Getting started",
+    summary: "Interactive, animated setup guide with side-by-side identity choices, TTS model audio previews, and dynamic embed builder.",
+  },
+  {
     href: "/docs/architecture",
     title: "Architecture",
     summary: "Visual guide to the local-first worker, AWS fallback, identity choices, and secure-design status.",
@@ -10,6 +15,11 @@ const sections = [
     href: "/docs/security",
     title: "Security",
     summary: "Operator authentication, refresh-token rotation, unattended workers, revocation, and notification.",
+  },
+  {
+    href: "/docs/security/google-workspace",
+    title: "Google Workspace SSO",
+    summary: "Step-by-step setup for Google OAuth 2.0 federation with Cognito, authorized redirect URIs, JavaScript origins, and Secrets Manager.",
   },
   {
     href: "/docs/usage",

@@ -1,5 +1,6 @@
 import './globals.css';
 import Header from '../components/Header';
+import AuthGuard from '../components/AuthGuard';
 
 export const metadata = {
   title: 'Auritus Operator Console',
@@ -15,7 +16,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Header />
-        <main>{children}</main>
+        <main>
+          <AuthGuard>{children}</AuthGuard>
+        </main>
       </body>
     </html>
   );

@@ -1,0 +1,20 @@
+{
+  "id": "auritus-14ec08fb-f0dc-4817-afb4-96e25ad72401",
+  "title": "Fix SSO callback flash of Authentication Failed on duplicate effect execution",
+  "description": "",
+  "type": "bug",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-1804be1b-aa66-4622-a07f-de188702cbb1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-14T20:53:57.137088Z",
+  "updated_at": "2026-09-14T20:55:47.963331Z",
+  "closed_at": "2026-09-14T20:55:47.963307Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

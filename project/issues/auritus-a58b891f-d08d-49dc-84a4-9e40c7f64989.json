@@ -1,0 +1,20 @@
+{
+  "id": "auritus-a58b891f-d08d-49dc-84a4-9e40c7f64989",
+  "title": "Player UI displays play and pause icons with clip duration",
+  "description": "Replace text PLAY button with standard SVG play triangle and pause icon toggle, and display formatted clip duration and elapsed time.",
+  "type": "story",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-14T22:42:12.853495Z",
+  "updated_at": "2026-09-14T22:46:29.365311Z",
+  "closed_at": "2026-09-14T22:46:29.365288Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

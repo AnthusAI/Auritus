@@ -81,6 +81,8 @@ from constructs import Construct
 
 LAMBDA_ROOT = Path(__file__).resolve().parents[1] / "lambdas"
 DEFAULT_CLAIM_TIMEOUT_SECONDS = 900
+DEFAULT_RACE_SECONDS = 900
+DEFAULT_DELIVERY_GRACE_SECONDS = 300
 
 
 class BackendStack(Stack):
@@ -92,6 +94,13 @@ class BackendStack(Stack):
         claim_timeout_seconds = int(
             self.node.try_get_context("claim_timeout_seconds")
             or DEFAULT_CLAIM_TIMEOUT_SECONDS
+        )
+        race_seconds = int(
+            self.node.try_get_context("race_seconds") or DEFAULT_RACE_SECONDS
+        )
+        delivery_grace_seconds = int(
+            self.node.try_get_context("delivery_grace_seconds")
+            or DEFAULT_DELIVERY_GRACE_SECONDS
         )
 
         google_secret_arn = self.node.try_get_context("google_oauth_secret_arn")
@@ -190,13 +199,23 @@ class BackendStack(Stack):
 
         user_pool = cognito.UserPool(
             self,
-            "AuritusUsers",
+            "AuritusUserPool",
             self_sign_up_enabled=False,
             sign_in_aliases=cognito.SignInAliases(email=True),
             standard_attributes=cognito.StandardAttributes(
-                email=cognito.StandardAttribute(required=True, mutable=False)
+                email=cognito.StandardAttribute(required=True, mutable=True)
             ),
-            removal_policy=RemovalPolicy.RETAIN,
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+
+        cognito_domain_prefix = (
+            self.node.try_get_context("cognito_domain_prefix") or "auritus-auth"
+        )
+        user_pool.add_domain(
+            "CognitoDomain",
+            cognito_domain=cognito.CognitoDomainOptions(
+                domain_prefix=cognito_domain_prefix,
+            ),
         )
 
         google_idp = cognito.UserPoolIdentityProviderGoogle(
@@ -211,6 +230,32 @@ class BackendStack(Stack):
                 fullname=cognito.ProviderAttribute.GOOGLE_NAME,
             ),
         )
+
+        # AWS IAM Identity Center or corporate SAML 2.0 Identity Provider
+        saml_metadata_url = self.node.try_get_context("saml_metadata_url")
+        saml_idp = None
+        supported_idps = [
+            cognito.UserPoolClientIdentityProvider.COGNITO,
+            cognito.UserPoolClientIdentityProvider.GOOGLE,
+        ]
+
+        if saml_metadata_url:
+            saml_idp = cognito.UserPoolIdentityProviderSaml(
+                self,
+                "IdentityCenterSamlIdP",
+                user_pool=user_pool,
+                name="IdentityCenter",
+                metadata=cognito.UserPoolIdentityProviderSamlMetadata.url(
+                    saml_metadata_url
+                ),
+                attribute_mapping=cognito.AttributeMapping(
+                    email=cognito.ProviderAttribute.other("email"),
+                    fullname=cognito.ProviderAttribute.other("name"),
+                ),
+            )
+            supported_idps.append(
+                cognito.UserPoolClientIdentityProvider.custom("IdentityCenter")
+            )
 
         user_pool_client = cognito.UserPoolClient(
             self,
@@ -232,18 +277,19 @@ class BackendStack(Stack):
                 callback_urls=[
                     "http://127.0.0.1/callback",
                     "http://localhost/callback",
+                    "http://localhost:8080/callback",
+                    "http://127.0.0.1:8080/callback",
                 ],
             ),
-            supported_identity_providers=[
-                cognito.UserPoolClientIdentityProvider.COGNITO,
-                cognito.UserPoolClientIdentityProvider.GOOGLE,
-            ],
+            supported_identity_providers=supported_idps,
             auth_flows=cognito.AuthFlow(
                 user_password=True,
                 user_srp=True,
             ),
         )
         user_pool_client.node.add_dependency(google_idp)
+        if saml_idp:
+            user_pool_client.node.add_dependency(saml_idp)
 
         web_console_client = cognito.UserPoolClient(
             self,
@@ -265,26 +311,28 @@ class BackendStack(Stack):
                 callback_urls=[
                     "http://localhost:3000/callback",
                     "http://localhost:3000",
+                    "http://localhost:3001/callback",
+                    "http://localhost:3001",
                     "https://console.aurit.us/callback",
                     "https://console.aurit.us",
                     "https://aurit.us/console/callback",
                 ],
                 logout_urls=[
                     "http://localhost:3000/login",
+                    "http://localhost:3001/login",
                     "https://console.aurit.us/login",
                     "https://aurit.us/console/login",
                 ],
             ),
-            supported_identity_providers=[
-                cognito.UserPoolClientIdentityProvider.COGNITO,
-                cognito.UserPoolClientIdentityProvider.GOOGLE,
-            ],
+            supported_identity_providers=supported_idps,
             auth_flows=cognito.AuthFlow(
                 user_password=True,
                 user_srp=True,
             ),
         )
         web_console_client.node.add_dependency(google_idp)
+        if saml_idp:
+            web_console_client.node.add_dependency(saml_idp)
 
         router_fn = lambda_.Function(
             self,
@@ -342,6 +390,7 @@ class BackendStack(Stack):
             environment={
                 "USER_POOL_ID": user_pool.user_pool_id,
                 "CLIENT_ID": user_pool_client.user_pool_client_id,
+                "ALLOWED_CLIENT_IDS": f"{user_pool_client.user_pool_client_id},{web_console_client.user_pool_client_id}",
             },
         )
 
@@ -523,15 +572,15 @@ class BackendStack(Stack):
             ),
         )
 
-        wait = sfn.Wait(
+        wait_race = sfn.Wait(
             self,
-            "WaitForLocalWorker",
-            time=sfn.WaitTime.duration(Duration.seconds(claim_timeout_seconds)),
+            "WaitForLocalWorkerRace",
+            time=sfn.WaitTime.duration(Duration.seconds(race_seconds)),
         )
 
-        get_job = sfn_tasks.DynamoGetItem(
+        get_job_initial = sfn_tasks.DynamoGetItem(
             self,
-            "GetJobStatus",
+            "GetJobStatusInitial",
             table=jobs,
             key={
                 "content_hash": sfn_tasks.DynamoAttributeValue.from_string(
@@ -541,16 +590,22 @@ class BackendStack(Stack):
             result_path="$.job",
         )
 
-        estimate_now = sfn.Pass(
+        wait_delivery = sfn.Wait(
             self,
-            "EstimateNowEpoch",
-            parameters={
-                "content_hash.$": "$.content_hash",
-                "job_token.$": "$.job_token",
-                "tts_backend.$": "$.tts_backend",
-                "job.$": "$.job",
-                "now_epoch.$": "States.Format('{}', States.MathAdd($.baseline_epoch, $.fallback_seconds))",
+            "WaitForClaimedDeliveryGrace",
+            time=sfn.WaitTime.duration(Duration.seconds(delivery_grace_seconds)),
+        )
+
+        get_job_after_grace = sfn_tasks.DynamoGetItem(
+            self,
+            "GetJobStatusAfterGrace",
+            table=jobs,
+            key={
+                "content_hash": sfn_tasks.DynamoAttributeValue.from_string(
+                    sfn.JsonPath.string_at("$.content_hash")
+                )
             },
+            result_path="$.job",
         )
 
         submit_batch = sfn_tasks.BatchSubmitJob(
@@ -572,30 +627,31 @@ class BackendStack(Stack):
             result_path="$.batch",
         )
 
-        still_open = sfn.Choice(self, "PendingOrStale")
-        succeed = sfn.Succeed(self, "LocalWorkerOwnsJob")
+        local_delivered = sfn.Succeed(self, "LocalWorkerDelivered")
 
-        definition = (
-            wait.next(get_job)
-            .next(estimate_now)
-            .next(
-                still_open.when(
-                    sfn.Condition.string_equals("$.job.Item.status.S", "pending"),
-                    submit_batch,
-                )
-                .when(
-                    sfn.Condition.and_(
-                        sfn.Condition.string_equals("$.job.Item.status.S", "claimed"),
-                        sfn.Condition.string_less_than(
-                            "$.job.Item.claim_deadline.N",
-                            sfn.JsonPath.string_at("$.now_epoch"),
-                        ),
-                    ),
-                    submit_batch,
-                )
-                .otherwise(succeed)
-            )
+        check_delivery_after_grace = sfn.Choice(self, "CheckDeliveryAfterGrace")
+        check_delivery_after_grace.when(
+            sfn.Condition.string_equals("$.job.Item.status.S", "done"),
+            local_delivered,
+        ).otherwise(submit_batch)
+
+        wait_delivery.next(get_job_after_grace).next(check_delivery_after_grace)
+
+        check_initial_status = sfn.Choice(self, "CheckInitialStatus")
+        check_initial_status.when(
+            sfn.Condition.string_equals("$.job.Item.status.S", "done"),
+            local_delivered,
+        ).when(
+            sfn.Condition.string_equals("$.job.Item.status.S", "pending"),
+            submit_batch,
+        ).when(
+            sfn.Condition.string_equals("$.job.Item.status.S", "claimed"),
+            wait_delivery,
+        ).otherwise(
+            submit_batch
         )
+
+        definition = wait_race.next(get_job_initial).next(check_initial_status)
 
         fallback = sfn.StateMachine(
             self,

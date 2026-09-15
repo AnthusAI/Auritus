@@ -16,6 +16,7 @@ Recorded 13 September 2026.
 | Kokoro | hexgrad/Kokoro-82M | Apache-2.0 on the [model card](https://huggingface.co/hexgrad/Kokoro-82M) | Yes under Apache-2.0, with attribution; **espeak-ng GPLv3** may apply if that G2P is linked | Wheels only (`kokoro==0.9.4`) | **Required** | Card cited 13 Sep 2026 |
 | Qwen 3 | Qwen3-TTS-12Hz-1.7B-CustomVoice | Apache-2.0 on the [model card](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice) and [qwen-tts](https://pypi.org/project/qwen-tts/0.1.1/) | Yes under Apache-2.0, with attribution | Wheels only (`qwen-tts==0.1.1`) | **Required** | Card cited 13 Sep 2026 |
 | Higgs | Boson Higgs TTS (unstubbed checkpoint TBD) | NEEDS_HUMAN_VERIFY | Assume **not** until a card is pinned | Not in the public image | N/A while stubbed | Stub only |
+| F5-TTS | SWivid/F5-TTS, mlx-community/F5-TTS | MIT on the [model card](https://huggingface.co/SWivid/F5-TTS) and code | Yes under MIT | Wheels only | **Required** | Card cited 14 Sep 2026 |
 
 ## Kokoro
 
@@ -41,6 +42,16 @@ Recorded 13 September 2026.
 - **Redistributability:** do not publish Higgs weights in ECR or Docker Hub.
 - **Recommended strategy:** leave the 440 Hz stub until a Boson card is pinned
   in [TTS_LICENSES.md](TTS_LICENSES.md).
+
+## F5-TTS
+
+- **License name:** MIT for weights and inference code.
+- **Redistributability:** weights and code under MIT with attribution.
+- **Recommended strategy:** runtime-fetch of `mlx-community/F5-TTS` (Apple Silicon)
+  or `SWivid/F5-TTS` on Linux/CUDA; keep weight blobs out of git and image builds.
+- **Operator checklist:** retain MIT notices; install `mlx-audio` on Apple Silicon
+  or `f5-tts` on Linux.
+
 
 ## Implementation notes
 

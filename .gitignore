@@ -22,6 +22,7 @@ out/
 # CDK / AWS
 cdk/cdk.out/
 cdk/cdk-outputs.json
+cdk/cdk.context.json
 *.js.map
 
 # Local secrets and data

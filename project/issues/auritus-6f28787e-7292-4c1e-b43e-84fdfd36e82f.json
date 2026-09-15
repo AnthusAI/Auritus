@@ -1,0 +1,20 @@
+{
+  "id": "auritus-6f28787e-7292-4c1e-b43e-84fdfd36e82f",
+  "title": "CDK and API support for SAML (IAM Identity Center) and Google IdP federation",
+  "description": "Enable SAML 2.0 Identity Provider configuration in CDK for AWS IAM Identity Center and verify Google IdP federation in Cognito User Pool with Hosted UI domain.",
+  "type": "story",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-1804be1b-aa66-4622-a07f-de188702cbb1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-14T19:47:15.125515Z",
+  "updated_at": "2026-09-14T19:50:47.086354Z",
+  "closed_at": "2026-09-14T19:50:47.086330Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

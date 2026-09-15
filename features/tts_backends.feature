@@ -32,3 +32,14 @@ Feature: Pluggable TTS backends
     Given a Qwen job with voice_id "Chelsie"
     When the Qwen voice is resolved for synthesis
     Then the Qwen voice_id is "Ryan"
+
+  Scenario: F5 uses default when voice_id is omitted
+    Given an F5 job without an explicit voice_id
+    When the F5 voice is resolved for synthesis
+    Then the F5 voice_id is "default"
+
+  Scenario: F5 maps empty voice_id to default
+    Given an F5 job with voice_id ""
+    When the F5 voice is resolved for synthesis
+    Then the F5 voice_id is "default"
+

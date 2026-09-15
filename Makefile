@@ -38,6 +38,9 @@ test-console:
 build-console:
 	cd console && npm run build
 
+build-embed:
+	cd embed && npm run build
+
 sync-embed: build-embed
 	cp embed/dist/embed.js site/public/embed.js
 

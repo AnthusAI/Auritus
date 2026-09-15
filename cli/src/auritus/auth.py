@@ -138,6 +138,94 @@ def login_with_password(username: str, password: str) -> dict[str, Any]:
     return tokens
 
 
+def login_with_sso(provider: str) -> dict[str, Any]:
+    """Authenticate via external SSO provider (Google or IAM Identity Center).
+
+    Launches browser for authorization and captures authorization code on loopback.
+
+    :param provider: Upstream provider name ('Google' or 'IdentityCenter').
+    :returns: Token dictionary containing access_token, id_token, refresh_token.
+    :raises AuthError: If login flow fails.
+    """
+    client_id, token_url = _token_endpoint()
+    cfg = load_config()
+    domain = str(cfg.get("cognito_domain") or "")
+    region = str(cfg.get("region") or "us-east-1")
+    redirect_uri = "http://localhost:8080/callback"
+
+    authorize_url = (
+        f"https://{domain}.auth.{region}.amazoncognito.com/oauth2/authorize?"
+        f"identity_provider={provider}&client_id={client_id}&response_type=code&"
+        f"redirect_uri={redirect_uri}&scope=openid+email+profile"
+    )
+
+    import webbrowser
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+    import urllib.parse
+
+    code_holder: dict[str, str] = {}
+
+    class CallbackHandler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            parsed = urllib.parse.urlparse(self.path)
+            query = urllib.parse.parse_qs(parsed.query)
+            if "code" in query:
+                code_holder["code"] = query["code"][0]
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html")
+                self.end_headers()
+                self.wfile.write(
+                    b"<h1>Signed in successfully!</h1><p>You can close this window and return to the terminal.</p>"
+                )
+            else:
+                self.send_response(400)
+                self.end_headers()
+
+        def log_message(self, format: str, *args: Any) -> None:
+            pass
+
+    server = HTTPServer(("localhost", 8080), CallbackHandler)
+    webbrowser.open(authorize_url)
+
+    # Handle one request
+    server.handle_request()
+
+    code = code_holder.get("code")
+    if not code:
+        raise AuthError("Failed to capture authorization code from browser callback.")
+
+    data = {
+        "grant_type": "authorization_code",
+        "client_id": client_id,
+        "code": code,
+        "redirect_uri": redirect_uri,
+    }
+    response = httpx.post(token_url, data=data, timeout=30.0)
+    if response.status_code >= 400:
+        raise AuthError(
+            f"OAuth code exchange failed: {response.status_code} {response.text}"
+        )
+
+    result = response.json()
+    access = result.get("access_token")
+    if not access:
+        raise AuthError("Login failed: Cognito did not return an access token.")
+
+    tokens: dict[str, Any] = {
+        "access_token": access,
+        "expires_in": int(result.get("expires_in") or 3600),
+        "token_type": result.get("token_type") or "Bearer",
+        "obtained_at": int(time.time()),
+    }
+    if result.get("id_token"):
+        tokens["id_token"] = result["id_token"]
+    if result.get("refresh_token"):
+        tokens["refresh_token"] = result["refresh_token"]
+    tokens["refresh_obtained_at"] = int(time.time())
+    save_tokens(tokens)
+    return tokens
+
+
 def refresh_tokens() -> dict[str, Any]:
     """Exchange a refresh token for new access and ID tokens.
 

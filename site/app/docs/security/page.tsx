@@ -30,7 +30,7 @@ const options = [
     kicker: "Option one",
     status: "Available today",
     title: "Native Cognito users.",
-    body: "The user pool holds the operator accounts directly. Self sign-up is disabled, so accounts exist only because someone with access to your AWS account created them. This is the path auritus login implements today, and it needs no identity provider of your own.",
+    body: "The user pool holds the operator accounts directly. Self sign-up is disabled, so accounts exist only because someone with access to your AWS account created them. This is the simplest path inside your AWS account, requiring no external identity provider.",
     src: "/diagrams/auth-cognito-native.svg",
     width: 2533,
     height: 403,
@@ -39,24 +39,25 @@ const options = [
   {
     id: "google",
     kicker: "Option two",
-    status: "Federation configured, CLI flow not built",
+    status: "Supported (SSO)",
     title: "Google Workspace.",
-    body: "The stack already wires a Google identity provider into the user pool, so operator identity can come from your Google directory, with your SSO and MFA policy and your offboarding process in front of it. What is missing is the browser sign-in flow in the CLI: auritus login currently supports only Cognito email and password. Configuring this also requires supplying a real Google OAuth client id and secret; the stack deploys a placeholder otherwise.",
+    body: "The stack wires a Google OAuth identity provider into the Cognito user pool. Operators authenticate with their Google account via the web console or CLI browser sign-in (`auritus login --sso google`), inheriting your Google directory MFA, password policies, and immediate offboarding controls.",
+    guideHref: "/docs/security/google-workspace",
     src: "/diagrams/auth-google-workspace.svg",
     width: 2675,
     height: 403,
-    alt: "Google Workspace option: the operator signs in once with a Google account, Google returns an OIDC authorization code to a Cognito user pool configured for Google federation, and the pool issues the same short-lived rotating tokens. The CLI browser sign-in flow is drawn dashed because it is not yet implemented.",
+    alt: "Google Workspace option: the operator signs in once with a Google account, Google returns an OIDC authorization code to a Cognito user pool configured for Google federation, and the pool issues short-lived rotating tokens.",
   },
   {
     id: "identity-center",
     kicker: "Option three",
-    status: "Planned, not implemented",
+    status: "Supported (SAML 2.0 / SSO)",
     title: "AWS IAM Identity Center or any SAML provider.",
-    body: "For organizations that already run workforce identity centrally, the same Cognito pool can accept a SAML assertion from IAM Identity Center, Okta, Entra ID, or Ping, which puts operator access under the joiner and leaver process you already audit. This is a design intent rather than a shipped feature: no SAML provider is configured in the stack today, and the diagram is drawn dashed throughout to say so.",
+    body: "For organizations running workforce identity centrally, the Cognito user pool connects directly to AWS IAM Identity Center (AWS SSO) or any corporate SAML 2.0 provider (Okta, Entra ID, Ping). Operators sign in via single sign-on (`auritus login --sso aws-sso`), keeping operator credentials under enterprise audit governance.",
     src: "/diagrams/auth-identity-center.svg",
     width: 2862,
     height: 403,
-    alt: "Planned Identity Center option, drawn entirely dashed: a workforce user signs in through AWS IAM Identity Center or another SAML provider backed by the corporate directory, which would federate into the Cognito user pool and issue the same short-lived rotating tokens. No SAML federation is configured in the stack today.",
+    alt: "AWS IAM Identity Center option: a workforce user signs in through AWS IAM Identity Center or another corporate SAML provider, federates through the Cognito user pool, and receives short-lived rotating JWT tokens.",
   },
 ];
 
@@ -208,6 +209,13 @@ export default function SecurityPage() {
               </p>
               <h3 id={`${option.id}-heading`}>{option.title}</h3>
               <p>{option.body}</p>
+              {option.guideHref && (
+                <p style={{ marginTop: "0.75rem" }}>
+                  <Link href={option.guideHref} className="text-link" style={{ fontWeight: 700 }}>
+                    View complete setup guide &amp; OAuth endpoints &rarr;
+                  </Link>
+                </p>
+              )}
             </div>
             <Image
               src={option.src}
@@ -238,7 +246,7 @@ export default function SecurityPage() {
         <p className="kicker">Boundaries</p>
         <h2 id="boundaries-heading">What is not true yet.</h2>
         <p>
-          Everything above describes the architecture. Two parts of it are not
+          Everything above describes the architecture. One part of it is not
           fully enforced in the current implementation, and we would rather say
           so here than have you discover it in the source.
         </p>
@@ -254,12 +262,6 @@ export default function SecurityPage() {
           it is the next piece of this work. Until it lands, treat the operator
           API as protected by obscurity of the endpoint rather than by the
           token.
-        </p>
-        <p>
-          <strong>Two of the three identity options are not shipped.</strong>{" "}
-          Native Cognito login works end to end. Google federation is configured
-          in the user pool but the CLI has no browser sign-in flow. SAML and IAM
-          Identity Center are design intent with no implementation in the stack.
         </p>
         <p>
           The claims that do hold today are the ones about what is absent: the

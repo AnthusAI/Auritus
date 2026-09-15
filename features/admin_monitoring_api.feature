@@ -25,3 +25,12 @@ Feature: Admin monitoring and queue control API
     Given an enabled Batch job queue
     When the operator toggles the queue state to "DISABLED"
     Then the Batch job queue state is "DISABLED"
+
+  Scenario: Operator paginates through jobs using cursor tokens
+    Given a set of historical jobs with varied statuses and worker types
+    When the operator requests jobs with limit 2
+    Then the response contains at most 2 jobs
+    And the response contains a next_token cursor
+    When the operator requests the next page of jobs with the cursor
+    Then the next page contains distinct jobs
+

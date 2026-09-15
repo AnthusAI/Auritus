@@ -20,3 +20,10 @@ Feature: Web console dashboard and job explorer
     When viewing the job detail page
     Then an audio player control is rendered
     And the synthesis duration is displayed
+
+  Scenario: Job explorer navigates pages with pagination controls
+    Given the operator is on the jobs page
+    When navigating to the next page of jobs
+    Then the second page of jobs is displayed
+    And the previous page button is enabled
+

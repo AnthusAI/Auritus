@@ -177,7 +177,7 @@ test("landing page does not overflow a narrow viewport", async ({ page }) => {
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
 });
 
-test("architecture documentation labels future identity work as planned", async ({
+test("architecture documentation showcases identity options", async ({
   page,
 }) => {
   await page.goto("/docs/architecture");
@@ -187,10 +187,8 @@ test("architecture documentation labels future identity work as planned", async 
       name: "Choose the login experience your team needs.",
     }),
   ).toBeVisible();
-  await expect(page.getByText("Future enterprise option")).toBeVisible();
-  await expect(
-    page.getByText(/has not implemented or reviewed it yet/i),
-  ).toBeVisible();
+  await expect(page.getByText("AWS IAM Identity Center")).toBeVisible();
+  await expect(page.getByText("Supported (SAML 2.0 / SSO)")).toBeVisible();
 });
 
 test("security page documents unattended worker auth and is reachable from the home nav", async ({
@@ -258,6 +256,61 @@ test("basic example plays Kokoro speech scoped to article", async ({
   await waitForPlayableClip(page);
   const durationSeconds = await clipDurationSeconds(page);
   expect(durationSeconds).toBeGreaterThanOrEqual(8);
+});
+
+test("Play while waiting starts Kokoro when audio arrives", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  let releaseJobGets: () => void = () => {};
+  const jobGetsReady = new Promise<void>((resolve) => {
+    releaseJobGets = resolve;
+  });
+  await page.route("**/jobs/**", async (route) => {
+    const request = route.request();
+    const pathname = new URL(request.url()).pathname;
+    const isJobRecordGet =
+      request.method() === "GET" && /\/jobs\/[0-9a-f]+$/i.test(pathname);
+    if (!isJobRecordGet) {
+      await route.continue();
+      return;
+    }
+    await jobGetsReady;
+    await route.continue();
+  });
+  await page.goto("/examples/basic");
+  await page.waitForFunction(() => {
+    const play = document
+      .querySelector(".auritus-root")
+      ?.shadowRoot?.querySelector(".auritus-play");
+    return Boolean(play);
+  });
+  await page.locator(".auritus-root").evaluate((host) => {
+    const playBtn = host.shadowRoot?.querySelector(
+      ".auritus-play",
+    ) as HTMLButtonElement | null;
+    playBtn?.click();
+  });
+  const waitingStatus = await page.locator(".auritus-root").evaluate((host) => {
+    return host.shadowRoot?.querySelector(".auritus-status")?.textContent ?? "";
+  });
+  expect(waitingStatus).toContain("Starting when ready");
+  releaseJobGets();
+  await page.waitForFunction(
+    () => {
+      const host = document.querySelector(".auritus-root");
+      const audio = host?.shadowRoot?.querySelector("audio");
+      const playBtn = host?.shadowRoot?.querySelector(
+        ".auritus-play",
+      ) as HTMLButtonElement | null;
+      return Boolean(
+        audio &&
+        !audio.paused &&
+        playBtn?.getAttribute("aria-label") === "Pause",
+      );
+    },
+    { timeout: 120_000 },
+  );
 });
 
 test("Play after the clip ends starts Kokoro speech from the beginning", async ({
@@ -353,26 +406,48 @@ test("Qwen example posts the same Gettysburg excerpt with Qwen", async ({
   expect(await clipDurationSeconds(page)).toBeGreaterThanOrEqual(20);
 });
 
-test("Kokoro and Qwen examples POST the same spoken text", async ({
+test("F5 example posts the same Gettysburg excerpt with F5", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  const createJobRequest = waitForJobPost(page);
+  await page.goto("/examples/f5");
+  const body = (await createJobRequest).postDataJSON() as JobPostBody;
+  expect(body.tts_backend).toBe("f5");
+  expect(body.voice_id).toBe("default");
+  expect(body.text).toContain("Four score and seven years ago");
+  expect(body.text).toContain("Now we are engaged in a great civil war");
+  expect(body.text).not.toContain("This page speaks that excerpt");
+});
+
+test("Kokoro, Qwen, and F5 examples POST the same spoken text", async ({
   browser,
 }) => {
   test.setTimeout(180_000);
   const kokoroPage = await browser.newPage();
   const qwenPage = await browser.newPage();
+  const f5Page = await browser.newPage();
   const kokoroPost = waitForJobPost(kokoroPage);
   const qwenPost = waitForJobPost(qwenPage);
+  const f5Post = waitForJobPost(f5Page);
   await Promise.all([
     kokoroPage.goto("/examples/basic"),
     qwenPage.goto("/examples/qwen"),
+    f5Page.goto("/examples/f5"),
   ]);
   const kokoroBody = (await kokoroPost).postDataJSON() as JobPostBody;
   const qwenBody = (await qwenPost).postDataJSON() as JobPostBody;
+  const f5Body = (await f5Post).postDataJSON() as JobPostBody;
   expect(kokoroBody.tts_backend).toBe("kokoro");
   expect(qwenBody.tts_backend).toBe("qwen");
+  expect(f5Body.tts_backend).toBe("f5");
   expect(kokoroBody.text).toBe(qwenBody.text);
+  expect(f5Body.text).toBe(kokoroBody.text);
   expect(kokoroBody.content_hash).not.toBe(qwenBody.content_hash);
+  expect(f5Body.content_hash).not.toBe(kokoroBody.content_hash);
   await kokoroPage.close();
   await qwenPage.close();
+  await f5Page.close();
 });
 
 test("ignore example posts Kokoro job without ignored paragraph", async ({

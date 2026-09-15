@@ -9,49 +9,67 @@ export default function JobExplorerPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pageSize, setPageSize] = useState<number>(25);
+  const [currentToken, setCurrentToken] = useState<string | undefined>(undefined);
+  const [nextToken, setNextToken] = useState<string | null>(null);
+  const [cursorHistory, setCursorHistory] = useState<(string | undefined)[]>([]);
+  const [pageIndex, setPageIndex] = useState<number>(1);
 
   useEffect(() => {
     async function loadJobs() {
       setLoading(true);
+      setError(null);
       try {
-        const data = await fetchJobs(statusFilter === 'all' ? undefined : statusFilter).catch(() => ({
-          jobs: [
-            {
-              content_hash: '1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d',
-              status: 'done',
-              worker_type: 'local',
-              tts_backend: 'kokoro',
-              voice_id: 'af_heart',
-              text: 'Four score and seven years ago our fathers brought forth on this continent a new nation...',
-              duration_seconds: 4.2,
-              created_at: '2026-09-13T14:10:00Z',
-            },
-            {
-              content_hash: '8f9e0d1c2b3a4f5e6d7c8b9a0f1e2d3c',
-              status: 'done',
-              worker_type: 'batch',
-              tts_backend: 'qwen',
-              voice_id: 'Ryan',
-              text: 'The brave men, living and dead, who struggled here, have consecrated it, far above our poor power...',
-              duration_seconds: 7.9,
-              created_at: '2026-09-13T14:15:00Z',
-            },
-            {
-              content_hash: '9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d',
-              status: 'pending',
-              tts_backend: 'kokoro',
-              text: 'Incoming TTS request waiting for available worker.',
-              created_at: '2026-09-13T14:20:00Z',
-            },
-          ] as JobSummary[],
-        }));
+        const data = await fetchJobs(
+          statusFilter === 'all' ? undefined : statusFilter,
+          pageSize,
+          currentToken
+        );
         setJobs(data.jobs || []);
+        setNextToken(data.next_token || null);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Failed to load jobs';
+        setError(message);
+        setJobs([]);
+        setNextToken(null);
       } finally {
         setLoading(false);
       }
     }
     loadJobs();
-  }, [statusFilter]);
+  }, [statusFilter, pageSize, currentToken]);
+
+  function handleStatusChange(newStatus: string) {
+    setStatusFilter(newStatus);
+    setCursorHistory([]);
+    setCurrentToken(undefined);
+    setPageIndex(1);
+  }
+
+  function handlePageSizeChange(newSize: number) {
+    setPageSize(newSize);
+    setCursorHistory([]);
+    setCurrentToken(undefined);
+    setPageIndex(1);
+  }
+
+  function handleNextPage() {
+    if (nextToken) {
+      setCursorHistory((prev) => [...prev, currentToken]);
+      setCurrentToken(nextToken);
+      setPageIndex((prev) => prev + 1);
+    }
+  }
+
+  function handlePrevPage() {
+    if (cursorHistory.length > 0) {
+      const prevToken = cursorHistory[cursorHistory.length - 1];
+      setCursorHistory((prev) => prev.slice(0, -1));
+      setCurrentToken(prevToken);
+      setPageIndex((prev) => Math.max(1, prev - 1));
+    }
+  }
 
   const filtered = jobs.filter((j) => {
     if (!searchQuery) return true;
@@ -76,7 +94,7 @@ export default function JobExplorerPage() {
           </label>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => handleStatusChange(e.target.value)}
             style={{ padding: '0.5rem 0.8rem', borderRadius: '4px', border: '1px solid var(--line)', background: '#fff', fontSize: '0.875rem' }}
           >
             <option value="all">All Statuses</option>
@@ -84,6 +102,22 @@ export default function JobExplorerPage() {
             <option value="claimed">Claimed</option>
             <option value="done">Done</option>
             <option value="failed">Failed</option>
+          </select>
+        </div>
+
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+            Page Size
+          </label>
+          <select
+            value={pageSize}
+            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+            style={{ padding: '0.5rem 0.8rem', borderRadius: '4px', border: '1px solid var(--line)', background: '#fff', fontSize: '0.875rem' }}
+          >
+            <option value={10}>10 per page</option>
+            <option value={25}>25 per page</option>
+            <option value={50}>50 per page</option>
+            <option value={100}>100 per page</option>
           </select>
         </div>
 
@@ -95,7 +129,7 @@ export default function JobExplorerPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search content hash or excerpt..."
+            placeholder="Search content hash or excerpt on current page..."
             style={{ width: '100%', padding: '0.5rem 0.8rem', borderRadius: '4px', border: '1px solid var(--line)', background: '#fff', fontSize: '0.875rem' }}
           />
         </div>
@@ -116,7 +150,13 @@ export default function JobExplorerPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {error ? (
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem', color: '#cf1322' }}>
+                  Error loading jobs: {error}
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--ink-muted)' }}>
                   {loading ? 'Loading jobs...' : 'No matching jobs found.'}
@@ -136,8 +176,10 @@ export default function JobExplorerPage() {
                   <td>
                     {job.worker_type ? (
                       <span className={`badge badge-worker-${job.worker_type}`}>
-                        {job.worker_type}
+                        {job.worker_type === 'batch' ? 'AWS Batch' : 'Local'}
                       </span>
+                    ) : job.status === 'done' ? (
+                      <span style={{ color: 'var(--ink-muted)', fontSize: '0.8rem' }}>—</span>
                     ) : (
                       <span style={{ color: 'var(--ink-muted)', fontSize: '0.8rem' }}>Unclaimed</span>
                     )}
@@ -161,6 +203,34 @@ export default function JobExplorerPage() {
             )}
           </tbody>
         </table>
+
+        {/* Pagination Controls Footer */}
+        <div style={{ padding: '0.85rem 1.25rem', borderTop: '1px solid var(--line)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#faf8f5', flexWrap: 'wrap', gap: '0.75rem' }}>
+          <div style={{ fontSize: '0.875rem', color: 'var(--ink-muted)' }}>
+            Showing <strong>{filtered.length}</strong> jobs (Page {pageIndex})
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <button
+              onClick={handlePrevPage}
+              disabled={pageIndex === 1 || loading}
+              className="button"
+              style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem', cursor: pageIndex === 1 ? 'not-allowed' : 'pointer', opacity: pageIndex === 1 ? 0.5 : 1 }}
+            >
+              &larr; Previous
+            </button>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, padding: '0 0.5rem' }}>
+              Page {pageIndex}
+            </span>
+            <button
+              onClick={handleNextPage}
+              disabled={!nextToken || loading}
+              className="button"
+              style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem', cursor: !nextToken ? 'not-allowed' : 'pointer', opacity: !nextToken ? 0.5 : 1 }}
+            >
+              Next &rarr;
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

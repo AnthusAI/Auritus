@@ -333,3 +333,49 @@ def test_admin_queue_toggle(router_resources: dict[str, object]) -> None:
         jobQueue="test-queue",
         state="DISABLED",
     )
+
+
+def test_admin_jobs_pagination(router_resources: dict[str, object]) -> None:
+    """Admin jobs endpoint supports limit and cursor pagination."""
+    table = router_resources["jobs"]
+    for i in range(1, 4):
+        table.put_item(
+            Item={
+                "content_hash": f"page-hash-{i}",
+                "status": "done",
+                "tts_backend": "kokoro",
+                "voice_id": "af_heart",
+                "text": f"Page text {i}",
+                "created_at": f"2026-09-13T12:0{i}:00Z",
+            }
+        )
+
+    p1_resp = router_resources["handler"].handler(
+        router_resources["event"](
+            "GET",
+            "/admin/jobs",
+            headers=_operator_headers(),
+            query_string_parameters={"limit": "2"},
+        ),
+        None,
+    )
+    assert p1_resp["statusCode"] == 200
+    p1_data = router_resources["response_body"](p1_resp)
+    assert len(p1_data["jobs"]) == 2
+    assert p1_data.get("next_token") is not None
+
+    p2_resp = router_resources["handler"].handler(
+        router_resources["event"](
+            "GET",
+            "/admin/jobs",
+            headers=_operator_headers(),
+            query_string_parameters={"limit": "2", "next_token": p1_data["next_token"]},
+        ),
+        None,
+    )
+    assert p2_resp["statusCode"] == 200
+    p2_data = router_resources["response_body"](p2_resp)
+    assert len(p2_data["jobs"]) >= 1
+    p1_hashes = {j["content_hash"] for j in p1_data["jobs"]}
+    p2_hashes = {j["content_hash"] for j in p2_data["jobs"]}
+    assert len(p1_hashes.intersection(p2_hashes)) == 0

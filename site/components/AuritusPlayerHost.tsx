@@ -22,7 +22,15 @@ export function AuritusPlayerHost({ name, byline }: AuritusPlayerHostProps) {
                 ?.setAttribute("data-auritus-play-intent", "true");
             }}
           >
-            Play
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86a1 1 0 0 0-1.5.86z" />
+            </svg>
           </button>
           <div className="auritus-placeholder-track" aria-hidden="true" />
         </div>

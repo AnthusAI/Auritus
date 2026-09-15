@@ -32,6 +32,15 @@ Recorded 13 September 2026 against the backends Auritus actually ships.
   redistributable until a pinned Boson checkpoint and its card are recorded
   here as approved.
 
+## F5-TTS (MLX on Apple Silicon)
+
+- Checkpoint: [SWivid/F5-TTS](https://huggingface.co/SWivid/F5-TTS) and [mlx-community/F5-TTS](https://huggingface.co/mlx-community/F5-TTS)
+- Code: [SWivid/F5-TTS](https://github.com/SWivid/F5-TTS) (**MIT**)
+- Weights license: **MIT**
+- Platform policy: `mlx-audio` native on Apple Silicon; `f5-tts` fallback on
+  NVIDIA/CPU. Model weights fetched at runtime.
+
+
 ## Decision for the current ship
 
 - Public examples and Batch jobs use **Kokoro** and **Qwen**, not Higgs.

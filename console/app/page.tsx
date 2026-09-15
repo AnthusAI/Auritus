@@ -6,24 +6,30 @@ import { fetchOverview, fetchJobs, OverviewMetrics, JobSummary } from '../lib/ap
 
 export default function DashboardOverviewPage() {
   const [metrics, setMetrics] = useState<OverviewMetrics>({
-    counts: { pending: 1, claimed: 2, done: 14, failed: 0 },
-    worker_breakdown: { local: 12, batch: 4 },
-    avg_duration_seconds: 3.4,
-    batch_queue_state: 'ENABLED',
-    total_sampled_jobs: 17,
+    counts: { pending: 0, claimed: 0, done: 0, failed: 0 },
+    worker_breakdown: { local: 0, batch: 0 },
+    avg_duration_seconds: 0,
+    batch_queue_state: 'UNKNOWN',
+    total_sampled_jobs: 0,
   });
   const [recentJobs, setRecentJobs] = useState<JobSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
+      setLoading(true);
+      setError(null);
       try {
         const [overviewData, jobsData] = await Promise.all([
-          fetchOverview().catch(() => null),
-          fetchJobs().catch(() => null),
+          fetchOverview(),
+          fetchJobs(),
         ]);
         if (overviewData) setMetrics(overviewData);
         if (jobsData?.jobs) setRecentJobs(jobsData.jobs.slice(0, 8));
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Failed to load dashboard data';
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -49,6 +55,12 @@ export default function DashboardOverviewPage() {
           Real-time metrics for just-in-time TTS generation, worker race performance, and Batch fallback health.
         </p>
       </div>
+
+      {error && (
+        <div className="card" style={{ marginBottom: '1.5rem', background: '#fff1f0', borderColor: '#ffa39e', color: '#cf1322' }}>
+          <strong>Error loading dashboard:</strong> {error}
+        </div>
+      )}
 
       {/* KPI Cards Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
@@ -129,7 +141,13 @@ export default function DashboardOverviewPage() {
               </tr>
             </thead>
             <tbody>
-              {recentJobs.length === 0 && !loading ? (
+              {error ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', color: '#cf1322', padding: '2rem' }}>
+                    Error loading jobs: {error}
+                  </td>
+                </tr>
+              ) : recentJobs.length === 0 && !loading ? (
                 <tr>
                   <td colSpan={7} style={{ textAlign: 'center', color: 'var(--ink-muted)', padding: '2rem' }}>
                     No generation jobs recorded yet.

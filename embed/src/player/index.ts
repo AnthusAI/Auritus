@@ -28,6 +28,25 @@ export function rewindIfEnded(media: {
   }
 }
 
+/**
+ * Format a duration in seconds to a human-readable mm:ss string (or h:mm:ss).
+ */
+export function formatDuration(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds < 0) {
+    return "0:00";
+  }
+  const totalSeconds = Math.floor(seconds);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const remainingSeconds = totalSeconds % 60;
+  const paddedSeconds = remainingSeconds.toString().padStart(2, "0");
+  if (hours > 0) {
+    const paddedMinutes = minutes.toString().padStart(2, "0");
+    return `${hours}:${paddedMinutes}:${paddedSeconds}`;
+  }
+  return `${minutes}:${paddedSeconds}`;
+}
+
 function statusLabel(job: JobRecord): string {
   switch (job.status) {
     case "done":
@@ -68,10 +87,22 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
       <p class="auritus-byline"></p>
     </div>
     <div class="auritus-controls">
-      <button type="button" class="auritus-play" aria-label="Play">Play</button>
+      <button type="button" class="auritus-play" aria-label="Play" data-playing="false">
+        <svg class="auritus-icon-play" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86a1 1 0 0 0-1.5.86z"/>
+        </svg>
+        <svg class="auritus-icon-pause" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+        </svg>
+      </button>
       <div class="auritus-track" aria-hidden="true">
         <div class="auritus-track-fill"></div>
       </div>
+      <span class="auritus-time" aria-label="Audio duration" hidden>
+        <span class="auritus-time-current">0:00</span>
+        <span class="auritus-time-separator">/</span>
+        <span class="auritus-time-duration">0:00</span>
+      </span>
       <span class="auritus-status"></span>
     </div>
     <p class="auritus-error" hidden></p>
@@ -84,6 +115,13 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
   const statusEl = root.querySelector(".auritus-status") as HTMLSpanElement;
   const trackFill = root.querySelector(".auritus-track-fill") as HTMLDivElement;
   const errorEl = root.querySelector(".auritus-error") as HTMLParagraphElement;
+  const timeEl = root.querySelector(".auritus-time") as HTMLSpanElement;
+  const timeCurrentEl = root.querySelector(
+    ".auritus-time-current",
+  ) as HTMLSpanElement;
+  const timeDurationEl = root.querySelector(
+    ".auritus-time-duration",
+  ) as HTMLSpanElement;
 
   nameEl.textContent = name;
   bylineEl.textContent = byline;
@@ -111,6 +149,13 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
     playBtn.disabled = true;
   }
 
+  function updateTimeDisplay(): void {
+    timeCurrentEl.textContent = formatDuration(audio.currentTime);
+    if (Number.isFinite(audio.duration) && audio.duration > 0) {
+      timeDurationEl.textContent = formatDuration(audio.duration);
+    }
+  }
+
   function applyJob(job: JobRecord): void {
     statusEl.hidden = false;
     statusEl.textContent = pendingPlay
@@ -126,6 +171,8 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
       audio.src = job.audio_url;
       playBtn.disabled = false;
       statusEl.hidden = true;
+      timeEl.hidden = false;
+      updateTimeDisplay();
       if (pendingPlay) {
         pendingPlay = false;
         rewindIfEnded(audio);
@@ -168,7 +215,7 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
 
   function syncPlayLabel(): void {
     const playing = !audio.paused && !audio.ended;
-    playBtn.textContent = playing ? "Pause" : "Play";
+    playBtn.setAttribute("data-playing", playing ? "true" : "false");
     playBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
   }
 
@@ -189,9 +236,21 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
 
   audio.addEventListener("play", syncPlayLabel);
   audio.addEventListener("pause", syncPlayLabel);
-  audio.addEventListener("ended", syncPlayLabel);
+  audio.addEventListener("ended", () => {
+    syncPlayLabel();
+    if (Number.isFinite(audio.duration) && audio.duration > 0) {
+      timeCurrentEl.textContent = formatDuration(audio.duration);
+      trackFill.style.width = "100%";
+    }
+  });
+  audio.addEventListener("loadedmetadata", () => {
+    updateTimeDisplay();
+    timeEl.hidden = false;
+  });
+  audio.addEventListener("durationchange", updateTimeDisplay);
 
   audio.addEventListener("timeupdate", () => {
+    updateTimeDisplay();
     if (!audio.duration || !Number.isFinite(audio.duration)) {
       trackFill.style.width = "0%";
       return;

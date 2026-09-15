@@ -1,0 +1,20 @@
+{
+  "id": "auritus-e07b466a-5e18-4ed9-88d2-41779e7a9410",
+  "title": "Interactive dynamic getting started guide with animated option decision flows",
+  "description": "Build an interactive, animated Getting Started onboarding guide for Auritus with Apple Store-style side-by-side decision cards for workforce auth and TTS models with audio samples and expanding setup instructions.",
+  "type": "story",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-14T20:00:41.680166Z",
+  "updated_at": "2026-09-14T20:03:51.307614Z",
+  "closed_at": "2026-09-14T20:03:51.307592Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

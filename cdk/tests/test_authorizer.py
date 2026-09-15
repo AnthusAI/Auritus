@@ -66,3 +66,41 @@ def test_denies_invalid_base64() -> None:
     token = "!!!.@@@.###"
     result = authorizer.handler({"headers": {"authorization": f"Bearer {token}"}}, None)
     assert result["isAuthorized"] is False
+
+
+def test_authorizes_allowed_client_ids_with_client_id_claim() -> None:
+    """A JWT with client_id claim matching ALLOWED_CLIENT_IDS is authorized."""
+    authorizer.USER_POOL_ID = "us-east-1_TestPool"
+    authorizer.CLIENT_ID = ""
+    authorizer.ALLOWED_CLIENT_IDS = ["cli-client-id", "web-console-client-id"]
+    token = _make_jwt(
+        {"alg": "RS256", "typ": "JWT"},
+        {
+            "iss": "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_TestPool",
+            "client_id": "web-console-client-id",
+            "sub": "user-456",
+        },
+    )
+    event = {"headers": {"authorization": f"Bearer {token}"}}
+    result = authorizer.handler(event, None)
+    assert result["isAuthorized"] is True
+    assert result["context"]["sub"] == "user-456"
+
+
+def test_denies_unauthorized_client_id() -> None:
+    """A JWT with client_id not in ALLOWED_CLIENT_IDS is denied."""
+    authorizer.USER_POOL_ID = "us-east-1_TestPool"
+    authorizer.CLIENT_ID = ""
+    authorizer.ALLOWED_CLIENT_IDS = ["cli-client-id", "web-console-client-id"]
+    token = _make_jwt(
+        {"alg": "RS256", "typ": "JWT"},
+        {
+            "iss": "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_TestPool",
+            "client_id": "unknown-client-id",
+            "sub": "user-789",
+        },
+    )
+    event = {"headers": {"authorization": f"Bearer {token}"}}
+    result = authorizer.handler(event, None)
+    assert result["isAuthorized"] is False
+    assert "audience_mismatch" in result["context"]["reason"]

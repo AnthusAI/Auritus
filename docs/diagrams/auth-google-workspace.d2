@@ -56,9 +56,8 @@ google: {
 }
 
 cli: {
-  label: "Auritus CLI\nbrowser sign-in flow\nnot yet implemented"
+  label: "Auritus CLI and\nWeb Console SSO"
   shape: hexagon
-  style.stroke-dash: 4
 }
 
 aws: {
@@ -88,8 +87,8 @@ iam: {
 
 operator -> google: "sign in once\nwith your Google account" {style.bold: true}
 google -> aws.pool: "OIDC authorization code"
-operator -> cli: "auritus login" {style.stroke-dash: 4}
-cli -> aws.pool: "browser flow, planned" {style.stroke-dash: 4}
+operator -> cli: "auritus login --sso google"
+cli -> aws.pool: "OAuth code exchange"
 aws.pool -> aws.tokens: "issues"
 aws.tokens -> aws.api: "Authorization: Bearer" {style.bold: true}
 aws.api -> aws.routes: "allow"

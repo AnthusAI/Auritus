@@ -1,0 +1,20 @@
+{
+  "id": "auritus-0cf57b35-99cb-4cf5-99ac-51048e9ee649",
+  "title": "Step Functions fallback on worker delivery timeout with claim grace period",
+  "description": "Ensure Step Functions cloud fallback monitors actual job completion rather than just claim status, providing an extra grace period for claimed jobs before submitting AWS Batch if the worker fails to deliver.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-e5d525e2-52c4-414f-8c17-6ceb78e8d6f7",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-14T22:26:59.798429Z",
+  "updated_at": "2026-09-14T22:32:49.939641Z",
+  "closed_at": "2026-09-14T22:32:49.939624Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

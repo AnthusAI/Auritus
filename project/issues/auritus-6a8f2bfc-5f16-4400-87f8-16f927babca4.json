@@ -1,0 +1,20 @@
+{
+  "id": "auritus-6a8f2bfc-5f16-4400-87f8-16f927babca4",
+  "title": "Fix corrupted dev server cache causing 500 error and missing styles in web console",
+  "description": "",
+  "type": "bug",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a72acda0-dc7b-44d5-9629-18edc0458fdc",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-14T20:57:19.467697Z",
+  "updated_at": "2026-09-14T20:58:33.496806Z",
+  "closed_at": "2026-09-14T20:58:33.496783Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

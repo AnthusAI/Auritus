@@ -16,7 +16,7 @@ def step_load_registry(context) -> None:
     from tts import get_backend
 
     context.registered_backends = [
-        get_backend(name).name for name in ("higgs", "qwen", "kokoro")
+        get_backend(name).name for name in ("higgs", "qwen", "kokoro", "f5")
     ]
 
 

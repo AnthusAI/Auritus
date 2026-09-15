@@ -135,3 +135,36 @@ def step_check_worker_attribution(context) -> None:
 @when('the operator toggles the queue state to "{new_state}"')
 def step_toggle_queue_state(context, new_state: str) -> None:
     context.batch_queue_state = new_state
+
+
+@when("the operator requests jobs with limit {limit:d}")
+def step_request_jobs_with_limit(context, limit: int) -> None:
+    job_items = list(context.jobs.values())
+    context.page_limit = limit
+    context.page1_jobs = job_items[:limit]
+    context.next_cursor = "cursor_page_2" if len(job_items) > limit else None
+
+
+@then("the response contains at most {limit:d} jobs")
+def step_check_jobs_at_most(context, limit: int) -> None:
+    assert len(context.page1_jobs) <= limit
+
+
+@then("the response contains a next_token cursor")
+def step_check_next_cursor(context) -> None:
+    assert context.next_cursor is not None
+
+
+@when("the operator requests the next page of jobs with the cursor")
+def step_request_next_page(context) -> None:
+    assert context.next_cursor is not None
+    job_items = list(context.jobs.values())
+    context.page2_jobs = job_items[context.page_limit :]
+
+
+@then("the next page contains distinct jobs")
+def step_check_distinct_jobs(context) -> None:
+    p1_hashes = {j["content_hash"] for j in context.page1_jobs}
+    p2_hashes = {j["content_hash"] for j in context.page2_jobs}
+    assert len(p1_hashes.intersection(p2_hashes)) == 0
+    assert len(p2_hashes) > 0
