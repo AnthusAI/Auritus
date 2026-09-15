@@ -453,6 +453,11 @@ var Auritus = (() => {
         statusEl.hidden = true;
         timeEl.hidden = false;
         updateTimeDisplay();
+        if (Number.isFinite(job.duration_seconds) && job.duration_seconds > 0) {
+          timeDurationEl.textContent = formatDuration(
+            job.duration_seconds
+          );
+        }
         if (pendingPlay) {
           pendingPlay = false;
           rewindIfEnded(audio);
