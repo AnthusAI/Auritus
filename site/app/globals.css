@@ -274,7 +274,14 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
   .marketing-hero, .architecture-panel, .docs-prose-grid { grid-template-columns: 1fr; }
   .marketing-hero { min-height: auto; padding-top: 3rem; }
   .hero-copy h1 { max-width: 12ch; }
-  .brand-announcer { margin-block: -0.5rem -1rem; width: 5rem; }
+  /* The desktop lockup's -2.2rem lift is sized for a 205px announcer. Left in
+     place here it pushed the wordmark above the top of the viewport, so the
+     whole lockup is re-proportioned rather than just scaled down. */
+  .brand-lockup { gap: 0.9rem; }
+  .brand-announcer { margin-block: 0 -1.1rem; width: 8rem; }
+  .wordmark { font-size: 2.4rem; }
+  .brand-tagline { font-size: 1.35rem; }
+  .brand-lockup-copy { transform: translateY(-0.7rem) rotate(-7deg); }
   .choice-grid, .identity-grid { grid-template-columns: 1fr; }
   .choice-card { min-height: auto; }
   .setup-steps { grid-template-columns: 1fr; }
