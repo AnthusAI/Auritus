@@ -67,7 +67,15 @@ class KokoroBackend(TTSBackend):
         return self._generate_torch(text, meta)
 
     def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via mlx-audio (Apple Silicon)."""
+        """Generate via mlx-audio (Apple Silicon).
+
+        model.generate() is a generator that yields one GenerationResult per
+        *segment* -- Kokoro's pipeline splits long text into speakable chunks
+        internally (a model sequence-length limit, not a paragraph split) and
+        yields each chunk's audio separately. Taking only the first result
+        truncates anything past the first segment; a full-length article is
+        many segments. Concatenate every segment's audio in order.
+        """
         import numpy as np
         from mlx_audio.tts.utils import load_model
 
@@ -78,24 +86,35 @@ class KokoroBackend(TTSBackend):
             )
         voice = resolve_kokoro_voice(meta)
         gen = KokoroBackend._model.generate(text, voice=voice)
-        result = next(iter(gen))
-        audio_np = np.array(result.audio)
+        chunks = [np.array(result.audio) for result in gen]
+        if not chunks:
+            raise ValueError("Kokoro generated no audio segments")
+        audio_np = np.concatenate(chunks) if len(chunks) > 1 else chunks[0]
         return _to_wav(audio_np, sample_rate=24000)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via PyTorch kokoro (fallback for non-Apple)."""
+        """Generate via PyTorch kokoro (fallback for non-Apple).
+
+        Same per-segment chunking as the MLX path (see _generate_mlx) --
+        KPipeline's own __call__ is a generator over segments. Concatenate
+        every segment instead of keeping only results[0].
+        """
         from kokoro import KPipeline
 
         if KokoroBackend._model is None:
             KokoroBackend._model = KPipeline(lang_code="a")
         voice = resolve_kokoro_voice(meta)
         results = list(KokoroBackend._model(text, voice=voice))
-        audio_tensor = results[0].audio
-        audio_list = (
-            audio_tensor.tolist()
-            if hasattr(audio_tensor, "tolist")
-            else list(audio_tensor)
-        )
+        if not results:
+            raise ValueError("Kokoro generated no audio segments")
+        audio_list: list[float] = []
+        for result in results:
+            audio_tensor = result.audio
+            audio_list.extend(
+                audio_tensor.tolist()
+                if hasattr(audio_tensor, "tolist")
+                else list(audio_tensor)
+            )
         return _to_wav(audio_list, sample_rate=24000)
 
 
