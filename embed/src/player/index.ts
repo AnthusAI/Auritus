@@ -130,7 +130,13 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
   }
 
   const audio = document.createElement("audio");
-  audio.preload = "none";
+  // "metadata" (not "none"): fetches just the file header via a small
+  // range request as soon as src is set, so the real duration is known
+  // before the reader presses Play. The job API's own duration_seconds
+  // field is claim-to-completion *processing* time (used for perf stats
+  // elsewhere), not clip length -- there's no shortcut around asking the
+  // browser to read the actual file.
+  audio.preload = "metadata";
   shadow.appendChild(audio);
 
   let pollTimer: ReturnType<typeof setInterval> | undefined;
@@ -169,25 +175,14 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
     if (job.status === "done" && job.audio_url) {
       stopPolling();
       audio.src = job.audio_url;
+      // preload="metadata" fetches the file header on its own once src is
+      // set, but some browsers need an explicit nudge to start that fetch
+      // for an <audio> element that already existed before src changed.
+      audio.load();
       playBtn.disabled = false;
       statusEl.hidden = true;
       timeEl.hidden = false;
-      // audio.duration isn't known yet — preload="none" means the browser
-      // hasn't fetched metadata and won't until playback starts. The API
-      // already computed the clip length during synthesis; show that now
-      // so the reader sees a real duration immediately instead of 0:00.
-      // The loadedmetadata/durationchange listeners below overwrite this
-      // with the browser's own figure once playback begins (same number,
-      // just confirmed from the file itself).
       updateTimeDisplay();
-      if (
-        Number.isFinite(job.duration_seconds) &&
-        (job.duration_seconds as number) > 0
-      ) {
-        timeDurationEl.textContent = formatDuration(
-          job.duration_seconds as number,
-        );
-      }
       if (pendingPlay) {
         pendingPlay = false;
         rewindIfEnded(audio);

@@ -418,7 +418,7 @@ var Auritus = (() => {
       bylineEl.hidden = true;
     }
     const audio = document.createElement("audio");
-    audio.preload = "none";
+    audio.preload = "metadata";
     shadow.appendChild(audio);
     let pollTimer;
     let pendingPlay = host.parentElement?.getAttribute("data-auritus-play-intent") === "true";
@@ -449,15 +449,11 @@ var Auritus = (() => {
       if (job.status === "done" && job.audio_url) {
         stopPolling();
         audio.src = job.audio_url;
+        audio.load();
         playBtn.disabled = false;
         statusEl.hidden = true;
         timeEl.hidden = false;
         updateTimeDisplay();
-        if (Number.isFinite(job.duration_seconds) && job.duration_seconds > 0) {
-          timeDurationEl.textContent = formatDuration(
-            job.duration_seconds
-          );
-        }
         if (pendingPlay) {
           pendingPlay = false;
           rewindIfEnded(audio);
