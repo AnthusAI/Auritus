@@ -1,0 +1,20 @@
+{
+  "id": "auritus-08cc65af-bcaa-475b-aa30-e6acbdeb5cba",
+  "title": "Implement Higgs Audio v3 TTS backend with MLX support",
+  "description": "",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-19ba7b16-6f43-4136-ad99-3b8e4b434c6c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-15T10:39:06.435885Z",
+  "updated_at": "2026-09-15T10:39:23.631306Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
