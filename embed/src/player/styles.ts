@@ -43,11 +43,14 @@ export const PLAYER_STYLES = `
 
 /* Shown only before the job is done: a one-shot "start once ready" request,
    since there's no file yet for native controls to attach to. Once done,
-   this whole block is replaced by the real <audio controls>. */
+   this whole block is replaced by the real <audio controls>. min-height
+   matches .auritus-audio below so that swap doesn't itself shift the
+   page -- both rows claim the same space regardless of which is hidden. */
 .auritus-pending {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-height: 40px;
 }
 
 .auritus-play {
@@ -101,6 +104,7 @@ export const PLAYER_STYLES = `
 .auritus-audio {
   display: block;
   width: 100%;
+  min-height: 40px;
   accent-color: var(--auritus-accent, #2d5f3f);
 }
 
