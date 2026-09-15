@@ -2,6 +2,85 @@
 
 <!-- version list -->
 
+## v0.15.0 (2026-09-15)
+
+### Bug Fixes
+
+- **auth**: Authorize web console client ID on admin routes and display live jobs
+  ([`adf8cf5`](https://github.com/AnthusAI/Auritus/commit/adf8cf585820d349f4b45e457c674e24f9fe3d2c))
+
+- **auth**: Enable mutable email attribute for cognito federated sso logins
+  ([`edcea21`](https://github.com/AnthusAI/Auritus/commit/edcea217fa6de67886bd767eb4b4dc58aa8f85da))
+
+- **cdk**: Deploy with a current CLI and keep Cognito refresh auth
+  ([`7a5c198`](https://github.com/AnthusAI/Auritus/commit/7a5c198c8d97b3c1b9b038b40174ed2220a51f37))
+
+- **cdk**: Do not set ALLOW_REFRESH_TOKEN_AUTH with rotation
+  ([`63a2b5d`](https://github.com/AnthusAI/Auritus/commit/63a2b5da0972964f098565c2b826c86f362c7e64))
+
+- **cli**: Bridge click 8.2 make_metavar signature for typer
+  ([`e4ec754`](https://github.com/AnthusAI/Auritus/commit/e4ec754e960aeb4a6822e423e6a3d9b2c6b0bb0f))
+
+- **cli**: Bridge click 8.4 UNSET flag_value for typer options
+  ([`ecf8436`](https://github.com/AnthusAI/Auritus/commit/ecf843671668e0edd0d48642d14243128954cb1e))
+
+- **console**: Prevent duplicate oauth code exchange flash in callback
+  ([`e3c2d6a`](https://github.com/AnthusAI/Auritus/commit/e3c2d6a1184fb27d1003a2d255af5e2c89697559))
+
+- **fallback**: Verify job delivery in step functions with claim grace period
+  ([`1264863`](https://github.com/AnthusAI/Auritus/commit/126486335d45f2463464f960f281a8cb94800f77))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`dcf3ca3`](https://github.com/AnthusAI/Auritus/commit/dcf3ca3c4eeec6b26642f01cca96194c62f39947))
+
+- **kanbus**: Commit board state (issues)
+  ([`00b879b`](https://github.com/AnthusAI/Auritus/commit/00b879b3cabb970795b3a4b7df10635d4a1babf6))
+
+- **kanbus**: Commit board state (issues)
+  ([`f0ecfd8`](https://github.com/AnthusAI/Auritus/commit/f0ecfd8feb16f96c0a1f0250c0415285addfcacf))
+
+- **kanbus**: Commit board state (issues)
+  ([`4a60500`](https://github.com/AnthusAI/Auritus/commit/4a605004929b657024d0f3bff1ea12721ef8ccd1))
+
+### Code Style
+
+- **site**: Display badge pills on examples index page
+  ([`7a3dcf9`](https://github.com/AnthusAI/Auritus/commit/7a3dcf9b44e783c545ae926e74650ee249cc586f))
+
+### Features
+
+- **auth**: Support Google Workspace and AWS IAM Identity Center SSO federation
+  ([`cf54cc7`](https://github.com/AnthusAI/Auritus/commit/cf54cc7b80007f6c5038223030aa9b3f4a7b5229))
+
+- **console**: Add cursor-based pagination to admin jobs API and job explorer
+  ([`3690f84`](https://github.com/AnthusAI/Auritus/commit/3690f844cc2f44b0da8adb8c8804d0e9746613fe))
+
+- **console**: Wire real Cognito InitiateAuth and add client-side AuthGuard
+  ([`e465de1`](https://github.com/AnthusAI/Auritus/commit/e465de1ad0335a7a2f1bb0d7a492aeaafcf9961f))
+
+- **docs**: Add comprehensive google workspace sso guide with exact redirect uris and js origins
+  ([`c26ce4c`](https://github.com/AnthusAI/Auritus/commit/c26ce4cb2447c3d8e48fd0798132533d4abee34a))
+
+- **player**: Add play and pause icon toggle with duration and progress display
+  ([`be33b4c`](https://github.com/AnthusAI/Auritus/commit/be33b4ceb13abf9461b6a2dfda48f96890451519))
+
+- **site**: Add interactive getting started guide with animated option decision flows
+  ([`012e118`](https://github.com/AnthusAI/Auritus/commit/012e118f499f67fd441ec54020cc31f172e2c8a8))
+
+- **site**: Reorganize demo pages into model comparison and embed features
+  ([`863d468`](https://github.com/AnthusAI/Auritus/commit/863d4681fe42a3cdb5122cd3665d74aea9660c11))
+
+- **tts**: Add F5-TTS pluggable backend with MLX support
+  ([`b5759fe`](https://github.com/AnthusAI/Auritus/commit/b5759fefc1867e6e2a479d1cee82626737ed2abb))
+
+### Testing
+
+- **site**: Prove Play while waiting starts Kokoro speech
+  ([`64ba52d`](https://github.com/AnthusAI/Auritus/commit/64ba52d9e12d6391e4cf5dbb15957768fec33f97))
+
+
 ## v0.14.1 (2026-09-14)
 
 ### Bug Fixes
