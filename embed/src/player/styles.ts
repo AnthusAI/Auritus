@@ -15,6 +15,10 @@ export const PLAYER_STYLES = `
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 .auritus-player {
   padding: 12px 14px;
   border-radius: inherit;
@@ -37,7 +41,10 @@ export const PLAYER_STYLES = `
   margin: 4px 0 0;
 }
 
-.auritus-controls {
+/* Shown only before the job is done: a one-shot "start once ready" request,
+   since there's no file yet for native controls to attach to. Once done,
+   this whole block is replaced by the real <audio controls>. */
+.auritus-pending {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -78,36 +85,8 @@ export const PLAYER_STYLES = `
   cursor: not-allowed;
 }
 
-.auritus-play .auritus-icon-play {
+.auritus-play svg {
   margin-left: 2px;
-}
-
-.auritus-play .auritus-icon-pause {
-  display: none;
-}
-
-.auritus-play[data-playing="true"] .auritus-icon-play {
-  display: none;
-}
-
-.auritus-play[data-playing="true"] .auritus-icon-pause {
-  display: block;
-}
-
-.auritus-time {
-  font-size: 0.75rem;
-  font-variant-numeric: tabular-nums;
-  opacity: 0.8;
-  white-space: nowrap;
-  user-select: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-}
-
-.auritus-time[hidden] {
-  display: none;
 }
 
 .auritus-status {
@@ -115,19 +94,14 @@ export const PLAYER_STYLES = `
   opacity: 0.9;
 }
 
-.auritus-track {
-  flex: 1;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--auritus-track, color-mix(in srgb, currentColor 25%, transparent));
-  overflow: hidden;
-}
-
-.auritus-track-fill {
-  height: 100%;
-  width: 0%;
-  background: var(--auritus-accent, currentColor);
-  transition: width 0.1s linear;
+/* Native browser media controls -- deliberately not reinventing scrubbing,
+   volume, or playback-rate UI. accent-color is a best-effort theme hook:
+   Chromium and Firefox tint the built-in controls with it, Safari ignores
+   it (no further reach into UA-shadow internals from here). */
+.auritus-audio {
+  display: block;
+  width: 100%;
+  accent-color: var(--auritus-accent, #2d5f3f);
 }
 
 .auritus-error {

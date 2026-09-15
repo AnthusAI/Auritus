@@ -86,58 +86,44 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
       <p class="auritus-name"></p>
       <p class="auritus-byline"></p>
     </div>
-    <div class="auritus-controls">
-      <button type="button" class="auritus-play" aria-label="Play" data-playing="false">
-        <svg class="auritus-icon-play" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+    <div class="auritus-pending">
+      <button type="button" class="auritus-play" aria-label="Play">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
           <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86a1 1 0 0 0-1.5.86z"/>
         </svg>
-        <svg class="auritus-icon-pause" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-        </svg>
       </button>
-      <div class="auritus-track" aria-hidden="true">
-        <div class="auritus-track-fill"></div>
-      </div>
-      <span class="auritus-time" aria-label="Audio duration" hidden>
-        <span class="auritus-time-current">0:00</span>
-        <span class="auritus-time-separator">/</span>
-        <span class="auritus-time-duration">0:00</span>
-      </span>
       <span class="auritus-status"></span>
     </div>
+    <audio class="auritus-audio" controls hidden></audio>
     <p class="auritus-error" hidden></p>
   `;
   shadow.appendChild(root);
 
   const nameEl = root.querySelector(".auritus-name") as HTMLParagraphElement;
   const bylineEl = root.querySelector(".auritus-byline") as HTMLParagraphElement;
+  const pendingEl = root.querySelector(".auritus-pending") as HTMLDivElement;
   const playBtn = root.querySelector(".auritus-play") as HTMLButtonElement;
   const statusEl = root.querySelector(".auritus-status") as HTMLSpanElement;
-  const trackFill = root.querySelector(".auritus-track-fill") as HTMLDivElement;
   const errorEl = root.querySelector(".auritus-error") as HTMLParagraphElement;
-  const timeEl = root.querySelector(".auritus-time") as HTMLSpanElement;
-  const timeCurrentEl = root.querySelector(
-    ".auritus-time-current",
-  ) as HTMLSpanElement;
-  const timeDurationEl = root.querySelector(
-    ".auritus-time-duration",
-  ) as HTMLSpanElement;
+  // The real player: native browser media controls (scrubbing, volume,
+  // and on Chromium/Edge a playback-speed menu) rather than a hand-built
+  // play button and progress bar. Hidden until a job is done and has a
+  // src -- an <audio controls> with nothing to play is confusing chrome,
+  // not a player.
+  const audio = root.querySelector(".auritus-audio") as HTMLAudioElement;
+  // "metadata" (not "none"): fetches just the file header via a small
+  // range request as soon as src is set, so the real duration is known
+  // immediately once revealed, before the reader presses Play. The job
+  // API's own duration_seconds field is claim-to-completion *processing*
+  // time (used for perf stats elsewhere), not clip length -- there's no
+  // shortcut around asking the browser to read the actual file.
+  audio.preload = "metadata";
 
   nameEl.textContent = name;
   bylineEl.textContent = byline;
   if (!byline) {
     bylineEl.hidden = true;
   }
-
-  const audio = document.createElement("audio");
-  // "metadata" (not "none"): fetches just the file header via a small
-  // range request as soon as src is set, so the real duration is known
-  // before the reader presses Play. The job API's own duration_seconds
-  // field is claim-to-completion *processing* time (used for perf stats
-  // elsewhere), not clip length -- there's no shortcut around asking the
-  // browser to read the actual file.
-  audio.preload = "metadata";
-  shadow.appendChild(audio);
 
   let pollTimer: ReturnType<typeof setInterval> | undefined;
   let pendingPlay =
@@ -152,21 +138,11 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
   function setError(message: string): void {
     errorEl.hidden = false;
     errorEl.textContent = message;
-    playBtn.disabled = true;
-  }
-
-  function updateTimeDisplay(): void {
-    timeCurrentEl.textContent = formatDuration(audio.currentTime);
-    if (Number.isFinite(audio.duration) && audio.duration > 0) {
-      timeDurationEl.textContent = formatDuration(audio.duration);
-    }
+    // Nothing left to offer: no file exists to play, and none is coming.
+    pendingEl.hidden = true;
   }
 
   function applyJob(job: JobRecord): void {
-    statusEl.hidden = false;
-    statusEl.textContent = pendingPlay
-      ? "Starting when ready…"
-      : statusLabel(job);
     if (job.status === "failed") {
       setError("Audio could not be generated.");
       stopPolling();
@@ -174,21 +150,24 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
     }
     if (job.status === "done" && job.audio_url) {
       stopPolling();
+      pendingEl.hidden = true;
+      audio.hidden = false;
       audio.src = job.audio_url;
       // preload="metadata" fetches the file header on its own once src is
       // set, but some browsers need an explicit nudge to start that fetch
       // for an <audio> element that already existed before src changed.
       audio.load();
-      playBtn.disabled = false;
-      statusEl.hidden = true;
-      timeEl.hidden = false;
-      updateTimeDisplay();
       if (pendingPlay) {
         pendingPlay = false;
         rewindIfEnded(audio);
         void audio.play();
       }
+      return;
     }
+    statusEl.hidden = false;
+    statusEl.textContent = pendingPlay
+      ? "Starting when ready…"
+      : statusLabel(job);
   }
 
   function stopPolling(): void {
@@ -223,50 +202,21 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
     }, pollIntervalMs);
   }
 
-  function syncPlayLabel(): void {
-    const playing = !audio.paused && !audio.ended;
-    playBtn.setAttribute("data-playing", playing ? "true" : "false");
-    playBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
-  }
-
+  // The pending-play button only ever requests an early start -- once a
+  // job is done, applyJob() hides this button entirely and reveals native
+  // <audio controls>, which has its own real play/pause button built in.
   playBtn.addEventListener("click", () => {
-    if (!audio.paused) {
-      audio.pause();
-      return;
-    }
-    if (!audio.src) {
-      pendingPlay = true;
-      statusEl.hidden = false;
-      statusEl.textContent = "Starting when ready…";
-      return;
-    }
-    rewindIfEnded(audio);
-    void audio.play();
+    pendingPlay = true;
+    playBtn.disabled = true;
+    statusEl.hidden = false;
+    statusEl.textContent = "Starting when ready…";
   });
 
-  audio.addEventListener("play", syncPlayLabel);
-  audio.addEventListener("pause", syncPlayLabel);
+  // Native controls leave a finished clip sitting at its own end; reset it
+  // so the reader's next click on the native play button starts over
+  // instead of doing nothing.
   audio.addEventListener("ended", () => {
-    syncPlayLabel();
-    if (Number.isFinite(audio.duration) && audio.duration > 0) {
-      timeCurrentEl.textContent = formatDuration(audio.duration);
-      trackFill.style.width = "100%";
-    }
-  });
-  audio.addEventListener("loadedmetadata", () => {
-    updateTimeDisplay();
-    timeEl.hidden = false;
-  });
-  audio.addEventListener("durationchange", updateTimeDisplay);
-
-  audio.addEventListener("timeupdate", () => {
-    updateTimeDisplay();
-    if (!audio.duration || !Number.isFinite(audio.duration)) {
-      trackFill.style.width = "0%";
-      return;
-    }
-    const pct = (audio.currentTime / audio.duration) * 100;
-    trackFill.style.width = `${pct}%`;
+    rewindIfEnded(audio);
   });
 
   startPolling();

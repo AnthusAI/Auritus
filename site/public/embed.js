@@ -198,6 +198,10 @@ var Auritus = (() => {
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 .auritus-player {
   padding: 12px 14px;
   border-radius: inherit;
@@ -220,7 +224,10 @@ var Auritus = (() => {
   margin: 4px 0 0;
 }
 
-.auritus-controls {
+/* Shown only before the job is done: a one-shot "start once ready" request,
+   since there's no file yet for native controls to attach to. Once done,
+   this whole block is replaced by the real <audio controls>. */
+.auritus-pending {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -261,36 +268,8 @@ var Auritus = (() => {
   cursor: not-allowed;
 }
 
-.auritus-play .auritus-icon-play {
+.auritus-play svg {
   margin-left: 2px;
-}
-
-.auritus-play .auritus-icon-pause {
-  display: none;
-}
-
-.auritus-play[data-playing="true"] .auritus-icon-play {
-  display: none;
-}
-
-.auritus-play[data-playing="true"] .auritus-icon-pause {
-  display: block;
-}
-
-.auritus-time {
-  font-size: 0.75rem;
-  font-variant-numeric: tabular-nums;
-  opacity: 0.8;
-  white-space: nowrap;
-  user-select: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-}
-
-.auritus-time[hidden] {
-  display: none;
 }
 
 .auritus-status {
@@ -298,19 +277,14 @@ var Auritus = (() => {
   opacity: 0.9;
 }
 
-.auritus-track {
-  flex: 1;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--auritus-track, color-mix(in srgb, currentColor 25%, transparent));
-  overflow: hidden;
-}
-
-.auritus-track-fill {
-  height: 100%;
-  width: 0%;
-  background: var(--auritus-accent, currentColor);
-  transition: width 0.1s linear;
+/* Native browser media controls -- deliberately not reinventing scrubbing,
+   volume, or playback-rate UI. accent-color is a best-effort theme hook:
+   Chromium and Firefox tint the built-in controls with it, Safari ignores
+   it (no further reach into UA-shadow internals from here). */
+.auritus-audio {
+  display: block;
+  width: 100%;
+  accent-color: var(--auritus-accent, #2d5f3f);
 }
 
 .auritus-error {
@@ -328,21 +302,6 @@ var Auritus = (() => {
     if (atEnd) {
       media.currentTime = 0;
     }
-  }
-  function formatDuration(seconds) {
-    if (!Number.isFinite(seconds) || seconds < 0) {
-      return "0:00";
-    }
-    const totalSeconds = Math.floor(seconds);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor(totalSeconds % 3600 / 60);
-    const remainingSeconds = totalSeconds % 60;
-    const paddedSeconds = remainingSeconds.toString().padStart(2, "0");
-    if (hours > 0) {
-      const paddedMinutes = minutes.toString().padStart(2, "0");
-      return `${hours}:${paddedMinutes}:${paddedSeconds}`;
-    }
-    return `${minutes}:${paddedSeconds}`;
   }
   function statusLabel(job) {
     switch (job.status) {
@@ -377,49 +336,31 @@ var Auritus = (() => {
       <p class="auritus-name"></p>
       <p class="auritus-byline"></p>
     </div>
-    <div class="auritus-controls">
-      <button type="button" class="auritus-play" aria-label="Play" data-playing="false">
-        <svg class="auritus-icon-play" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+    <div class="auritus-pending">
+      <button type="button" class="auritus-play" aria-label="Play">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
           <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86a1 1 0 0 0-1.5.86z"/>
         </svg>
-        <svg class="auritus-icon-pause" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-        </svg>
       </button>
-      <div class="auritus-track" aria-hidden="true">
-        <div class="auritus-track-fill"></div>
-      </div>
-      <span class="auritus-time" aria-label="Audio duration" hidden>
-        <span class="auritus-time-current">0:00</span>
-        <span class="auritus-time-separator">/</span>
-        <span class="auritus-time-duration">0:00</span>
-      </span>
       <span class="auritus-status"></span>
     </div>
+    <audio class="auritus-audio" controls hidden></audio>
     <p class="auritus-error" hidden></p>
   `;
     shadow.appendChild(root);
     const nameEl = root.querySelector(".auritus-name");
     const bylineEl = root.querySelector(".auritus-byline");
+    const pendingEl = root.querySelector(".auritus-pending");
     const playBtn = root.querySelector(".auritus-play");
     const statusEl = root.querySelector(".auritus-status");
-    const trackFill = root.querySelector(".auritus-track-fill");
     const errorEl = root.querySelector(".auritus-error");
-    const timeEl = root.querySelector(".auritus-time");
-    const timeCurrentEl = root.querySelector(
-      ".auritus-time-current"
-    );
-    const timeDurationEl = root.querySelector(
-      ".auritus-time-duration"
-    );
+    const audio = root.querySelector(".auritus-audio");
+    audio.preload = "metadata";
     nameEl.textContent = name;
     bylineEl.textContent = byline;
     if (!byline) {
       bylineEl.hidden = true;
     }
-    const audio = document.createElement("audio");
-    audio.preload = "metadata";
-    shadow.appendChild(audio);
     let pollTimer;
     let pendingPlay = host.parentElement?.getAttribute("data-auritus-play-intent") === "true";
     playBtn.disabled = false;
@@ -430,17 +371,9 @@ var Auritus = (() => {
     function setError(message) {
       errorEl.hidden = false;
       errorEl.textContent = message;
-      playBtn.disabled = true;
-    }
-    function updateTimeDisplay() {
-      timeCurrentEl.textContent = formatDuration(audio.currentTime);
-      if (Number.isFinite(audio.duration) && audio.duration > 0) {
-        timeDurationEl.textContent = formatDuration(audio.duration);
-      }
+      pendingEl.hidden = true;
     }
     function applyJob(job) {
-      statusEl.hidden = false;
-      statusEl.textContent = pendingPlay ? "Starting when ready\u2026" : statusLabel(job);
       if (job.status === "failed") {
         setError("Audio could not be generated.");
         stopPolling();
@@ -448,18 +381,19 @@ var Auritus = (() => {
       }
       if (job.status === "done" && job.audio_url) {
         stopPolling();
+        pendingEl.hidden = true;
+        audio.hidden = false;
         audio.src = job.audio_url;
         audio.load();
-        playBtn.disabled = false;
-        statusEl.hidden = true;
-        timeEl.hidden = false;
-        updateTimeDisplay();
         if (pendingPlay) {
           pendingPlay = false;
           rewindIfEnded(audio);
           void audio.play();
         }
+        return;
       }
+      statusEl.hidden = false;
+      statusEl.textContent = pendingPlay ? "Starting when ready\u2026" : statusLabel(job);
     }
     function stopPolling() {
       if (pollTimer !== void 0) {
@@ -488,47 +422,14 @@ var Auritus = (() => {
         void refresh();
       }, pollIntervalMs);
     }
-    function syncPlayLabel() {
-      const playing = !audio.paused && !audio.ended;
-      playBtn.setAttribute("data-playing", playing ? "true" : "false");
-      playBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
-    }
     playBtn.addEventListener("click", () => {
-      if (!audio.paused) {
-        audio.pause();
-        return;
-      }
-      if (!audio.src) {
-        pendingPlay = true;
-        statusEl.hidden = false;
-        statusEl.textContent = "Starting when ready\u2026";
-        return;
-      }
-      rewindIfEnded(audio);
-      void audio.play();
+      pendingPlay = true;
+      playBtn.disabled = true;
+      statusEl.hidden = false;
+      statusEl.textContent = "Starting when ready\u2026";
     });
-    audio.addEventListener("play", syncPlayLabel);
-    audio.addEventListener("pause", syncPlayLabel);
     audio.addEventListener("ended", () => {
-      syncPlayLabel();
-      if (Number.isFinite(audio.duration) && audio.duration > 0) {
-        timeCurrentEl.textContent = formatDuration(audio.duration);
-        trackFill.style.width = "100%";
-      }
-    });
-    audio.addEventListener("loadedmetadata", () => {
-      updateTimeDisplay();
-      timeEl.hidden = false;
-    });
-    audio.addEventListener("durationchange", updateTimeDisplay);
-    audio.addEventListener("timeupdate", () => {
-      updateTimeDisplay();
-      if (!audio.duration || !Number.isFinite(audio.duration)) {
-        trackFill.style.width = "0%";
-        return;
-      }
-      const pct = audio.currentTime / audio.duration * 100;
-      trackFill.style.width = `${pct}%`;
+      rewindIfEnded(audio);
     });
     startPolling();
     host.addEventListener(

@@ -32,7 +32,7 @@ describe("mountPlayer pending Play", () => {
     vi.restoreAllMocks();
   });
 
-  it("starts playback when audio arrives after Play", async () => {
+  it("starts playback when audio arrives after Play, and reveals native controls", async () => {
     let job: JobRecord = { content_hash: "h", status: "pending" };
     const api = {
       getJob: async () => job,
@@ -56,10 +56,20 @@ describe("mountPlayer pending Play", () => {
       pollIntervalMs: 15,
     });
 
+    const pendingEl = host.shadowRoot?.querySelector(
+      ".auritus-pending",
+    ) as HTMLDivElement;
     const play = host.shadowRoot?.querySelector(
       ".auritus-play",
     ) as HTMLButtonElement;
+    const audio = host.shadowRoot?.querySelector("audio") as HTMLAudioElement;
+
+    expect(pendingEl.hidden).toBe(false);
+    expect(audio.hidden).toBe(true);
+
     play.click();
+    expect(play.disabled).toBe(true);
+
     job = {
       content_hash: "h",
       status: "done",
@@ -69,6 +79,12 @@ describe("mountPlayer pending Play", () => {
       expect(played.length).toBeGreaterThan(0);
     });
     expect(played[0]).toContain("speech.wav");
+    // The button-and-status UI is gone; the real player -- native controls
+    // with a src -- is what's left.
+    expect(pendingEl.hidden).toBe(true);
+    expect(audio.hidden).toBe(false);
+    expect(audio.hasAttribute("controls")).toBe(true);
+    expect(audio.src).toContain("speech.wav");
   });
 });
 
@@ -140,13 +156,13 @@ describe("mountPlayer duration fetch", () => {
   });
 });
 
-describe("mountPlayer controls and duration", () => {
+describe("mountPlayer native controls handoff", () => {
   afterEach(() => {
     document.body.replaceChildren();
     vi.restoreAllMocks();
   });
 
-  it("toggles play/pause icon states and updates duration indicators", async () => {
+  it("reveals native <audio controls> and hides the pending UI once the job is already done", async () => {
     const job: JobRecord = {
       content_hash: "test-hash",
       status: "done",
@@ -167,71 +183,89 @@ describe("mountPlayer controls and duration", () => {
       pollIntervalMs: 15,
     });
 
-    const playBtn = host.shadowRoot?.querySelector(
-      ".auritus-play",
-    ) as HTMLButtonElement;
-    const playIcon = playBtn.querySelector(".auritus-icon-play");
-    const pauseIcon = playBtn.querySelector(".auritus-icon-pause");
-    const timeEl = host.shadowRoot?.querySelector(
-      ".auritus-time",
-    ) as HTMLSpanElement;
-    const timeCurrentEl = host.shadowRoot?.querySelector(
-      ".auritus-time-current",
-    ) as HTMLSpanElement;
-    const timeDurationEl = host.shadowRoot?.querySelector(
-      ".auritus-time-duration",
-    ) as HTMLSpanElement;
+    const pendingEl = host.shadowRoot?.querySelector(
+      ".auritus-pending",
+    ) as HTMLDivElement;
     const audio = host.shadowRoot?.querySelector("audio") as HTMLAudioElement;
 
-    expect(playIcon).not.toBeNull();
-    expect(pauseIcon).not.toBeNull();
-    expect(playBtn.getAttribute("data-playing")).toBe("false");
-    expect(playBtn.getAttribute("aria-label")).toBe("Play");
-
-    // Wait for audio src to be assigned from job
     await vi.waitFor(() => {
       expect(audio.src).toContain("speech.wav");
     });
-    expect(timeEl.hidden).toBe(false);
+    expect(pendingEl.hidden).toBe(true);
+    expect(audio.hidden).toBe(false);
+    expect(audio.hasAttribute("controls")).toBe(true);
+  });
 
-    // Simulate duration loaded
+  it("rewinds a finished clip on ended, so native controls can replay it", () => {
+    const job: JobRecord = {
+      content_hash: "rewind-hash",
+      status: "done",
+      audio_url: "https://example.test/speech.wav",
+    };
+    const api = {
+      getJob: async () => job,
+    } as unknown as AuritusApiClient;
+
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    mountPlayer({
+      host,
+      api,
+      contentHash: "rewind-hash",
+      name: "Test Title",
+      byline: "Test Author",
+      pollIntervalMs: 15,
+    });
+
+    const audio = host.shadowRoot?.querySelector("audio") as HTMLAudioElement;
     Object.defineProperty(audio, "duration", {
-      value: 143,
+      value: 30,
       writable: true,
       configurable: true,
     });
-    audio.dispatchEvent(new Event("loadedmetadata"));
-    expect(timeDurationEl.textContent).toBe("2:23");
-    expect(timeCurrentEl.textContent).toBe("0:00");
-
-    // Simulate play
-    Object.defineProperty(audio, "paused", {
-      value: false,
-      writable: true,
-      configurable: true,
-    });
-    audio.dispatchEvent(new Event("play"));
-    expect(playBtn.getAttribute("data-playing")).toBe("true");
-    expect(playBtn.getAttribute("aria-label")).toBe("Pause");
-
-    // Simulate timeupdate at 25 seconds
     Object.defineProperty(audio, "currentTime", {
-      value: 25,
+      value: 30,
       writable: true,
       configurable: true,
     });
-    audio.dispatchEvent(new Event("timeupdate"));
-    expect(timeCurrentEl.textContent).toBe("0:25");
-    expect(timeDurationEl.textContent).toBe("2:23");
-
-    // Simulate pause
-    Object.defineProperty(audio, "paused", {
+    Object.defineProperty(audio, "ended", {
       value: true,
       writable: true,
       configurable: true,
     });
-    audio.dispatchEvent(new Event("pause"));
-    expect(playBtn.getAttribute("data-playing")).toBe("false");
-    expect(playBtn.getAttribute("aria-label")).toBe("Play");
+    audio.dispatchEvent(new Event("ended"));
+    expect(audio.currentTime).toBe(0);
+  });
+
+  it("shows an error and hides the pending UI when generation fails", async () => {
+    const job: JobRecord = { content_hash: "failed-hash", status: "failed" };
+    const api = {
+      getJob: async () => job,
+    } as unknown as AuritusApiClient;
+
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    mountPlayer({
+      host,
+      api,
+      contentHash: "failed-hash",
+      name: "Test Title",
+      byline: "Test Author",
+      pollIntervalMs: 15,
+    });
+
+    const pendingEl = host.shadowRoot?.querySelector(
+      ".auritus-pending",
+    ) as HTMLDivElement;
+    const errorEl = host.shadowRoot?.querySelector(
+      ".auritus-error",
+    ) as HTMLParagraphElement;
+    const audio = host.shadowRoot?.querySelector("audio") as HTMLAudioElement;
+
+    await vi.waitFor(() => {
+      expect(errorEl.hidden).toBe(false);
+    });
+    expect(pendingEl.hidden).toBe(true);
+    expect(audio.hidden).toBe(true);
   });
 });
