@@ -19,6 +19,11 @@ Feature: Pluggable TTS backends
     When the TTS backend is resolved from the registry
     Then the resolved backend name is "f5"
 
+  Scenario: Higgs resolves from tts_backend without loading a model
+    Given tts_backend "higgs"
+    When the TTS backend is resolved from the registry
+    Then the resolved backend name is "higgs"
+
   @integration
   Scenario: Job requests the Qwen backend
     Given a claimable job with tts_backend "qwen"

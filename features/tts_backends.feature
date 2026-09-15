@@ -43,3 +43,13 @@ Feature: Pluggable TTS backends
     When the F5 voice is resolved for synthesis
     Then the F5 voice_id is "default"
 
+  Scenario: Higgs uses default when voice_id is omitted
+    Given a Higgs job without an explicit voice_id
+    When the Higgs voice is resolved for synthesis
+    Then the Higgs voice_id is "default"
+
+  Scenario: Higgs maps empty voice_id to default
+    Given a Higgs job with voice_id ""
+    When the Higgs voice is resolved for synthesis
+    Then the Higgs voice_id is "default"
+

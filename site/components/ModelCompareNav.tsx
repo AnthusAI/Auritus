@@ -1,13 +1,14 @@
 import Link from "next/link";
 
 interface ModelCompareNavProps {
-  currentBackend: "kokoro" | "qwen" | "f5";
+  currentBackend: "kokoro" | "qwen" | "f5" | "higgs";
 }
 
 const models = [
   { id: "kokoro", label: "Kokoro-82M", href: "/examples/basic" },
   { id: "qwen", label: "Qwen3-TTS", href: "/examples/qwen" },
   { id: "f5", label: "F5-TTS", href: "/examples/f5" },
+  { id: "higgs", label: "Higgs-v3", href: "/examples/higgs" },
 ] as const;
 
 export function ModelCompareNav({ currentBackend }: ModelCompareNavProps) {

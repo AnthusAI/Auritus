@@ -8,10 +8,29 @@ from auritus.tts.kokoro import resolve_kokoro_voice
 from auritus.tts.qwen import resolve_qwen_voice
 
 
-def test_higgs_backend_name_and_stub_generate() -> None:
+from auritus.tts.higgs import resolve_higgs_voice
+
+
+def test_higgs_backend_name_and_generate() -> None:
     higgs = get_backend("higgs")
     assert higgs.name == "higgs"
-    assert higgs.generate("hello", {}) != b""
+    assert get_backend("higgs-v3").name == "higgs"
+    assert get_backend("higgs3").name == "higgs"
+
+
+def test_higgs_resolve_voice_defaults_to_default() -> None:
+    assert resolve_higgs_voice({}) == "default"
+    assert resolve_higgs_voice({"voice_id": ""}) == "default"
+    assert resolve_higgs_voice({"voice_id": "default"}) == "default"
+    assert resolve_higgs_voice({"voice_id": "voice_a"}) == "voice_a"
+
+
+def test_higgs_backend_empty_text_raises() -> None:
+    import pytest
+
+    higgs = get_backend("higgs")
+    with pytest.raises(ValueError, match="Cannot generate audio for empty text"):
+        higgs.generate("", {})
 
 
 def test_qwen_backend_resolves_without_generate() -> None:

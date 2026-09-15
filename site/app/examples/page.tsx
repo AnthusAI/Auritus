@@ -22,6 +22,13 @@ const modelExamples = [
     summary:
       "The same Gettysburg excerpt, spoken with non-autoregressive F5-TTS via MLX on Apple Silicon.",
   },
+  {
+    href: "/examples/higgs",
+    title: "Higgs Audio v3 — Gettysburg Address",
+    badge: "Boson AI 4B",
+    summary:
+      "The same Gettysburg excerpt, spoken with Boson AI's Higgs Audio v3 via MLX on Apple Silicon or Transformers.",
+  },
 ];
 
 const featureExamples = [
@@ -51,7 +58,7 @@ export default function ExamplesIndexPage() {
       </nav>
       <h1>Examples</h1>
       <p>
-        Kokoro, Qwen, and F5 are the speech backends. They narrate the identical
+        Kokoro, Qwen, F5, and Higgs are the speech backends. They narrate the identical
         two-paragraph Gettysburg excerpt so you can directly compare audio
         timbre, pacing, and quality.
       </p>
@@ -61,7 +68,7 @@ export default function ExamplesIndexPage() {
           Model Comparison
         </h2>
         <p style={{ color: "var(--ink-muted)", fontSize: "0.95rem" }}>
-          The same excerpt spoken by three open model architectures:
+          The same excerpt spoken by four open model architectures:
         </p>
         <ul className="doc-index" style={{ marginTop: "1rem" }}>
           {modelExamples.map((example) => (

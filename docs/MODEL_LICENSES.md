@@ -15,7 +15,7 @@ Recorded 13 September 2026.
 | --- | --- | --- | --- | --- | --- | --- |
 | Kokoro | hexgrad/Kokoro-82M | Apache-2.0 on the [model card](https://huggingface.co/hexgrad/Kokoro-82M) | Yes under Apache-2.0, with attribution; **espeak-ng GPLv3** may apply if that G2P is linked | Wheels only (`kokoro==0.9.4`) | **Required** | Card cited 13 Sep 2026 |
 | Qwen 3 | Qwen3-TTS-12Hz-1.7B-CustomVoice | Apache-2.0 on the [model card](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice) and [qwen-tts](https://pypi.org/project/qwen-tts/0.1.1/) | Yes under Apache-2.0, with attribution | Wheels only (`qwen-tts==0.1.1`) | **Required** | Card cited 13 Sep 2026 |
-| Higgs | Boson Higgs TTS (unstubbed checkpoint TBD) | NEEDS_HUMAN_VERIFY | Assume **not** until a card is pinned | Not in the public image | N/A while stubbed | Stub only |
+| Higgs | bosonai/higgs-audio-v3-tts-4b | Boson Research & Non-Commercial | Non-commercial only (Boson license) | Not in image build | **Required** | Card cited 15 Sep 2026 |
 | F5-TTS | SWivid/F5-TTS, mlx-community/F5-TTS | MIT on the [model card](https://huggingface.co/SWivid/F5-TTS) and code | Yes under MIT | Wheels only | **Required** | Card cited 14 Sep 2026 |
 
 ## Kokoro
@@ -38,10 +38,15 @@ Recorded 13 September 2026.
 
 ## Higgs (Boson)
 
-- **License name:** NEEDS_HUMAN_VERIFY — no speech checkpoint is wired.
-- **Redistributability:** do not publish Higgs weights in ECR or Docker Hub.
-- **Recommended strategy:** leave the 440 Hz stub until a Boson card is pinned
-  in [TTS_LICENSES.md](TTS_LICENSES.md).
+- **License name:** Boson Higgs TTS 3 Research and Non-Commercial License Agreement.
+- **Redistributability:** Weights are licensed for research and non-commercial use.
+  Do not redistribute or bake weights into public ECR or Docker Hub images. Operators
+  must obtain commercial terms from Boson AI for commercial deployments.
+- **Recommended strategy:** runtime-fetch `bosonai/higgs-audio-v3-tts-4b` via `mlx-audio`
+  on Apple Silicon or `multimodalart/higgs-audio-v3-tts-4b-transformers` via PyTorch/CUDA
+  on AWS Batch.
+- **Operator checklist:** retain Boson license notice; ensure weights are downloaded
+  at runtime into scratch storage; verify non-commercial compliance or secure commercial license.
 
 ## F5-TTS
 

@@ -16,7 +16,7 @@ def get_backend(name: str) -> TTSBackend:
     :raises ValueError: If the name is unknown.
     """
     key = (name or "").strip().lower()
-    if key == "higgs":
+    if key in ("higgs", "higgs-v3", "higgs3"):
         from auritus.tts.higgs import HiggsBackend
 
         return HiggsBackend()

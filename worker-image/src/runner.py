@@ -31,7 +31,10 @@ def _auth_headers(bearer: str) -> dict[str, str]:
 RUNTIME_PACKAGES = {
     "kokoro": ("kokoro", ["kokoro>=0.9.0", "torch", "soundfile"]),
     "qwen": ("qwen_tts", ["qwen-tts", "torch", "soundfile"]),
-    "higgs": ("soundfile", ["torch", "soundfile"]),
+    "higgs": (
+        "transformers",
+        ["transformers>=5.5.0", "torch", "torchaudio", "soundfile"],
+    ),
     "fish": ("fish_speech", ["fish-speech", "torch", "soundfile"]),
     "coqui": ("TTS", ["TTS", "torch", "soundfile"]),
     "bark": ("transformers", ["transformers", "torch", "soundfile"]),

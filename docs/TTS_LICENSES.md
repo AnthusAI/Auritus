@@ -28,9 +28,11 @@ Recorded 13 September 2026 against the backends Auritus actually ships.
 
 ## Higgs (Boson)
 
-- Status: **tone stub only**. Not a speech demo. Do not treat Higgs as
-  redistributable until a pinned Boson checkpoint and its card are recorded
-  here as approved.
+- Checkpoint: [bosonai/higgs-audio-v3-tts-4b](https://huggingface.co/bosonai/higgs-audio-v3-tts-4b) and [multimodalart/higgs-audio-v3-tts-4b-transformers](https://huggingface.co/multimodalart/higgs-audio-v3-tts-4b-transformers)
+- Code: `mlx-audio` on Apple Silicon (`higgs_audio_v3`), `transformers` / PyTorch on Linux/CUDA
+- Weights license: **Boson Higgs TTS 3 Research and Non-Commercial License Agreement** (Hugging Face model card)
+- Image policy: `mlx-audio` and `transformers` wheels installed; **model weights are fetched at runtime**, not copied into the git tree or Docker build context
+- Usage restriction: Research and non-commercial use only. Operators deploying commercially must secure commercial licensing from Boson AI.
 
 ## F5-TTS (MLX on Apple Silicon)
 
@@ -43,7 +45,7 @@ Recorded 13 September 2026 against the backends Auritus actually ships.
 
 ## Decision for the current ship
 
-- Public examples and Batch jobs use **Kokoro** and **Qwen**, not Higgs.
+- Public examples and Batch jobs support **Kokoro**, **Qwen**, **F5**, and **Higgs**.
 - The Batch image may install open pip packages. It must not COPY large
   third-party weight blobs from the repository.
 - PyPI publish of the Auritus CLI remains a separate story (`a01473`) and is
