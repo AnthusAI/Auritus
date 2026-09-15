@@ -3,17 +3,25 @@
   "title": "Chatterbox-TTS backend and example layout redesign",
   "description": "",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-19ba7b16-6f43-4136-ad99-3b8e4b434c6c",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "d6451770-d63b-42ba-a1f2-62b4f5d9a7e8",
+      "author": "home",
+      "text": "Implemented Chatterbox-TTS (Resemble AI) backend with mlx-audio on Apple Silicon and PyTorch/CUDA worker backend. Redesigned example pages with responsive ModelCompareNav switcher, steppers, and spec strips. All BDD scenarios and quality gates pass.",
+      "created_at": "2026-09-15T13:51:22.835474Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-15T13:04:20.404005Z",
-  "updated_at": "2026-09-15T13:04:51.100649Z",
-  "closed_at": null,
+  "updated_at": "2026-09-15T13:51:22.868442Z",
+  "closed_at": "2026-09-15T13:51:22.868425Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
