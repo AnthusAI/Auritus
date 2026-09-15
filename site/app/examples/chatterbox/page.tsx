@@ -20,7 +20,7 @@ export default function ChatterboxExamplePage() {
         name="Gettysburg Address"
         byline="Abraham Lincoln, 1863 — Chatterbox"
         ttsBackend="chatterbox"
-        voiceId="default"
+        voiceId="narrator"
         root=".example-article"
         playerHost=".auritus-player-host"
       />

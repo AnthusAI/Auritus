@@ -130,7 +130,7 @@ test("landing page posts the Kokoro product pitch", async ({ page }) => {
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("kokoro");
   expect(body.voice_id).toBe("af_heart");
-  expect(body.content_hash).toBe("2caf28aa");
+  expect(body.content_hash).toBe("4703bfda");
   expect(body.text).toContain("Press play");
   expect(body.text).toContain("What you hear is this page reading itself");
   expect(body.text).not.toContain("Narrated by Auritus with Kokoro");
@@ -428,7 +428,7 @@ test("Chatterbox example posts the same Gettysburg excerpt with Chatterbox", asy
   await page.goto("/examples/chatterbox");
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("chatterbox");
-  expect(body.voice_id).toBe("default");
+  expect(body.voice_id).toBe("narrator");
   expect(body.text).toContain("Four score and seven years ago");
   expect(body.text).toContain("Now we are engaged in a great civil war");
   expect(body.text).not.toContain("This page speaks that excerpt");
