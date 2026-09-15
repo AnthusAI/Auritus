@@ -112,6 +112,18 @@ var Auritus = (() => {
 
   // src/generator/index.ts
   var BUILTIN_IGNORE_SELECTOR = "[data-auritus-ignore]";
+  var AUTO_BREAK_TAGS = /* @__PURE__ */ new Set([
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "p",
+    "li",
+    "blockquote",
+    "figcaption"
+  ]);
   function resolveRoot(root) {
     if (root instanceof Element) {
       return root;
@@ -159,6 +171,9 @@ var Auritus = (() => {
       }
       for (const child of el.childNodes) {
         walkNode(child, ignoreSelectors, parts);
+      }
+      if (AUTO_BREAK_TAGS.has(tag) && parts[parts.length - 1] !== AURITUS_BREAK_MARKER) {
+        parts.push(AURITUS_BREAK_MARKER);
       }
       return;
     }

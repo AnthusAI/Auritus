@@ -11,6 +11,24 @@ from tts.base import TTSBackend
 
 KOKORO_DEFAULT_VOICE = "af_heart"
 
+# Must match embed/src/generator/hash.ts AURITUS_BREAK_MARKER exactly. The
+# generator inserts this after headings, paragraphs, list items, and
+# blockquotes automatically (plus wherever a page explicitly marks
+# data-auritus-break) -- without an actual silence gap at those points, a
+# heading reads flush against the paragraph that follows it.
+AURITUS_BREAK_MARKER = "[[auritus:break]]"
+BREAK_SILENCE_SECONDS = 0.5
+
+
+def split_on_breaks(text: str) -> list[str]:
+    """Split TTS input into segments on the block-boundary pause marker.
+
+    :param text: Full TTS input, possibly containing AURITUS_BREAK_MARKER.
+    :returns: Non-empty, trimmed segments in original order.
+    """
+    segments = [s.strip() for s in text.split(AURITUS_BREAK_MARKER)]
+    return [s for s in segments if s]
+
 
 def resolve_kokoro_voice(meta: dict[str, Any]) -> str:
     """Return the Kokoro voice id, mapping missing or legacy values to the default.
@@ -67,7 +85,27 @@ class KokoroBackend(TTSBackend):
         return self._generate_torch(text, meta)
 
     def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via mlx-audio (Apple Silicon)."""
+        """Generate via mlx-audio (Apple Silicon).
+
+        Two layers of splitting happen here, for different reasons:
+
+        1. Block splitting (split_on_breaks): the embed generator marks
+           paragraph/heading/etc. boundaries with AURITUS_BREAK_MARKER. Each
+           block is synthesized separately so a real silence gap can be
+           inserted between them -- otherwise a heading reads flush against
+           the paragraph that follows it.
+        2. Segment splitting (model.generate() itself): within a single
+           block, Kokoro's own pipeline further splits long text into
+           speakable chunks due to a model sequence-length limit (nothing to
+           do with paragraphs). model.generate() is a generator yielding one
+           GenerationResult per segment; taking only the first discards
+           everything past it, silently truncating any block long enough to
+           need more than one.
+
+        Every block's every segment gets concatenated, with silence between
+        blocks only (not between a block's own internal segments, which are
+        mid-thought splits, not real pauses).
+        """
         import numpy as np
         from mlx_audio.tts.utils import load_model
 
@@ -77,26 +115,75 @@ class KokoroBackend(TTSBackend):
                 lazy=False,
             )
         voice = resolve_kokoro_voice(meta)
-        gen = KokoroBackend._model.generate(text, voice=voice)
-        result = next(iter(gen))
-        audio_np = np.array(result.audio)
-        return _to_wav(audio_np, sample_rate=24000)
+        sample_rate = 24000
+        block_audios: list[np.ndarray] = []
+        for block_text in split_on_breaks(text):
+            gen = KokoroBackend._model.generate(block_text, voice=voice)
+            segments = [np.array(result.audio) for result in gen]
+            if not segments:
+                continue
+            block_audios.append(
+                np.concatenate(segments) if len(segments) > 1 else segments[0]
+            )
+        if not block_audios:
+            raise ValueError("Kokoro generated no audio segments")
+        audio_np = _join_with_silence(block_audios, sample_rate)
+        return _to_wav(audio_np, sample_rate=sample_rate)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via PyTorch kokoro (fallback for non-Apple)."""
+        """Generate via PyTorch kokoro (fallback for non-Apple).
+
+        Same two-layer split as the MLX path (see _generate_mlx): blocks on
+        AURITUS_BREAK_MARKER for real pauses, segments from KPipeline's own
+        generator within each block for Kokoro's internal length limit.
+        """
         from kokoro import KPipeline
 
         if KokoroBackend._model is None:
             KokoroBackend._model = KPipeline(lang_code="a")
         voice = resolve_kokoro_voice(meta)
-        results = list(KokoroBackend._model(text, voice=voice))
-        audio_tensor = results[0].audio
-        audio_list = (
-            audio_tensor.tolist()
-            if hasattr(audio_tensor, "tolist")
-            else list(audio_tensor)
-        )
-        return _to_wav(audio_list, sample_rate=24000)
+        sample_rate = 24000
+        silence = [0.0] * int(sample_rate * BREAK_SILENCE_SECONDS)
+        audio_list: list[float] = []
+        for block_text in split_on_breaks(text):
+            results = list(KokoroBackend._model(block_text, voice=voice))
+            if not results:
+                continue
+            if audio_list:
+                audio_list.extend(silence)
+            for result in results:
+                audio_tensor = result.audio
+                audio_list.extend(
+                    audio_tensor.tolist()
+                    if hasattr(audio_tensor, "tolist")
+                    else list(audio_tensor)
+                )
+        if not audio_list:
+            raise ValueError("Kokoro generated no audio segments")
+        return _to_wav(audio_list, sample_rate=sample_rate)
+
+
+def _join_with_silence(blocks: list, sample_rate: int) -> Any:
+    """Concatenate per-block audio arrays with a silence gap between them.
+
+    :param blocks: One numpy array per AURITUS_BREAK_MARKER-delimited block,
+        in order. Never empty (callers raise before this is called otherwise).
+    :param sample_rate: Sample rate the blocks were generated at.
+    :returns: A single concatenated array; the type matches ``blocks``'
+        element type (numpy is an optional dependency of this module, so it
+        isn't imported at module scope only to name it here).
+    """
+    import numpy as np
+
+    if len(blocks) == 1:
+        return blocks[0]
+    silence = np.zeros(int(sample_rate * BREAK_SILENCE_SECONDS), dtype=blocks[0].dtype)
+    pieces = []
+    for i, block in enumerate(blocks):
+        if i > 0:
+            pieces.append(silence)
+        pieces.append(block)
+    return np.concatenate(pieces)
 
 
 def _to_wav(samples: list, sample_rate: int = 24000) -> bytes:
