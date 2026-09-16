@@ -102,14 +102,8 @@ class FishBackend(TTSBackend):
         except ImportError:
             pass
 
-        from mlx_audio.tts.utils import load_model
-
         if FishBackend._model is None:
-            FishBackend._model = load_model(
-                FISH_MLX_MODEL,
-                lazy=False,
-                strict=False,
-            )
+            FishBackend._model = _load_fish_mlx_model(FISH_MLX_MODEL)
         sample_rate = int(
             getattr(
                 FishBackend._model,
@@ -190,3 +184,46 @@ def _to_wav(samples: list | Any, sample_rate: int = 24000) -> bytes:
         handle.setframerate(sample_rate)
         handle.writeframes(frames)
     return buffer.getvalue()
+
+
+def _load_fish_mlx_model(repo_id: str) -> Any:
+    """Load Fish Speech MLX model with proper weight remapping.
+
+    :param repo_id: Hugging Face model repository identifier.
+    :returns: Fully initialized and loaded FishSpeech Model instance.
+    """
+    import mlx.core as mx
+    from mlx_audio.tts.models.fish_qwen3_omni.config import ModelConfig
+    from mlx_audio.tts.models.fish_qwen3_omni.fish_speech import Model
+    from mlx_audio.utils import apply_quantization, get_model_path, load_config
+
+    path = get_model_path(repo_id)
+    config = load_config(path)
+    model_config = ModelConfig.from_dict(config)
+    model = Model(model_config)
+
+    weights = mx.load(str(path / "model.safetensors"))
+    remapped = {}
+    for key, value in weights.items():
+        if key.startswith("model."):
+            remapped[key] = value
+        elif key.startswith("text_model.model."):
+            new_key = key[len("text_model.model.") :]
+            remapped[f"model.{new_key}"] = value
+        elif key.startswith("audio_decoder."):
+            suffix = key[len("audio_decoder.") :]
+            if suffix.startswith("codebook_embeddings."):
+                new_key = suffix
+            else:
+                new_key = f"fast_{suffix}"
+            remapped[f"model.{new_key}"] = value
+        else:
+            remapped[f"model.{key}"] = value
+
+    apply_quantization(model, config, remapped, None)
+    model.load_weights(list(remapped.items()), strict=True)
+    mx.eval(model.parameters())
+    model.eval()
+
+    Model.post_load_hook(model, path)
+    return model
