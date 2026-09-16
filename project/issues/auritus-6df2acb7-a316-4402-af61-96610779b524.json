@@ -17,10 +17,17 @@
       "text": "Fixed: added site/customHttp.yml setting Cache-Control: public, max-age=0, s-maxage=60, must-revalidate specifically for /embed.js. Amplify Hosting auto-detects this file at the app root with no other config needed. This is fix option 1 from the original description (short s-maxage instead of the inherited one-year default) -- didn't do the content-hashed-filename version, since that would also require updating every published embed snippet's src (this site's own examples, every integrator's copied snippet) to point at the new filename, a bigger and more disruptive change. A CloudFront edge will now pick up a new deploy within a minute, not up to a year.",
       "created_at": "2026-09-16T01:06:57.165847Z",
       "comment_type": "default"
+    },
+    {
+      "id": "771fbc4f-8097-4966-b740-8cdb83f8f3d1",
+      "author": "home",
+      "text": "Correction: site/customHttp.yml never actually took effect -- confirmed live through a full successful deploy (job 109) with the app's customHeaders field (aws amplify get-app) still empty and aurit.us/embed.js still serving s-maxage=31536000. The real mechanism for this app is the Amplify App resource's own customHeaders field, set directly:\n\naws amplify update-app --app-id d1xec2o22j5yq2 --custom-headers file:///path/to/headers.yml\n\n(or equivalently via Console -> App settings -> Hosting -> Custom headers). Confirmed: took effect on the very next request, no redeploy needed. Removed the inert file from the repo so it doesn't point the next person at a mechanism that does nothing on this app. Current live value: cache-control: public, max-age=0, s-maxage=60, must-revalidate.",
+      "created_at": "2026-09-16T01:11:57.161987Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-15T11:26:39.388971Z",
-  "updated_at": "2026-09-16T01:06:57.191061Z",
+  "updated_at": "2026-09-16T01:11:57.162004Z",
   "closed_at": "2026-09-16T01:06:57.191041Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
