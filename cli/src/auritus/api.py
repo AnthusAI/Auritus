@@ -191,6 +191,14 @@ class AuritusClient:
         """Revoke a site key."""
         return self._request("DELETE", f"/sites/{site_id}")
 
+    def delete_job(self, content_hash: str) -> dict[str, Any]:
+        """Delete a generated audio job and its audio artifact.
+
+        :param content_hash: The content hash identifying the job.
+        :returns: The API response confirming deletion.
+        """
+        return self._request("DELETE", f"/admin/jobs/{content_hash}")
+
     def disable_batch_queue(self) -> dict[str, Any]:
         """Emergency kill-switch: disable the Batch job queue."""
         return self._request(
