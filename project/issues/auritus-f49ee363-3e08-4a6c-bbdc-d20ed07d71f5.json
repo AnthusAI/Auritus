@@ -3,17 +3,25 @@
   "title": "Fish Speech MLX weights dropped due to missing model prefix in safetensors keys",
   "description": "Upstream mlx_audio Model.sanitize in fish_speech silently dropped weights because keys in mlx-community/fishaudio-s2-pro-8bit-mlx lack the model. prefix. This caused inference to execute with 766 uninitialized weights, producing garbled acoustic noise instead of speech. Fixed by remapping keys in _load_fish_mlx_model and validating with strict=True.",
   "type": "bug",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "auritus-19ba7b16-6f43-4136-ad99-3b8e4b434c6c",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "a6ab54c8-2060-418c-ac94-2bc0a8454578",
+      "author": "home",
+      "text": "Remapped safetensors keys to dual AR transformer model prefix so all 766 parameters strictly load. Re-synthesized Gettysburg Address in 65s (37.63s audio at 44.1kHz) with clean speech and uploaded to S3. Verified in browser at /examples/fish.",
+      "created_at": "2026-09-16T15:55:49.145048Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-16T15:52:57.554684Z",
-  "updated_at": "2026-09-16T15:53:52.127418Z",
-  "closed_at": null,
+  "updated_at": "2026-09-16T15:55:49.183371Z",
+  "closed_at": "2026-09-16T15:55:49.183339Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
