@@ -3,7 +3,7 @@
   "title": "Costs roll up daily by site and worker type",
   "description": "Per-job costs answer \"what did this clip cost.\" Operators ask \"what did last\nmonth cost, and which site drove it.\" That is an aggregate, and it must not be\ncomputed by scanning the jobs table at read time.\n\n`_get_admin_overview` currently derives every KPI from `_jobs.scan(Limit=100)`.\nThat is already the defect in auritus-294fa6, where a 25-item page silently\nomitted the newest job in the system. A partial scan produces a cost total\nthat looks authoritative and is simply wrong -- worse than one that is visibly\nincomplete, because nothing signals the shortfall.\n\nRollups are written incrementally on completion and read directly.\n\n## Feature\n\n```gherkin\nFeature: Daily cost rollups\n\n  Scenario: A completed Batch job adds to the daily rollup\n    Given the daily rollup for a site is empty\n    When a Batch job for that site completes with a GPU cost\n    Then the daily rollup gpu cost equals that job cost\n    And the daily rollup batch job count is one\n\n  Scenario: A local job adds platform cost but no GPU cost\n    Given the daily rollup for a site is empty\n    When a local job for that site completes\n    Then the daily rollup gpu cost is zero\n    And the daily rollup local job count is one\n\n  Scenario: Rollups separate sites\n    Given jobs complete for site \"site-a\" and site \"site-b\"\n    Then each site has its own daily rollup\n\n  Scenario: Rollups are read without scanning the jobs table\n    Given thirty days of rollups exist for a site\n    When the operator requests the cost summary for that site\n    Then the summary is read from the rollup records\n\n  Scenario: A regenerated job adds its new cost without erasing the old\n    Given a job completed with a GPU cost yesterday\n    When the job is regenerated and completes again today\n    Then yesterday's rollup is unchanged\n    And today's rollup includes the new cost\n```\n\nThat last scenario is the interesting one: regeneration (auritus-907209, in\nthe M10 epic) means a single content hash can incur cost more than once. Cost\nbelongs to the *completion event*, not to the job record -- otherwise\nregenerating a clip silently rewrites history.\n\n## Implementation brief\n\n**`cdk/stacks/backend.py`** -- a new `AuritusCostRollups` table:\n\n- Partition key `rollup_key` (`f\"{site_id}#{date}\"`), sort key or plain\n  attributes for the measures.\n- Attributes: `gpu_cost_usd`, `platform_cost_usd`, `batch_job_count`,\n  `local_job_count`, `billed_seconds`, `local_duration_seconds`.\n- `PAY_PER_REQUEST`, `RemovalPolicy.RETAIN`, consistent with the other tables.\n- No TTL. Cost history is the one thing that should outlive its jobs -- the\n  M10 retention story (auritus-e45264) will expire job records, and the\n  rollups must survive that or every retention pass destroys the cost record.\n\n**Writes** -- `update_item` with `ADD` on the numeric attributes, so\nconcurrent completions accumulate atomically rather than racing a\nread-modify-write. Both `_mark_done`/`_mark_failed` (platform cost, local\nduration) and the batch telemetry Lambda (GPU cost, billed seconds) write to\nthe same rollup; `ADD` makes that safe without coordination.\n\n**Idempotency** -- EventBridge delivers at least once, so the telemetry\nLambda can fire twice for one Batch job and double-count. Guard it: record\nthe processed Batch job ID on the job record and make the rollup write\nconditional on not having seen it. This is the single most likely source of\nwrong numbers in the whole epic.\n\n**`cdk/lambdas/router/handler.py`** -- `GET /admin/costs` with optional\n`site_id`, `from`, and `to`, returning daily rows plus a total. Query the\nrollup table by key range; never scan.\n\n## Blocked on\n\nThe per-job estimated cost story, which supplies the figures being summed.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -19,10 +19,18 @@
       "type": "relates-to"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "e954b9a8-ac97-4cfb-be44-c5a25fe1fb63",
+      "author": "home",
+      "text": "Implemented on feature/cost-rollups, merged to develop. New AuritusCostRollups table (partition site_id, sort date, no TTL by design), date-site_id-index GSI for the all-sites read. GET /admin/costs reads only this table, never the jobs table (avoiding the exact defect class from auritus-294fa6). Idempotency: a conditional flag (platform_cost_rolled_up / gpu_cost_rolled_up) written to the JOB record via a conditional UpdateItem before the rollup's ADD -- DynamoDB serializes conditional writes on a single item, so this correctly protects against concurrent invocations, not just sequential retries. Ordering is flag-first-rollup-second so a crash between them under-counts rather than double-counts. batch_job_count incremented only by batch_telemetry (not the router) to avoid double-counting from two writers, an explicitly documented trade-off. This is the highest-stakes story in the epic so I gave it the most scrutiny: independently disabled the gpu_cost_rolled_up guard myself and reran the retry scenario -- confirmed it doubles (1.052 vs expected 0.526) and the test genuinely catches it, then restored and reconfirmed green. Full suite independently re-verified: black/ruff, cli pytest (59 passed), behave (29 features, 111 scenarios), cdk pytest (35 passed), cdk synth clean.",
+      "created_at": "2026-09-16T06:41:20.258943Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-16T02:37:28.754704Z",
-  "updated_at": "2026-09-16T06:05:01.541262Z",
-  "closed_at": null,
+  "updated_at": "2026-09-16T06:41:20.303062Z",
+  "closed_at": "2026-09-16T06:41:20.303037Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {
