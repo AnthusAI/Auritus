@@ -1,0 +1,20 @@
+{
+  "id": "auritus-f49ee363-3e08-4a6c-bbdc-d20ed07d71f5",
+  "title": "Fish Speech MLX weights dropped due to missing model prefix in safetensors keys",
+  "description": "Upstream mlx_audio Model.sanitize in fish_speech silently dropped weights because keys in mlx-community/fishaudio-s2-pro-8bit-mlx lack the model. prefix. This caused inference to execute with 766 uninitialized weights, producing garbled acoustic noise instead of speech. Fixed by remapping keys in _load_fish_mlx_model and validating with strict=True.",
+  "type": "bug",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-19ba7b16-6f43-4136-ad99-3b8e4b434c6c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-16T15:52:57.554684Z",
+  "updated_at": "2026-09-16T15:53:52.127418Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
