@@ -1,0 +1,23 @@
+{
+  "id": "auritus-203598f2-e2d4-4b6d-b54d-a947511f8d14",
+  "title": "Console Playwright suite failed against a real API endpoint, only in the main checkout",
+  "description": "Found during final verification of the M10/M11 epics -- every individual\nstory's own review passed the full console Playwright suite in its isolated\nworktree, but running the suite directly in the main checkout (the only place\n\\`.env.local\\` actually exists, since it's gitignored and worktrees only\ncontain tracked files) surfaced 7-8 real failures.\n\nRoot cause: \\`sites.spec.ts\\`'s mock used a bare \\`page.route('/sites', ...)\\`\npattern. Playwright resolves a bare relative pattern against\n\\`playwright.config.ts\\`'s \\`baseURL\\` (\\`localhost:3000\\`), so it only ever\nmatched requests to that origin. The moment \\`.env.local\\` sets\n\\`NEXT_PUBLIC_AURITUS_API_ENDPOINT\\` to a real deployed API (as it does on\nthis machine, per \\`AGENTS.local.md\\`), \\`fetchSites()\\`'s real request target\nno longer matches the mock, goes out live and unmocked, and the test\nobserves a genuine 401 from the real backend. Every other spec file in\n\\`console/tests/\\` already uses a \\`**\\`-prefixed glob for exactly this reason\n-- \\`sites.spec.ts\\` was the one file that didn't.\n\nA separate, unrelated flake was also found and fixed in the same pass:\n\\`costs.spec.ts\\`'s site-filter test asserted against a \\`requestedUrls\\` array\npopulated by an independent route-handler listener with no ordering\nguarantee relative to a \\`waitForRequest\\` call already used in the same\ntest -- fixed to assert directly on the object \\`waitForRequest\\` returns.\n\nFixed directly on \\`fix/console-test-origin-and-flakiness\\`, merged to\ndevelop. Confirmed stable across 6 consecutive full-suite runs (25/25) after\nthe fix, including 2 runs after the merge landed on develop itself.\n\n## Lesson for future review discipline\n\nEvery worktree-based review in this session ran the console suite in an\nenvironment that happened to differ from the real dev machine in a way that\nmasked this bug. A final sanity pass on the actual integration branch (not\njust each feature branch in isolation) is what caught it -- worth doing\nroutinely at the end of a batch of merges, not only as an afterthought.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-16T07:52:58.454894Z",
+  "updated_at": "2026-09-16T10:52:00.068670Z",
+  "closed_at": "2026-09-16T10:52:00.068641Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
+}
