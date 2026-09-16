@@ -75,7 +75,9 @@ def test_job_list_with_status_filter() -> None:
     with patch("auritus.commands.job.AuritusClient", return_value=fake_client):
         result = runner.invoke(app, ["job", "list", "--status", "pending"])
     assert result.exit_code == 0, result.output
-    fake_client.list_jobs.assert_called_once_with(status="pending", limit=25)
+    fake_client.list_jobs.assert_called_once_with(
+        status="pending", limit=25, next_token=None
+    )
 
 
 def test_job_list_with_limit() -> None:
@@ -85,7 +87,9 @@ def test_job_list_with_limit() -> None:
     with patch("auritus.commands.job.AuritusClient", return_value=fake_client):
         result = runner.invoke(app, ["job", "list", "--limit", "10"])
     assert result.exit_code == 0, result.output
-    fake_client.list_jobs.assert_called_once_with(status=None, limit=10)
+    fake_client.list_jobs.assert_called_once_with(
+        status=None, limit=10, next_token=None
+    )
 
 
 def test_job_list_empty() -> None:
@@ -277,6 +281,85 @@ def test_job_list_api_error_prints_to_stderr() -> None:
         result = runner.invoke(app, ["job", "list"])
     assert result.exit_code == 1
     assert "GET /admin/jobs failed: 401 Unauthorized" in result.output
+
+
+def test_job_list_with_next_token() -> None:
+    """job list --next-token <token> should pass next_token to api.list_jobs()."""
+    fake_client = MagicMock()
+    fake_client.list_jobs.return_value = {"jobs": [], "next_token": None}
+    with patch("auritus.commands.job.AuritusClient", return_value=fake_client):
+        result = runner.invoke(app, ["job", "list", "--next-token", "cursor_abc123"])
+    assert result.exit_code == 0, result.output
+    fake_client.list_jobs.assert_called_once_with(
+        status=None, limit=25, next_token="cursor_abc123"
+    )
+
+
+def test_job_list_prints_next_token_when_available() -> None:
+    """When API response includes next_token, the command should print pagination info."""
+    fake_client = MagicMock()
+    fake_client.list_jobs.return_value = {
+        "jobs": [
+            {
+                "content_hash": "abc123",
+                "status": "completed",
+                "tts_backend": "kokoro",
+                "voice_id": "default",
+                "text": "Hello world",
+                "name": "clip1",
+                "byline": "author",
+                "site_id": "site-1",
+                "worker_type": "batch",
+                "claimed_by": "worker-1",
+                "created_at": "2026-09-14T00:00:00Z",
+                "claimed_at": "2026-09-14T00:01:00Z",
+                "completed_at": "2026-09-14T00:02:00Z",
+                "failed_at": None,
+                "duration_seconds": 2,
+                "error_message": None,
+                "audio_url": "https://example.com/audio.wav",
+            },
+        ],
+        "next_token": "cursor_next_page",
+    }
+    with patch("auritus.commands.job.AuritusClient", return_value=fake_client):
+        result = runner.invoke(app, ["job", "list"])
+    assert result.exit_code == 0, result.output
+    assert "Next page:" in result.output
+    assert "cursor_next_page" in result.output
+
+
+def test_job_list_does_not_print_pagination_when_no_next_token() -> None:
+    """When API response has no next_token, no pagination info should be printed."""
+    fake_client = MagicMock()
+    fake_client.list_jobs.return_value = {
+        "jobs": [
+            {
+                "content_hash": "abc123",
+                "status": "completed",
+                "tts_backend": "kokoro",
+                "voice_id": "default",
+                "text": "Hello world",
+                "name": "clip1",
+                "byline": "author",
+                "site_id": "site-1",
+                "worker_type": "batch",
+                "claimed_by": "worker-1",
+                "created_at": "2026-09-14T00:00:00Z",
+                "claimed_at": "2026-09-14T00:01:00Z",
+                "completed_at": "2026-09-14T00:02:00Z",
+                "failed_at": None,
+                "duration_seconds": 2,
+                "error_message": None,
+                "audio_url": "https://example.com/audio.wav",
+            },
+        ],
+        "next_token": None,
+    }
+    with patch("auritus.commands.job.AuritusClient", return_value=fake_client):
+        result = runner.invoke(app, ["job", "list"])
+    assert result.exit_code == 0, result.output
+    assert "Next page:" not in result.output
 
 
 def test_job_list_help_does_not_crash() -> None:

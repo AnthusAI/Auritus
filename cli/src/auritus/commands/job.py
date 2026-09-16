@@ -13,11 +13,14 @@ app = typer.Typer(help="Inspect and manage generation jobs.")
 def list_jobs(
     status: str | None = typer.Option(None, "--status", help="Filter by job status."),
     limit: int = typer.Option(25, "--limit", help="Maximum jobs to return."),
+    next_token: str | None = typer.Option(
+        None, "--next-token", help="Pagination cursor from a prior call."
+    ),
 ) -> None:
     """List recent jobs."""
     try:
         client = AuritusClient()
-        result = client.list_jobs(status=status, limit=limit)
+        result = client.list_jobs(status=status, limit=limit, next_token=next_token)
     except AuritusApiError as exc:
         typer.secho(str(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1) from exc
@@ -29,6 +32,15 @@ def list_jobs(
         typer.echo(
             f"{job.get('content_hash')}\tstatus={job.get('status')}\t"
             f"backend={job.get('tts_backend')}\tcreated_at={job.get('created_at')}"
+        )
+
+    # Print pagination info if there are more results
+    returned_next_token = result.get("next_token")
+    if returned_next_token:
+        typer.echo()
+        typer.secho(
+            f"Next page: auritus job list --next-token {returned_next_token}",
+            fg=typer.colors.BLUE,
         )
 
 
