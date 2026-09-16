@@ -138,9 +138,26 @@ def test_cost_daily_prints_one_row_per_day() -> None:
 
 
 def test_cost_empty_result_prints_message() -> None:
-    """Empty cost data should print a sensible message, not a crash or wall of zeros."""
+    """Empty cost data should print a sensible message, not a crash or wall of zeros.
+
+    The real API always returns `total` populated with every field
+    zeroed (see _get_admin_costs), never an empty dict -- mock that
+    actual shape, not an idealized empty one, so this test would have
+    caught the command checking the wrong field for emptiness.
+    """
     fake_client = MagicMock()
-    fake_client.get_costs.return_value = {"daily": [], "total": {}}
+    fake_client.get_costs.return_value = {
+        "daily": [],
+        "total": {
+            "gpu_cost_usd": Decimal("0"),
+            "platform_cost_usd": Decimal("0"),
+            "avoided_cost_usd": Decimal("0"),
+            "batch_job_count": Decimal("0"),
+            "local_job_count": Decimal("0"),
+            "billed_seconds": Decimal("0"),
+            "local_duration_seconds": Decimal("0"),
+        },
+    }
     with patch("auritus.commands.cost.AuritusClient", return_value=fake_client):
         result = runner.invoke(app, ["cost"])
     assert result.exit_code == 0, result.output

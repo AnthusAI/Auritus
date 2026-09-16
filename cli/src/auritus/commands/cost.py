@@ -46,8 +46,17 @@ def cost_summary(
     daily_data = result.get("daily") or []
     total = result.get("total") or {}
 
-    # Handle empty result
-    if not daily_data and not total:
+    # Handle empty result. The real API always returns `total` populated
+    # with every cost field present (summed from `daily`, so all zero
+    # when `daily` is empty) -- never an empty dict -- so a bare
+    # `not total` check can never trigger against a real response. Treat
+    # it as empty only when there is nothing to show either way: no
+    # daily rows AND every total figure is zero (or `total` itself is
+    # falsy, for a defensively-shaped response).
+    no_cost_data = not daily_data and (
+        not total or all((value or 0) == 0 for value in total.values())
+    )
+    if no_cost_data:
         typer.echo("No cost data for this range.")
         return
 
