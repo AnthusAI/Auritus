@@ -260,17 +260,6 @@ def _create_job(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]
             raise
         existing = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
         if existing:
-            if existing.get("tts_backend") != tts_backend:
-                print(
-                    f"UPDATING {content_hash} from {existing.get('tts_backend')} to {tts_backend}",
-                    flush=True,
-                )
-                _jobs.update_item(
-                    Key={"content_hash": content_hash},
-                    UpdateExpression="SET tts_backend = :backend",
-                    ExpressionAttributeValues={":backend": tts_backend},
-                )
-                existing["tts_backend"] = tts_backend
             return _response(
                 200,
                 {
