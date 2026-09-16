@@ -8,26 +8,22 @@ import wave
 from typing import Any
 
 from auritus.tts.base import TTSBackend
+from auritus.tts.breaks import AURITUS_BREAK_MARKER, split_on_breaks
+
+__all__ = [
+    "AURITUS_BREAK_MARKER",
+    "split_on_breaks",
+    "KokoroBackend",
+    "resolve_kokoro_voice",
+]
 
 KOKORO_DEFAULT_VOICE = "af_heart"
 
-# Must match embed/src/generator/hash.ts AURITUS_BREAK_MARKER exactly. The
-# generator inserts this after headings, paragraphs, list items, and
-# blockquotes automatically (plus wherever a page explicitly marks
-# data-auritus-break) -- without an actual silence gap at those points, a
-# heading reads flush against the paragraph that follows it.
-AURITUS_BREAK_MARKER = "[[auritus:break]]"
+# How long a real silence gap is between AURITUS_BREAK_MARKER-delimited
+# blocks for this specific backend/voice. The marker itself and how it's
+# split live in auritus.tts.breaks, shared by every backend -- only the
+# gap length is a per-backend tuning choice.
 BREAK_SILENCE_SECONDS = 0.5
-
-
-def split_on_breaks(text: str) -> list[str]:
-    """Split TTS input into segments on the block-boundary pause marker.
-
-    :param text: Full TTS input, possibly containing AURITUS_BREAK_MARKER.
-    :returns: Non-empty, trimmed segments in original order.
-    """
-    segments = [s.strip() for s in text.split(AURITUS_BREAK_MARKER)]
-    return [s for s in segments if s]
 
 
 def resolve_kokoro_voice(meta: dict[str, Any]) -> str:

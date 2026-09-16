@@ -13,22 +13,23 @@ import wave
 from typing import Any
 
 from auritus.tts.base import TTSBackend
+from auritus.tts.breaks import AURITUS_BREAK_MARKER, split_on_breaks
+
+__all__ = [
+    "AURITUS_BREAK_MARKER",
+    "split_on_breaks",
+    "ChatterboxBackend",
+    "resolve_chatterbox_voice",
+]
 
 CHATTERBOX_DEFAULT_VOICE = "default"
 CHATTERBOX_MLX_MODEL = "mlx-community/chatterbox-fp16"
 
-AURITUS_BREAK_MARKER = "[[auritus:break]]"
+# How long a real silence gap is between AURITUS_BREAK_MARKER-delimited
+# blocks for this specific backend/voice. The marker itself and how it's
+# split live in auritus.tts.breaks, shared by every backend -- only the
+# gap length is a per-backend tuning choice.
 BREAK_SILENCE_SECONDS = 0.4
-
-
-def split_on_breaks(text: str) -> list[str]:
-    """Split TTS input into segments on the block-boundary pause marker.
-
-    :param text: Full TTS input, possibly containing AURITUS_BREAK_MARKER.
-    :returns: Non-empty, trimmed segments in original order.
-    """
-    segments = [s.strip() for s in text.split(AURITUS_BREAK_MARKER)]
-    return [s for s in segments if s]
 
 
 def resolve_chatterbox_voice(meta: dict[str, Any]) -> str:
