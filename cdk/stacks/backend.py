@@ -278,6 +278,47 @@ class BackendStack(Stack):
             projection_type=dynamodb.ProjectionType.ALL,
         )
 
+        # Per-TTS-backend running average of observed AWS Batch billed
+        # seconds -- the counterfactual basis for "what would this local
+        # job have cost if the Batch fallback had won the race instead".
+        #
+        # Partition key ONLY (tts_backend, a handful of distinct values
+        # forever) -- no sort key. This is NOT shaped like AuritusCostRollups
+        # (site_id, date): that table aggregates a growing time series meant
+        # to be queried by date range. This table holds one row per TTS
+        # backend, updated forever, with no date dimension at all -- the
+        # average is all-time, not daily. Forcing it into the rollup table's
+        # (site_id, date) key would either scatter one backend's samples
+        # across many rows (breaking the "average" into meaningless partial
+        # averages) or require a fake constant sort key, which is just this
+        # table with extra steps.
+        #
+        # Only batch_billed_seconds_sum and batch_sample_count are stored;
+        # the average itself is computed at read time (sum / count). This is
+        # a deliberately simple running AVERAGE, not a true median -- an
+        # exact streaming median needs a sorted structure or an approximate
+        # percentile algorithm (t-digest, etc.) to maintain incrementally.
+        # An average aggregates trivially via the same additive ADD pattern
+        # already used for cost rollups (sum and count both increment with
+        # plain ADD), and is a defensible-enough "typical" figure for a
+        # counterfactual estimate. See router handler's avoided-cost
+        # computation and batch_telemetry's backend-timing rollup for where
+        # this trade-off is used and documented again in code.
+        #
+        # PAY_PER_REQUEST, RETAIN, no TTL: same reasoning as
+        # AuritusCostRollups above -- this is a permanent running statistic,
+        # not job-record-derived data subject to any future retention pass.
+        backend_timing = dynamodb.Table(
+            self,
+            "AuritusBackendTiming",
+            partition_key=dynamodb.Attribute(
+                name="tts_backend",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=RemovalPolicy.RETAIN,
+        )
+
         audio_bucket = s3.Bucket(
             self,
             "AuritusAudio",
@@ -464,12 +505,14 @@ class BackendStack(Stack):
                 "RATE_CARD_VERSION": rate_card_version,
                 "COST_ROLLUPS_TABLE": cost_rollups.table_name,
                 "COST_ROLLUPS_DATE_INDEX": "date-site_id-index",
+                "BACKEND_TIMING_TABLE": backend_timing.table_name,
             },
         )
         jobs.grant_read_write_data(router_fn)
         sites.grant_read_write_data(router_fn)
         alerts.grant_read_write_data(router_fn)
         cost_rollups.grant_read_write_data(router_fn)
+        backend_timing.grant_read_data(router_fn)
         audio_bucket.grant_read_write(router_fn)
         user_pool.grant(
             router_fn,
@@ -839,10 +882,12 @@ class BackendStack(Stack):
                 "GPU_HOURLY_RATE_USD": str(gpu_hourly_rate_usd),
                 "RATE_CARD_VERSION": rate_card_version,
                 "COST_ROLLUPS_TABLE": cost_rollups.table_name,
+                "BACKEND_TIMING_TABLE": backend_timing.table_name,
             },
         )
         jobs.grant_read_write_data(batch_telemetry_fn)
         cost_rollups.grant_read_write_data(batch_telemetry_fn)
+        backend_timing.grant_read_write_data(batch_telemetry_fn)
 
         events.Rule(
             self,
