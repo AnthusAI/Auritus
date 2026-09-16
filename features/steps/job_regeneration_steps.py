@@ -294,11 +294,19 @@ def step_verify_regenerated_no_audio_url(context) -> None:
 
 @then("the regenerated job keeps the same content hash")
 def step_verify_regenerated_content_hash_unchanged(context) -> None:
-    """Verify the content hash is the same after regeneration."""
-    result = context.jobs_table.get_item(Key={"content_hash": context.job_content_hash})
-    item = result.get("Item")
-    assert item is not None, f"Job {context.job_content_hash} does not exist"
-    actual_hash = item.get("content_hash")
+    """Verify the regenerate response itself echoes the requested content hash.
+
+    Re-reading the record under the same key it was stored at is
+    vacuously true regardless of whether regeneration ran at all, so
+    this asserts against the API response body instead -- proof the
+    request was actually handled by the regenerate route, not merely
+    that DynamoDB returns records under the key you ask for.
+    """
+    assert context.response["statusCode"] == 200, (
+        f"Expected 200, got {context.response['statusCode']}: "
+        f"{context.response_body}"
+    )
+    actual_hash = context.response_body.get("content_hash")
     assert (
         actual_hash == context.job_content_hash
     ), f"Expected hash {context.job_content_hash}, got {actual_hash}"
