@@ -44,6 +44,12 @@ COST_ROLLUPS_DATE_INDEX = os.environ.get(
     "COST_ROLLUPS_DATE_INDEX", "date-site_id-index"
 )
 BACKEND_TIMING_TABLE = os.environ.get("BACKEND_TIMING_TABLE", "")
+# Retention window for completed/failed job records and the audio they
+# reference, in days. 0 (the default) means retention is disabled -- no
+# ``ttl`` attribute is ever written, so no job record or clip ever expires.
+# See DEFAULT_RETENTION_DAYS in cdk/stacks/backend.py for why this defaults
+# off rather than on.
+RETENTION_DAYS = int(os.environ.get("RETENTION_DAYS", "0"))
 # Bounds the number of per-day Query calls _get_admin_costs' "all sites"
 # path (no site_id filter) will issue for one request -- see that
 # function's docstring for why that path queries once per calendar day
@@ -739,6 +745,24 @@ def _claim_job(
     )
 
 
+def _retention_ttl_epoch() -> int | None:
+    """Return the DynamoDB ``ttl`` value to stamp on a job reaching a terminal
+    state (done or failed), or ``None`` when retention is disabled.
+
+    A DynamoDB TTL attribute must be a Unix epoch second integer -- DynamoDB
+    reads it as "expire this item at or after this timestamp", not before.
+    That expiry is enforced by a background sweep, not immediately at the
+    stroke of the timestamp: AWS documents item deletion as typically
+    happening within 48 hours of expiry, not instantaneously. Any downstream
+    behavior that depends on an expired record being gone the instant its
+    ``ttl`` passes (rather than "eventually, usually within two days") is
+    relying on a guarantee DynamoDB does not make.
+    """
+    if RETENTION_DAYS <= 0:
+        return None
+    return int(time.time()) + RETENTION_DAYS * 86400
+
+
 def _mark_done(
     content_hash: str, body: dict[str, Any], headers: dict[str, str]
 ) -> dict[str, Any]:
@@ -795,34 +819,50 @@ def _mark_done(
     #   charged/stamped on every job via the request path, since the flat
     #   platform allowance applies regardless of who processed the job and
     #   batch_telemetry never fires for local jobs.
+    set_clauses = [
+        "#status = :done",
+        "audio_key = :key",
+        "updated_at = :now",
+        "completed_at = :now",
+        "duration_seconds = :duration",
+        "gpu_cost_usd = :gpu_cost",
+        "platform_cost_usd = :platform_cost",
+        "cost_rate_usd_per_hour = :cost_rate",
+        "rate_card_version = :rate_card_version",
+        "avoided_cost_usd = :avoided_cost",
+        "avoided_cost_basis = :avoided_cost_basis",
+    ]
+    attr_values = {
+        ":done": "done",
+        ":key": audio_key,
+        ":now": now,
+        ":duration": duration_seconds,
+        ":claimed": "claimed",
+        ":pending": "pending",
+        ":gpu_cost": Decimal(0),
+        ":platform_cost": Decimal(PLATFORM_COST_PER_JOB_USD),
+        ":cost_rate": Decimal(GPU_HOURLY_RATE_USD),
+        ":rate_card_version": RATE_CARD_VERSION,
+        ":avoided_cost": avoided_cost_usd,
+        ":avoided_cost_basis": avoided_cost_basis,
+    }
+    # Retention TTL: only stamped when RETENTION_DAYS > 0 (see
+    # _retention_ttl_epoch). Left unset entirely when retention is disabled,
+    # rather than written as some far-future sentinel, so the job record
+    # never expires by default.
+    attr_names = {"#status": "status"}
+    ttl_epoch = _retention_ttl_epoch()
+    if ttl_epoch is not None:
+        set_clauses.append("#ttl = :ttl")
+        attr_values[":ttl"] = ttl_epoch
+        attr_names["#ttl"] = "ttl"
+
     _jobs.update_item(
         Key={"content_hash": content_hash},
-        UpdateExpression=(
-            "SET #status = :done, audio_key = :key, updated_at = :now, "
-            "completed_at = :now, duration_seconds = :duration, "
-            "gpu_cost_usd = :gpu_cost, platform_cost_usd = :platform_cost, "
-            "cost_rate_usd_per_hour = :cost_rate, "
-            "rate_card_version = :rate_card_version, "
-            "avoided_cost_usd = :avoided_cost, "
-            "avoided_cost_basis = :avoided_cost_basis "
-            "REMOVE claim_deadline"
-        ),
+        UpdateExpression=f"SET {', '.join(set_clauses)} REMOVE claim_deadline",
         ConditionExpression="#status IN (:claimed, :pending)",
-        ExpressionAttributeNames={"#status": "status"},
-        ExpressionAttributeValues={
-            ":done": "done",
-            ":key": audio_key,
-            ":now": now,
-            ":duration": duration_seconds,
-            ":claimed": "claimed",
-            ":pending": "pending",
-            ":gpu_cost": Decimal(0),
-            ":platform_cost": Decimal(PLATFORM_COST_PER_JOB_USD),
-            ":cost_rate": Decimal(GPU_HOURLY_RATE_USD),
-            ":rate_card_version": RATE_CARD_VERSION,
-            ":avoided_cost": avoided_cost_usd,
-            ":avoided_cost_basis": avoided_cost_basis,
-        },
+        ExpressionAttributeNames=attr_names,
+        ExpressionAttributeValues=attr_values,
     )
 
     _roll_up_request_path_cost(
@@ -884,11 +924,30 @@ def _mark_failed(
         ":cost_rate": Decimal(GPU_HOURLY_RATE_USD),
         ":rate_card_version": RATE_CARD_VERSION,
     }
+    attr_names: dict[str, str] = {"#status": "status"}
     if owner:
         worker_type = "batch" if owner.startswith("batch:") else "local"
         set_clauses.extend(["claimed_by = :owner", "worker_type = :wtype"])
         attr_values[":owner"] = owner
         attr_values[":wtype"] = worker_type
+
+    # A failed job is a terminal outcome too, and the story's underlying
+    # concern -- the full extracted text of a narrated page sitting in the
+    # job record forever -- applies whether the job ended in "done" or
+    # "failed". The original Gherkin only spells out "a completed job", but
+    # scoping retention to done-only would leave every failed job's text
+    # exempt from the exact privacy/cost policy this story exists to
+    # enforce, for no principled reason. A failed job stays retryable right
+    # up until this ttl actually sweeps it (DynamoDB TTL deletion is a
+    # background pass, not instantaneous -- see _retention_ttl_epoch), and
+    # both _regenerate_admin_job and _retry_admin_job clear this ttl the
+    # moment the job is reset to pending, so retrying well before expiry is
+    # unaffected either way.
+    ttl_epoch = _retention_ttl_epoch()
+    if ttl_epoch is not None:
+        set_clauses.append("#ttl = :ttl")
+        attr_values[":ttl"] = ttl_epoch
+        attr_names["#ttl"] = "ttl"
 
     update_expr = f"SET {', '.join(set_clauses)} REMOVE claim_deadline"
 
@@ -896,7 +955,7 @@ def _mark_failed(
         Key={"content_hash": content_hash},
         UpdateExpression=update_expr,
         ConditionExpression="#status IN (:claimed, :pending)",
-        ExpressionAttributeNames={"#status": "status"},
+        ExpressionAttributeNames=attr_names,
         ExpressionAttributeValues=attr_values,
     )
 
@@ -1750,6 +1809,12 @@ def _regenerate_admin_job(content_hash: str, headers: dict[str, str]) -> dict[st
 
     job_token = secrets.token_urlsafe(32)
     now = _utc_now_iso()
+    # ttl is REMOVEd here alongside the other terminal-state attributes: a
+    # regenerated job is pending again, not done, so any ttl left over from
+    # its PREVIOUS completion would expire the record based on when it
+    # finished last time, not this time -- an off-by-one-lifecycle bug that
+    # could delete an in-flight (or freshly completed) job's record early.
+    # The new ttl gets set the normal way by the next _mark_done/_mark_failed.
     _jobs.update_item(
         Key={"content_hash": content_hash},
         UpdateExpression=(
@@ -1762,9 +1827,9 @@ def _regenerate_admin_job(content_hash: str, headers: dict[str, str]) -> dict[st
             "platform_cost_rolled_up, gpu_cost_rolled_up, "
             "backend_timing_rolled_up, batch_created_at, batch_started_at, "
             "batch_stopped_at, instance_type, container_seconds, "
-            "provisioning_seconds, billed_seconds"
+            "provisioning_seconds, billed_seconds, #ttl"
         ),
-        ExpressionAttributeNames={"#status": "status"},
+        ExpressionAttributeNames={"#status": "status", "#ttl": "ttl"},
         ExpressionAttributeValues={
             ":pending": "pending",
             ":token": job_token,
@@ -1812,6 +1877,14 @@ def _retry_admin_job(
 
     job_token = secrets.token_urlsafe(32)
     now = _utc_now_iso()
+    # ttl is REMOVEd for the same reason as in _regenerate_admin_job: a
+    # retried job (from "failed", which -- per this story's scope decision
+    # in _mark_failed -- may itself carry a ttl from when it failed) is
+    # pending again, and a stale ttl from the previous outcome must not
+    # survive to expire the record at the wrong time. A stuck "claimed" job
+    # never had a ttl set in the first place (only _mark_done/_mark_failed
+    # set one), so this REMOVE is a no-op for that path and only matters for
+    # the "failed" path -- but it's harmless and correct to always include.
     _jobs.update_item(
         Key={"content_hash": content_hash},
         UpdateExpression=(
@@ -1823,9 +1896,9 @@ def _retry_admin_job(
             "platform_cost_rolled_up, gpu_cost_rolled_up, "
             "backend_timing_rolled_up, batch_created_at, batch_started_at, "
             "batch_stopped_at, instance_type, container_seconds, "
-            "provisioning_seconds, billed_seconds"
+            "provisioning_seconds, billed_seconds, #ttl"
         ),
-        ExpressionAttributeNames={"#status": "status"},
+        ExpressionAttributeNames={"#status": "status", "#ttl": "ttl"},
         ExpressionAttributeValues={
             ":pending": "pending",
             ":token": job_token,
