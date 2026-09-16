@@ -27,21 +27,31 @@ def _compat_make_metavar(
 
 click.core.Parameter.make_metavar = _compat_make_metavar  # type: ignore[method-assign]
 
-# typer.core.TyperArgument carries its own pre-Click-8.2 make_metavar(self)
-# override (to render the argument name), which shadows the patch above for
-# Argument-based commands (e.g. `site revoke SITE_ID`): typer's Rich help
-# renderer calls make_metavar() with no ctx, while Click 8.2+'s own usage
-# formatter calls it as make_metavar(ctx). Wrap Click's Argument
-# implementation the same way, so both call conventions work.
-_orig_argument_make_metavar = click.core.Argument.make_metavar
+# typer.core.TyperArgument carries its own make_metavar override (to render
+# the argument name), used for Argument-based commands (e.g.
+# `site revoke SITE_ID`). Its call signature has changed shape across the
+# typer/click releases we've hit in this environment: typer's Rich help
+# renderer calls it with no arguments at all, while Click's own usage
+# formatter calls it as make_metavar(ctx) on some versions and
+# make_metavar(ctx, usage=True/False) on others. An earlier fix here
+# delegated to click.core.Argument.make_metavar (the plain base-class
+# implementation) -- but that method's own signature is just (self), with
+# no ctx or usage parameter at all in the click version installed today, so
+# forwarding ctx/usage into it crashes just as hard as not patching at all.
+# The actual fix is to delegate to TYPER's own make_metavar, captured here
+# before we wrap it -- in every version seen so far it already knows how to
+# render itself given a ctx and an optional usage flag; the only gap is the
+# zero-argument call typer's Rich renderer makes, which we backfill with
+# the current click context.
+_orig_argument_make_metavar = typer.core.TyperArgument.make_metavar
 
 
 def _compat_argument_make_metavar(
-    self: click.core.Argument, ctx: click.Context | None = None
+    self: click.core.Argument, *args: object, **kwargs: object
 ) -> str:
-    if ctx is None:
-        ctx = click.get_current_context(silent=True)
-    return _orig_argument_make_metavar(self, ctx)  # type: ignore[arg-type]
+    if not args and "ctx" not in kwargs:
+        args = (click.get_current_context(silent=True),)
+    return _orig_argument_make_metavar(self, *args, **kwargs)  # type: ignore[arg-type]
 
 
 typer.core.TyperArgument.make_metavar = _compat_argument_make_metavar  # type: ignore[method-assign]

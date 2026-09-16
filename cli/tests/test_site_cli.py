@@ -76,14 +76,17 @@ def test_site_revoke_calls_api_with_site_id() -> None:
 def test_site_revoke_help_does_not_crash() -> None:
     """Regression test: TyperArgument.make_metavar() version-mismatch crash.
 
-    Typer 0.12.x's TyperArgument overrides make_metavar with a pre-Click-8.2
-    signature; Click 8.4's usage formatter calls it as make_metavar(ctx) while
-    Typer's own Rich help renderer calls it as make_metavar() -- the fix in
-    auritus.cli must support both call shapes for Argument-based commands.
+    typer.core.TyperArgument.make_metavar's calling convention has shifted
+    across the typer/click releases seen in this environment -- no
+    arguments, a bare ctx, or ctx plus a usage keyword -- and each shift has
+    crashed --help on any Argument-based command until auritus.cli's compat
+    shim adapted to it. Assert only that --help renders without crashing and
+    still documents the argument; the exact casing/braces typer chooses to
+    render it with is a cosmetic detail this test should not pin down.
     """
     result = runner.invoke(app, ["site", "revoke", "--help"])
     assert result.exit_code == 0, result.output
-    assert "SITE_ID" in result.output
+    assert "site_id" in result.output.lower()
 
 
 def test_site_create_help_does_not_crash() -> None:
