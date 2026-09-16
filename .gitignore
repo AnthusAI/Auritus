@@ -35,6 +35,8 @@ AGENTS.local.md
 # Playwright
 site/test-results/
 site/playwright-report/
+console/test-results/
+console/playwright-report/
 
 # OS / editor
 .DS_Store

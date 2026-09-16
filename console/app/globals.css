@@ -104,6 +104,18 @@ h1, h2, h3, h4 {
   border: 1px solid #c9b8e8;
 }
 
+.badge-active {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid rgba(46, 105, 48, 0.3);
+}
+
+.badge-disabled {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid rgba(184, 121, 37, 0.3);
+}
+
 .button {
   display: inline-flex;
   align-items: center;

@@ -26,6 +26,7 @@ export default function Header() {
   const navItems = [
     { label: 'Overview', href: '/' },
     { label: 'Job Explorer', href: '/jobs' },
+    { label: 'Sites', href: '/sites' },
     { label: 'Worker & Queue Health', href: '/workers' },
   ];
 

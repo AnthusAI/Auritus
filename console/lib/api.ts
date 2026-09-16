@@ -123,3 +123,27 @@ export async function retryJob(hash: string, force = false): Promise<{ content_h
     }
   );
 }
+
+export interface Site {
+  site_id: string;
+  label: string;
+  disabled: boolean;
+  created_at: string;
+}
+
+export interface CreatedSite extends Site {
+  site_key: string;
+}
+
+export async function fetchSites(): Promise<Site[]> {
+  const data = await apiFetch<{ sites: Site[] }>('/sites');
+  return data.sites || [];
+}
+
+export async function createSite(label: string): Promise<CreatedSite> {
+  return apiFetch('/sites', { method: 'POST', body: JSON.stringify({ label }) });
+}
+
+export async function revokeSite(siteId: string): Promise<{ site_id: string; deleted: boolean }> {
+  return apiFetch(`/sites/${encodeURIComponent(siteId)}`, { method: 'DELETE' });
+}
