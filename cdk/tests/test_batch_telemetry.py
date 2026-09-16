@@ -44,6 +44,8 @@ def batch_telemetry() -> Any:
                 "CLAIMED_BY_INDEX": "claimed_by-index",
                 "WARM_START_THRESHOLD_SECONDS": "60",
                 "PROVISIONING_OVERHEAD_SECONDS": "90",
+                "GPU_HOURLY_RATE_USD": "0.526",
+                "RATE_CARD_VERSION": "v1",
                 "AWS_DEFAULT_REGION": "us-east-1",
             }
         )
@@ -136,6 +138,48 @@ def test_handler_records_timing_on_matching_job(batch_telemetry: Any) -> None:
     # duration_seconds means something else (claim-to-done) and must be
     # left untouched by this handler.
     assert "duration_seconds" not in item
+
+
+def test_handler_computes_gpu_cost_from_billed_seconds_and_rate(
+    batch_telemetry: Any,
+) -> None:
+    """gpu_cost_usd = billed_seconds * hourly_rate / 3600, at the configured rate."""
+    jobs = boto3.resource("dynamodb", region_name="us-east-1").Table("jobs")
+    jobs.put_item(
+        Item={
+            "content_hash": "cost-job-1",
+            "status": "claimed",
+            "claimed_by": "batch:job-cost-1",
+        }
+    )
+
+    created_at_ms = 1_700_000_000_000
+    event = {
+        "detail": {
+            "jobId": "job-cost-1",
+            "status": "SUCCEEDED",
+            "createdAt": created_at_ms,
+            # 5s gap: warm start, so billed_seconds == container_seconds == 3600.
+            "startedAt": created_at_ms + 5_000,
+            "stoppedAt": created_at_ms + 5_000 + 3_600_000,
+            "container": {"instanceType": "g4dn.xlarge"},
+        }
+    }
+
+    result = batch_telemetry.handler(event, None)
+
+    assert result["status"] == "recorded"
+    assert result["billed_seconds"] == 3600.0
+
+    item = jobs.get_item(Key={"content_hash": "cost-job-1"})["Item"]
+    assert item["billed_seconds"] == Decimal("3600")
+    # 3600 billed seconds at $0.526/hr is exactly one hour's rate.
+    assert item["gpu_cost_usd"] == Decimal("0.526")
+    assert item["cost_rate_usd_per_hour"] == Decimal("0.526")
+    assert item["rate_card_version"] == "v1"
+    # batch_telemetry never writes the flat platform allowance -- that's
+    # the router's job, charged on every job regardless of worker type.
+    assert "platform_cost_usd" not in item
 
 
 def test_handler_skips_cleanly_when_no_job_matches(batch_telemetry: Any) -> None:

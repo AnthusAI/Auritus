@@ -86,6 +86,27 @@ DEFAULT_DELIVERY_GRACE_SECONDS = 300
 DEFAULT_WARM_START_THRESHOLD_SECONDS = 60
 DEFAULT_PROVISIONING_OVERHEAD_SECONDS = 90
 
+# On-demand hourly rate for a g4dn.xlarge in us-east-1, the instance type
+# our GPU compute environment uses. Sourced from two independent third-party
+# pricing aggregators (instances.vantage.sh and a second cross-check) in
+# September 2026, both agreeing on $0.526/hr; this was NOT read directly off
+# AWS's own pricing page (its on-demand table did not come back from an
+# automated fetch) and has not been confirmed against an AWS Cost Explorer
+# bill. Treat this as a reasonable default, not an authoritative, current
+# AWS-sourced figure -- override it with ``gpu_hourly_rate_usd`` context once
+# a real invoice is available to check it against.
+DEFAULT_GPU_HOURLY_RATE_USD = 0.526
+
+# Flat modelled allowance per job for the DynamoDB/Lambda/S3/CloudFront
+# activity every job causes regardless of who processes it (a handful of
+# DynamoDB reads/writes, a few Lambda invocations, an S3 object, some
+# CloudFront egress). This is a deliberately rough estimate, not a measured
+# figure -- nobody has itemized actual per-job AWS costs for these services
+# yet. Revisit once real billing data exists.
+DEFAULT_PLATFORM_COST_PER_JOB_USD = 0.0005
+
+DEFAULT_RATE_CARD_VERSION = "v1"
+
 
 class BackendStack(Stack):
     """Cloud backend for Auritus just-in-time TTS generation."""
@@ -103,6 +124,23 @@ class BackendStack(Stack):
         delivery_grace_seconds = int(
             self.node.try_get_context("delivery_grace_seconds")
             or DEFAULT_DELIVERY_GRACE_SECONDS
+        )
+
+        # Rate card for the job cost estimate: two components (GPU cost,
+        # accrued only for Batch jobs, and a flat platform allowance charged
+        # on every job) plus a version tag stamped onto every costed job so
+        # a later rate-card change doesn't retroactively appear to have
+        # applied to historical jobs.
+        gpu_hourly_rate_usd = float(
+            self.node.try_get_context("gpu_hourly_rate_usd")
+            or DEFAULT_GPU_HOURLY_RATE_USD
+        )
+        platform_cost_per_job_usd = float(
+            self.node.try_get_context("platform_cost_per_job_usd")
+            or DEFAULT_PLATFORM_COST_PER_JOB_USD
+        )
+        rate_card_version = str(
+            self.node.try_get_context("rate_card_version") or DEFAULT_RATE_CARD_VERSION
         )
 
         google_secret_arn = self.node.try_get_context("google_oauth_secret_arn")
@@ -375,6 +413,9 @@ class BackendStack(Stack):
                     or "auritus@example.com"
                 ),
                 "ALERTS_TABLE": alerts.table_name,
+                "GPU_HOURLY_RATE_USD": str(gpu_hourly_rate_usd),
+                "PLATFORM_COST_PER_JOB_USD": str(platform_cost_per_job_usd),
+                "RATE_CARD_VERSION": rate_card_version,
             },
         )
         jobs.grant_read_write_data(router_fn)
@@ -746,6 +787,8 @@ class BackendStack(Stack):
                 "CLAIMED_BY_INDEX": "claimed_by-index",
                 "WARM_START_THRESHOLD_SECONDS": str(warm_start_threshold_seconds),
                 "PROVISIONING_OVERHEAD_SECONDS": str(provisioning_overhead_seconds),
+                "GPU_HOURLY_RATE_USD": str(gpu_hourly_rate_usd),
+                "RATE_CARD_VERSION": rate_card_version,
             },
         )
         jobs.grant_read_write_data(batch_telemetry_fn)

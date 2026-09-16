@@ -11,10 +11,14 @@ This handler listens for "Batch Job State Change" EventBridge events for
 our job queue, correlates the Batch job back to its job record, and writes
 timing facts (``batch_created_at``, ``batch_started_at``,
 ``batch_stopped_at``, ``instance_type``, ``container_seconds``,
-``provisioning_seconds``, ``billed_seconds``). It does NOT touch
-``duration_seconds`` -- that field already means something else and is read
-by the console -- and it does NOT calculate a dollar cost; that's a
-separate, blocked-on-this story.
+``provisioning_seconds``, ``billed_seconds``) plus the GPU cost derived from
+``billed_seconds`` (``gpu_cost_usd``, ``cost_rate_usd_per_hour``,
+``rate_card_version``). It does NOT touch ``duration_seconds`` -- that field
+already means something else and is read by the console -- and it does NOT
+write ``platform_cost_usd``: the flat platform allowance is charged on
+every job regardless of worker type, so the router Lambda's
+``_mark_done``/``_mark_failed`` write it on the request path, which every
+job (local or Batch) goes through, avoiding a duplicated constant.
 
 Correlation: the Batch job's own environment overrides (which carry
 ``AURITUS_CONTENT_HASH``, set by the Step Functions ``BatchSubmitJob`` task)
@@ -55,6 +59,16 @@ WARM_START_THRESHOLD_SECONDS = float(
 PROVISIONING_OVERHEAD_SECONDS = float(
     os.environ.get("PROVISIONING_OVERHEAD_SECONDS", "90")
 )
+# GPU_HOURLY_RATE_USD and RATE_CARD_VERSION are read fresh here rather than
+# depending on the router's _mark_done/_mark_failed having already stamped
+# cost_rate_usd_per_hour / rate_card_version onto the job record -- a Batch
+# job whose EventBridge state-change event arrives before its own mark_done
+# call would otherwise see this handler skip writing them, or write stale
+# defaults. Both Lambdas are configured from the same CDK context values, so
+# in normal operation they agree; this handler's write is self-consistent
+# either way.
+GPU_HOURLY_RATE_USD = os.environ.get("GPU_HOURLY_RATE_USD", "0.526")
+RATE_CARD_VERSION = os.environ.get("RATE_CARD_VERSION", "v1")
 
 _jobs = _dynamodb.Table(JOBS_TABLE)
 
@@ -161,17 +175,33 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
 
     timing = compute_timing(created_at_ms, started_at_ms, stopped_at_ms)
 
+    # GPU cost in dollars: billed_seconds * hourly_rate / 3600. Decimal
+    # arithmetic throughout -- this is a dollar figure written to DynamoDB,
+    # and float arithmetic accumulated across many records is exactly the
+    # kind of bug that's expensive to find later.
+    gpu_cost_usd = (
+        Decimal(str(timing["billed_seconds"]))
+        * Decimal(GPU_HOURLY_RATE_USD)
+        / Decimal(3600)
+    )
+
     set_clauses = [
         "batch_created_at = :batch_created_at",
         "container_seconds = :container_seconds",
         "provisioning_seconds = :provisioning_seconds",
         "billed_seconds = :billed_seconds",
+        "gpu_cost_usd = :gpu_cost_usd",
+        "cost_rate_usd_per_hour = :cost_rate_usd_per_hour",
+        "rate_card_version = :rate_card_version",
     ]
     expression_values: dict[str, Any] = {
         ":batch_created_at": _iso(created_at_ms),
         ":container_seconds": Decimal(str(timing["container_seconds"])),
         ":provisioning_seconds": Decimal(str(timing["provisioning_seconds"])),
         ":billed_seconds": Decimal(str(timing["billed_seconds"])),
+        ":gpu_cost_usd": gpu_cost_usd,
+        ":cost_rate_usd_per_hour": Decimal(GPU_HOURLY_RATE_USD),
+        ":rate_card_version": RATE_CARD_VERSION,
     }
 
     if started_at_ms is not None:

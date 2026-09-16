@@ -36,6 +36,9 @@ BATCH_JOB_QUEUE_NAME = os.environ.get("BATCH_JOB_QUEUE_NAME", "")
 USER_POOL_ID = os.environ.get("USER_POOL_ID", "")
 SES_FROM_ADDRESS = os.environ.get("SES_FROM_ADDRESS", "")
 ALERTS_TABLE = os.environ.get("ALERTS_TABLE", "")
+GPU_HOURLY_RATE_USD = os.environ.get("GPU_HOURLY_RATE_USD", "0.526")
+PLATFORM_COST_PER_JOB_USD = os.environ.get("PLATFORM_COST_PER_JOB_USD", "0.0005")
+RATE_CARD_VERSION = os.environ.get("RATE_CARD_VERSION", "v1")
 
 KOKORO_DEFAULT_VOICE_ID = "af_heart"
 
@@ -520,11 +523,39 @@ def _mark_done(
     claimed_epoch = int(item.get("claimed_at_epoch", now_epoch)) if item else now_epoch
     duration_seconds = max(1, now_epoch - claimed_epoch)
 
+    # Cost accounting, written on every completion path (local or Batch):
+    #
+    # - gpu_cost_usd starts at 0 here. For a local job this is correct and
+    #   final -- local jobs never run on Batch, so there is no GPU cost to
+    #   add. For a Batch job, this is a placeholder that batch_telemetry
+    #   (triggered independently by an EventBridge "Batch Job State Change"
+    #   event) will overwrite with the real figure computed from
+    #   billed_seconds. In practice the Batch container calls this route
+    #   itself just before it exits, and AWS only emits the state-change
+    #   event once the container has actually stopped, so mark_done's write
+    #   usually lands first and batch_telemetry's corrected value lands
+    #   after it. That ordering is not a documented guarantee, though --
+    #   Lambda cold starts or EventBridge delivery delays could plausibly
+    #   let the telemetry event's Lambda invocation complete first. Either
+    #   order is safe here: the two writers touch disjoint concerns
+    #   (gpu_cost_usd here is a placeholder for Batch jobs; batch_telemetry
+    #   recomputes it independently and does not read this value), so
+    #   whichever runs second for a Batch job still leaves the record with
+    #   batch_telemetry's correct figure once its event arrives -- it just
+    #   means the placeholder may be briefly visible first. This is a known
+    #   limitation of the current design, not a proven-safe guarantee.
+    # - platform_cost_usd, cost_rate_usd_per_hour, and rate_card_version are
+    #   charged/stamped on every job via the request path, since the flat
+    #   platform allowance applies regardless of who processed the job and
+    #   batch_telemetry never fires for local jobs.
     _jobs.update_item(
         Key={"content_hash": content_hash},
         UpdateExpression=(
             "SET #status = :done, audio_key = :key, updated_at = :now, "
-            "completed_at = :now, duration_seconds = :duration "
+            "completed_at = :now, duration_seconds = :duration, "
+            "gpu_cost_usd = :gpu_cost, platform_cost_usd = :platform_cost, "
+            "cost_rate_usd_per_hour = :cost_rate, "
+            "rate_card_version = :rate_card_version "
             "REMOVE claim_deadline"
         ),
         ConditionExpression="#status IN (:claimed, :pending)",
@@ -536,6 +567,10 @@ def _mark_done(
             ":duration": duration_seconds,
             ":claimed": "claimed",
             ":pending": "pending",
+            ":gpu_cost": Decimal(0),
+            ":platform_cost": Decimal(PLATFORM_COST_PER_JOB_USD),
+            ":cost_rate": Decimal(GPU_HOURLY_RATE_USD),
+            ":rate_card_version": RATE_CARD_VERSION,
         },
     )
     return _response(
@@ -557,11 +592,20 @@ def _mark_failed(
     reason = body.get("reason") or "unknown_error"
     owner = body.get("owner")
     now = _utc_now_iso()
+    # See the comment in _mark_done: a failed job is still costed. GPU cost
+    # starts at 0 (correct and final for local jobs; a placeholder for
+    # Batch jobs, overwritten by batch_telemetry's independent, correct
+    # write once its EventBridge event arrives). The flat platform
+    # allowance and rate-card stamp apply regardless of outcome.
     set_clauses = [
         "#status = :failed",
         "error_message = :reason",
         "failed_at = :now",
         "updated_at = :now",
+        "gpu_cost_usd = :gpu_cost",
+        "platform_cost_usd = :platform_cost",
+        "cost_rate_usd_per_hour = :cost_rate",
+        "rate_card_version = :rate_card_version",
     ]
     attr_values: dict[str, Any] = {
         ":failed": "failed",
@@ -569,6 +613,10 @@ def _mark_failed(
         ":now": now,
         ":claimed": "claimed",
         ":pending": "pending",
+        ":gpu_cost": Decimal(0),
+        ":platform_cost": Decimal(PLATFORM_COST_PER_JOB_USD),
+        ":cost_rate": Decimal(GPU_HOURLY_RATE_USD),
+        ":rate_card_version": RATE_CARD_VERSION,
     }
     if owner:
         worker_type = "batch" if owner.startswith("batch:") else "local"
@@ -1063,6 +1111,10 @@ def _get_admin_job(content_hash: str, headers: dict[str, str]) -> dict[str, Any]
             "duration_seconds": item.get("duration_seconds"),
             "error_message": item.get("error_message"),
             "audio_url": _audio_url(audio_key) if audio_key else None,
+            "gpu_cost_usd": item.get("gpu_cost_usd"),
+            "platform_cost_usd": item.get("platform_cost_usd"),
+            "cost_rate_usd_per_hour": item.get("cost_rate_usd_per_hour"),
+            "rate_card_version": item.get("rate_card_version"),
         },
     )
 
