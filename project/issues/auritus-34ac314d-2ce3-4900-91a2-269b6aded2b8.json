@@ -1,0 +1,20 @@
+{
+  "id": "auritus-34ac314d-2ce3-4900-91a2-269b6aded2b8",
+  "title": "auritus login left a stray project-local .auritus/config with placeholder endpoints, shadowing the real global config",
+  "description": "Correcting the title as filed: auritus login itself was never the actual\ncause -- traced it down and neither login.py nor auth.py write config at\nall. The real mechanism, found by reading config.py closely:\n\n_default_save_path() in cli/src/auritus/config.py:\n  if local_config_path().is_file(): return local\n  if global_config_path().is_file(): return global\n  return local_config_path()   <- fallback was LOCAL, not global\n\nAny unqualified save_config() call (auritus config set, or a test) that\nruns when NEITHER a local nor global config exists yet silently creates a\nnew PROJECT-LOCAL .auritus/config -- in whatever directory happens to be\nthe process's cwd -- rather than the global one a user would expect\n(matching how auritus deploy always writes to global_config_path()\nexplicitly, and how the config command's own --help describes itself:\n'global or ./.auritus/config', implying global is the default).\n\nThe concrete incident: cli/tests/test_config.py, test_save_and_load_roundtrip,\npatched auritus.config.config_dir (the GLOBAL directory function) but never\npatched or chdir'd away from the real cwd, so its own save_config(cfg) call\n-- with cfg['api_endpoint'] set to a placeholder example URL for the test's\nown assertions -- landed on the unmocked, real local_config_path(). Running\nthis test from the repo root, or from cli/, leaves a real\n<cwd>/.auritus/config behind with that placeholder content. Confirmed this\nhappened twice this session: once in the repo root (someone ran the suite\nfrom there earlier), and once in cli/ when I ran the test suite myself as\npart of an unrelated verification -- both silently broke the local worker\nfor any invocation from those directories afterward (real Cognito/API\nendpoint config shadowed by the placeholder), which is what looked like a\nfresh auritus-login problem when the user actually hit it.\n\nFixed both the root cause and the specific incident:\n1. auritus/config.py: _default_save_path() now defaults to GLOBAL when\n   neither file exists. A local config remains fully supported and still\n   takes priority when one already exists -- it is just no longer created\n   as a side effect of the first unqualified write.\n2. test_config.py: added monkeypatch.chdir(tmp_path) so the test's own\n   local_config_path() resolves inside the sandbox too, matching what the\n   config_dir() patch was already doing for the global path.\n\nVerified: full cli test suite passes (30/30), and a repeated run of the\npreviously-guilty test no longer creates any .auritus directory outside\ntmp_path.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-16T01:59:38.818243Z",
+  "updated_at": "2026-09-16T02:00:51.882635Z",
+  "closed_at": "2026-09-16T02:00:14.148347Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

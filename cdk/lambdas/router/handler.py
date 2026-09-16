@@ -404,7 +404,6 @@ def _claim_job(
     now = _utc_now_iso()
     now_int = int(time.time())
     now_epoch = Decimal(now_int)
-    now_str = str(now_int)
     worker_type = "batch" if claim_owner.startswith("batch:") else "local"
     try:
         _jobs.update_item(
@@ -415,10 +414,42 @@ def _claim_job(
                 "claimed_at = :now, claimed_at_epoch = :now_epoch, "
                 "claim_deadline = :deadline, updated_at = :now"
             ),
+            # A claimant may take a job that is pending, or reclaim one
+            # whose existing claim has genuinely expired -- that's the
+            # whole mutex, and it must hold the same way for every
+            # claimant. This condition used to carry two more problems,
+            # both found the same day live jobs were double-processed:
+            #
+            # 1. An extra clause, "(#status = :claimed AND :is_batch =
+            #    :true_val)". :is_batch and :true_val were both literal
+            #    values computed in Python before the call (worker_type ==
+            #    "batch"), not DynamoDB attribute comparisons, so the
+            #    clause reduced to "status = claimed AND True" for every
+            #    Batch claim attempt -- Batch could steal *any*
+            #    already-claimed job at any moment, deadline or not,
+            #    including one a local worker was actively mid-synthesis
+            #    on. Reproduced live: a local worker completed a job's
+            #    mark_done, then Batch's independent, already-running
+            #    fallback execution (started at job creation, per the
+            #    architecture) claimed the same job anyway and overwrote it
+            #    with its own (also successful) result -- both workers did
+            #    the same work, and whichever finished last silently won.
+            #
+            # 2. The deadline check itself was "claim_deadline < :now_epoch
+            #    OR claim_deadline < :now_str" -- comparing the same stored
+            #    Number attribute against both a Decimal and a string
+            #    literal. Only one of those can ever type-match a given
+            #    item; the other is a Number-vs-String order comparison,
+            #    which is invalid. claim_deadline is written as a Decimal a
+            #    few lines below (and confirmed Decimal in every live
+            #    record checked), so the string half was dead weight that
+            #    also broke a straightforward regression test for fix #1
+            #    (moto raises on the mismatched compare; real DynamoDB's
+            #    behavior on it was never something to depend on either
+            #    way). Compare against :now_epoch only.
             ConditionExpression=(
                 "#status = :pending OR "
-                "(#status = :claimed AND (claim_deadline < :now_epoch OR claim_deadline < :now_str)) OR "
-                "(#status = :claimed AND :is_batch = :true_val)"
+                "(#status = :claimed AND claim_deadline < :now_epoch)"
             ),
             ExpressionAttributeNames={"#status": "status"},
             ExpressionAttributeValues={
@@ -429,9 +460,6 @@ def _claim_job(
                 ":deadline": Decimal(deadline_epoch),
                 ":now": now,
                 ":now_epoch": now_epoch,
-                ":now_str": now_str,
-                ":is_batch": worker_type == "batch",
-                ":true_val": True,
             },
         )
     except ClientError as exc:

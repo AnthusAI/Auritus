@@ -186,6 +186,53 @@ def _operator_headers() -> dict[str, str]:
     return {"authorization": "Bearer valid-operator-jwt"}
 
 
+def test_batch_cannot_steal_an_unexpired_local_claim(
+    router_resources: dict[str, object],
+) -> None:
+    """A live local claim must reject a competing Batch claim.
+
+    The ConditionExpression used to also allow ANY claim attempt whose
+    claim_owner starts with "batch:" to succeed unconditionally, regardless
+    of who already held the claim or whether its deadline had passed
+    (":is_batch"/":true_val" were literal Python values, not attribute
+    comparisons -- the clause reduced to "status = claimed AND True" for
+    every Batch attempt). Reproduced live: a local worker's completed job
+    got silently overwritten by the AWS Batch fallback, which had been
+    running the whole time per the architecture (it starts at job creation,
+    not after the local claim window) and claimed the same job anyway.
+    """
+    created = _create_job(router_resources)
+    content_hash = router_resources["response_body"](created)["content_hash"]
+
+    local_claim = router_resources["handler"].handler(
+        router_resources["event"](
+            "PUT",
+            f"/jobs/{content_hash}/claim",
+            body={"claim_owner": "local:node-1:abcdef"},
+            headers=_operator_headers(),
+            path_parameters={"hash": content_hash},
+        ),
+        None,
+    )
+    assert local_claim["statusCode"] == 200
+
+    batch_claim = router_resources["handler"].handler(
+        router_resources["event"](
+            "PUT",
+            f"/jobs/{content_hash}/claim",
+            body={"claim_owner": "batch:some-batch-job-id"},
+            headers=_operator_headers(),
+            path_parameters={"hash": content_hash},
+        ),
+        None,
+    )
+    assert batch_claim["statusCode"] == 409
+
+    item = router_resources["jobs"].get_item(Key={"content_hash": content_hash})["Item"]
+    assert item["worker_type"] == "local"
+    assert item["claimed_by"] == "local:node-1:abcdef"
+
+
 def test_claim_and_done_telemetry(router_resources: dict[str, object]) -> None:
     """Record worker_type, timestamps, and duration upon claim and completion."""
     created = _create_job(router_resources)

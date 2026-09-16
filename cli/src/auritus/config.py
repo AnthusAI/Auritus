@@ -74,11 +74,27 @@ def load_config() -> dict[str, Any]:
 
 
 def _default_save_path() -> Path:
+    """Pick where an unqualified save_config() call writes.
+
+    Local overrides global when a local config already exists (matching
+    config_path()'s own read-side preference) -- that's deliberate, project-
+    scoped config is a real feature. But when *neither* file exists yet, the
+    old fallback was local_config_path(), which meant the very first
+    `auritus config set` (or any other unqualified save_config() call) run
+    from inside a project directory silently created a new project-local
+    config instead of the global one -- surprising for a command whose own
+    --help says "global or ./.auritus/config", and exactly the trap a config
+    test fell into: it patched the global config directory but not
+    local_config_path()'s cwd, so save_config() picked the unmocked local
+    path and wrote a real file into whatever directory happened to be the
+    test runner's cwd. Default to global when nothing exists yet; a local
+    config is something a caller opts into (an explicit path, or by having
+    already created ./.auritus/config themselves), not something that gets
+    created as a side effect of the first write.
+    """
     if local_config_path().is_file():
         return local_config_path()
-    if global_config_path().is_file():
-        return global_config_path()
-    return local_config_path()
+    return global_config_path()
 
 
 def save_config(data: dict[str, Any], *, path: Path | None = None) -> Path:
