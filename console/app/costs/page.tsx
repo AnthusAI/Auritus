@@ -193,6 +193,53 @@ export default function CostsPage() {
               </div>
             )}
           </div>
+          {/* Reconciliation vs. actual AWS bill: account-wide only (Cost
+              Explorer has no per-site attribution), so this only ever has
+              data for the "all sites" view. */}
+          {selectedSiteId === '' && costs.reconciliation && costs.reconciliation.length > 0 && (
+            <div className="card" style={{ padding: 0, overflow: 'hidden', marginTop: '1.5rem' }}>
+              <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--line)' }}>
+                <h3 style={{ fontSize: '1.2rem', marginBottom: '0.2rem' }}>Reconciliation vs. Actual AWS Bill</h3>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--ink-muted)' }}>
+                  Account-wide GPU cost estimate vs. actual AWS Cost Explorer spend (Batch/EC2 only). Cost Explorer cannot attribute spend to a single site.
+                </p>
+              </div>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Estimated GPU Cost</th>
+                      <th>Actual Cost</th>
+                      <th>Variance</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {costs.reconciliation.map((row) => (
+                      <tr key={row.date}>
+                        <td className="mono" style={{ fontSize: '0.85rem' }}>
+                          {new Date(row.date).toLocaleDateString()}
+                        </td>
+                        <td>{formatUSD(row.estimated_gpu_cost_usd)}</td>
+                        <td>{formatUSD(row.actual_cost_usd)}</td>
+                        <td style={{ color: row.out_of_tolerance ? 'var(--danger)' : 'var(--ink)' }}>
+                          {formatUSD(row.variance_usd)}
+                        </td>
+                        <td>
+                          {row.out_of_tolerance ? (
+                            <span style={{ color: 'var(--danger)', fontWeight: 600 }}>Out of tolerance</span>
+                          ) : (
+                            <span style={{ color: 'var(--success)' }}>Within tolerance</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

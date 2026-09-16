@@ -90,3 +90,23 @@ def cost_summary(
     typer.echo(f"  Avoided Cost: ${_format_usd(total.get('avoided_cost_usd'))}")
     typer.echo("")
     typer.echo("Note: These are modelled cost estimates, not an AWS invoice.")
+
+    # Reconciliation against the actual AWS bill: an account-wide figure
+    # (Cost Explorer cannot attribute spend per-site), present only when
+    # the cost_reconciliation Lambda has run for at least one day in the
+    # requested range. Absent entirely for a site-scoped query -- see
+    # _get_admin_costs' docstring in the router Lambda for why.
+    reconciliation = result.get("reconciliation") or []
+    if reconciliation:
+        typer.echo("")
+        typer.echo("Reconciliation vs. actual AWS bill (account-wide):")
+        for row in reconciliation:
+            date_str = row.get("date", "")
+            actual = _format_usd(row.get("actual_cost_usd"))
+            estimated = _format_usd(row.get("estimated_gpu_cost_usd"))
+            variance = _format_usd(row.get("variance_usd"))
+            flag = " [OUT OF TOLERANCE]" if row.get("out_of_tolerance") else ""
+            typer.echo(
+                f"  {date_str}: estimated ${estimated}  actual ${actual}  "
+                f"variance ${variance}{flag}"
+            )
