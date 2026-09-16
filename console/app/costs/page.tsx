@@ -57,7 +57,7 @@ export default function CostsPage() {
       </div>
 
       {error && (
-        <div className="card" style={{ marginBottom: '1.5rem', background: '#fff1f0', borderColor: '#ffa39e', color: '#cf1322' }}>
+        <div className="card" style={{ marginBottom: '1.5rem', background: 'var(--danger-bg)', borderColor: 'var(--danger)', color: 'var(--danger)' }}>
           <strong>Error loading costs:</strong> {error}
         </div>
       )}
