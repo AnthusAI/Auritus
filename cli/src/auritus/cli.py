@@ -6,6 +6,7 @@ import click.core
 import typer
 
 from auritus.commands import config_cmd, worker_cmd
+from auritus.commands import cost as cost_cmd
 from auritus.commands import deploy as deploy_cmd
 from auritus.commands import job as job_cmd
 from auritus.commands import killswitch as killswitch_cmd
@@ -84,6 +85,7 @@ app.add_typer(config_cmd.app, name="config")
 app.add_typer(deploy_cmd.app, name="deploy")
 app.add_typer(site_cmd.app, name="site")
 app.add_typer(job_cmd.app, name="job")
+app.add_typer(cost_cmd.app, name="cost")
 app.add_typer(player_cmd.app, name="player")
 worker_cmd.register(app)
 app.add_typer(killswitch_cmd.app, name="killswitch")
