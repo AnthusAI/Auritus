@@ -649,8 +649,13 @@ class BackendStack(Stack):
         for method, path in [
             (apigwv2.HttpMethod.GET, "/jobs/claimable"),
             (apigwv2.HttpMethod.GET, "/admin/overview"),
+            (apigwv2.HttpMethod.GET, "/admin/costs"),
             (apigwv2.HttpMethod.GET, "/admin/jobs"),
             (apigwv2.HttpMethod.GET, "/admin/jobs/{hash}"),
+            (apigwv2.HttpMethod.DELETE, "/admin/jobs/{hash}"),
+            (apigwv2.HttpMethod.POST, "/admin/jobs/{hash}/regenerate"),
+            (apigwv2.HttpMethod.POST, "/admin/jobs/{hash}/retry"),
+            (apigwv2.HttpMethod.POST, "/admin/jobs/bulk-delete"),
             (apigwv2.HttpMethod.POST, "/admin/queue/toggle"),
         ]:
             http_api.add_routes(

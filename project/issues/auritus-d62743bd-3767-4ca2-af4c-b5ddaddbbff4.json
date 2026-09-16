@@ -1,0 +1,31 @@
+{
+  "id": "auritus-d62743bd-3767-4ca2-af4c-b5ddaddbbff4",
+  "title": "M10/M11 admin routes never wired to API Gateway (deployed unreachable)",
+  "description": "All M10 job-management routes (DELETE /admin/jobs/{hash}, POST .../regenerate,\nPOST .../retry, POST /admin/jobs/bulk-delete) and the M11 GET /admin/costs\nroute were implemented in cdk/lambdas/router/handler.py and covered by\nextensive moto-based Lambda-level tests, but were never added to the CDK\nHttpApi route table in cdk/stacks/backend.py. The Lambda handler itself\ncorrectly dispatches on these paths, but API Gateway had no route entries\nfor them at all, so every one of these endpoints 404'd in production\ndespite passing 100% of automated tests.\n\nRoot cause: cdk/tests/test_router.py and test_router_cost_reconciliation.py\ninvoke the handler function directly with synthetic API-Gateway-shaped\nevent dicts, bypassing the actual CDK-synthesized HttpApi routing entirely.\nNo test exercised route registration, so a missing add_routes() call was\ninvisible to the whole review process across ~20 sub-agent dispatches.\n\nDiscovered during first production deploy of M11 (2026-09-16): `auritus\ncost --daily` returned `404 {\"message\":\"Not Found\"}` against the live API,\nwhich led to inspecting cdk/stacks/backend.py's route list and finding the\nfive missing entries.\n\nFixed directly (not via sub-agent) in cdk/stacks/backend.py by adding:\n  GET    /admin/costs\n  DELETE /admin/jobs/{hash}\n  POST   /admin/jobs/{hash}/regenerate\n  POST   /admin/jobs/{hash}/retry\n  POST   /admin/jobs/bulk-delete\nto the authenticated route group, and re-deployed to production\n(AuritusBackend stack). Verified via `auritus cost --daily` and\n`auritus job show` returning 200 instead of 404 post-deploy.\n\nFollow-up worth considering (not done here): an integration-style test that\nasserts every route the router handler dispatches on actually has a\ncorresponding add_routes() entry in the CDK stack, so this class of gap\ncan't recur silently.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-c56c4a76-cf1f-434d-bb32-3b202ccc6302",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "1d7e1fc7-effe-4449-bc8f-8ad973790a5f",
+      "author": "home",
+      "text": "Fixed and deployed to production. Verified auritus cost --daily and auritus job show return 200 (not 404) post-deploy.",
+      "created_at": "2026-09-16T16:04:42.306536Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-16T16:04:28.420936Z",
+  "updated_at": "2026-09-16T16:04:42.350869Z",
+  "closed_at": "2026-09-16T16:04:42.350848Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
+}
