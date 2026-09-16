@@ -199,6 +199,16 @@ class AuritusClient:
         """
         return self._request("DELETE", f"/admin/jobs/{content_hash}")
 
+    def regenerate_job(self, content_hash: str) -> dict[str, Any]:
+        """Force regeneration of a job, resetting it to pending in place.
+
+        :param content_hash: The content hash identifying the job.
+        :returns: The API response with the job reset to pending.
+        """
+        return self._request(
+            "POST", f"/admin/jobs/{content_hash}/regenerate", json_body={}
+        )
+
     def disable_batch_queue(self) -> dict[str, Any]:
         """Emergency kill-switch: disable the Batch job queue."""
         return self._request(

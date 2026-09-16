@@ -16,6 +16,11 @@ from typing import Any
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
+
+class ConflictError(Exception):
+    """Raised when an admin action is invalid for the job's current state."""
+
+
 _dynamodb = boto3.resource("dynamodb")
 _s3 = boto3.client("s3")
 _sfn = boto3.client("stepfunctions")
@@ -99,6 +104,11 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         if method == "DELETE" and path.startswith("/admin/jobs/"):
             content_hash = path_params.get("hash") or path.removeprefix("/admin/jobs/")
             return _delete_admin_job(content_hash, headers)
+        if method == "POST" and path.endswith("/regenerate"):
+            content_hash = path_params.get("hash") or path.removesuffix(
+                "/regenerate"
+            ).removeprefix("/admin/jobs/")
+            return _regenerate_admin_job(content_hash, headers)
         if method == "POST" and path == "/admin/queue/toggle":
             return _toggle_admin_queue(body, headers)
         return _response(404, {"error": "not_found"})
@@ -106,6 +116,8 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         return _response(403, {"error": str(exc)})
     except ValueError as exc:
         return _response(400, {"error": str(exc)})
+    except ConflictError as exc:
+        return _response(409, {"error": str(exc)})
     except LookupError as exc:
         return _response(404, {"error": str(exc)})
 
@@ -219,6 +231,31 @@ def _increment_quota(site_id: str) -> None:
     )
 
 
+def _arm_fallback(content_hash: str, job_token: str, tts_backend: str) -> None:
+    """Start the Step Functions fallback execution for a job, if configured.
+
+    :param content_hash: The content hash identifying the job.
+    :param job_token: The job's current single-use token.
+    :param tts_backend: The TTS backend the job will use.
+    """
+    if not FALLBACK_STATE_MACHINE_ARN:
+        return
+    baseline_epoch = int(time.time())
+    _sfn.start_execution(
+        stateMachineArn=FALLBACK_STATE_MACHINE_ARN,
+        name=f"auritus-{content_hash[:16]}-{uuid.uuid4().hex[:8]}",
+        input=json.dumps(
+            {
+                "content_hash": content_hash,
+                "job_token": job_token,
+                "tts_backend": tts_backend,
+                "baseline_epoch": baseline_epoch,
+                "fallback_seconds": FALLBACK_SECONDS,
+            }
+        ),
+    )
+
+
 def _create_job(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]:
     site = _site_from_headers(headers)
     _check_daily_quota(site)
@@ -275,21 +312,7 @@ def _create_job(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]
 
     _increment_quota(site["site_id"])
 
-    if FALLBACK_STATE_MACHINE_ARN:
-        baseline_epoch = int(time.time())
-        _sfn.start_execution(
-            stateMachineArn=FALLBACK_STATE_MACHINE_ARN,
-            name=f"auritus-{content_hash[:16]}-{uuid.uuid4().hex[:8]}",
-            input=json.dumps(
-                {
-                    "content_hash": content_hash,
-                    "job_token": job_token,
-                    "tts_backend": tts_backend,
-                    "baseline_epoch": baseline_epoch,
-                    "fallback_seconds": FALLBACK_SECONDS,
-                }
-            ),
-        )
+    _arm_fallback(content_hash, job_token, tts_backend)
 
     return _response(
         201,
@@ -919,6 +942,53 @@ def _delete_admin_job(content_hash: str, headers: dict[str, str]) -> dict[str, A
         _s3.delete_object(Bucket=AUDIO_BUCKET, Key=audio_key)
     _jobs.delete_item(Key={"content_hash": content_hash})
     return _response(200, {"content_hash": content_hash, "deleted": True})
+
+
+def _regenerate_admin_job(content_hash: str, headers: dict[str, str]) -> dict[str, Any]:
+    """Force regeneration of a job, resetting it to pending in place.
+
+    The content hash is kept stable so an embedding page's existing
+    reference keeps resolving; only the job's state is reset.
+
+    :param content_hash: The content hash identifying the job.
+    :param headers: Request headers for auth (operator-only).
+    :returns: 200 with the job reset to pending.
+    :raises LookupError: If no job exists for the given content hash.
+    :raises ConflictError: If the job is already pending or claimed.
+    """
+    _require_operator(headers)
+    item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
+    if not item:
+        raise LookupError("job_not_found")
+    status = item.get("status")
+    if status in ("pending", "claimed"):
+        raise ConflictError(f"job_is_{status}")
+
+    audio_key = item.get("audio_key")
+    if audio_key:
+        _s3.delete_object(Bucket=AUDIO_BUCKET, Key=audio_key)
+
+    job_token = secrets.token_urlsafe(32)
+    now = _utc_now_iso()
+    _jobs.update_item(
+        Key={"content_hash": content_hash},
+        UpdateExpression=(
+            "SET #status = :pending, job_token = :token, updated_at = :now "
+            "REMOVE audio_key, claimed_by, claim_owner, claimed_at, "
+            "claimed_at_epoch, claim_deadline, completed_at, failed_at, "
+            "duration_seconds, error_message, worker_type"
+        ),
+        ExpressionAttributeNames={"#status": "status"},
+        ExpressionAttributeValues={
+            ":pending": "pending",
+            ":token": job_token,
+            ":now": now,
+        },
+    )
+
+    _arm_fallback(content_hash, job_token, item.get("tts_backend", "kokoro"))
+
+    return _response(200, {"content_hash": content_hash, "status": "pending"})
 
 
 def _toggle_admin_queue(
