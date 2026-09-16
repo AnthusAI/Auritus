@@ -1,0 +1,20 @@
+{
+  "id": "auritus-9fcb4025-d240-4382-8c0d-6c6ffa0fea14",
+  "title": "Regenerate must clear Batch billing attributes once M11 telemetry lands",
+  "description": "\\`_regenerate_admin_job\\` (cdk/lambdas/router/handler.py, from auritus-907209)\nREMOVEs every ephemeral attribute that \\`_claim_job\\`/\\`_mark_done\\`/\\`_mark_failed\\`\ncan write, so a regenerated job starts clean. It predates M11's batch billing\ntelemetry story (auritus-d43efe / auritus-bb0dac), which adds\n\\`batch_created_at\\`, \\`batch_started_at\\`, \\`batch_stopped_at\\`,\n\\`container_seconds\\`, \\`provisioning_seconds\\`, \\`billed_seconds\\`,\n\\`instance_type\\`, and later cost fields to job records.\n\nNone of those are in the regenerate REMOVE list. Once M11 lands, regenerating\na job that previously ran on Batch will keep its old billing/cost attributes\non the reset record -- a job now genuinely pending would still show a stale\nGPU cost from its prior run until it completes again (or forever, if it's\npicked up locally instead).\n\nExtend \\`_regenerate_admin_job\\`'s REMOVE clause to cover the M11 attributes\nwhen that epic's job-record schema exists. Add a regression scenario to\n\\`features/job_regeneration.feature\\` asserting a regenerated job has no\nleftover billing attributes.",
+  "type": "task",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-c56c4a76-cf1f-434d-bb32-3b202ccc6302",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-16T03:14:10.564441Z",
+  "updated_at": "2026-09-16T03:14:10.564470Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
