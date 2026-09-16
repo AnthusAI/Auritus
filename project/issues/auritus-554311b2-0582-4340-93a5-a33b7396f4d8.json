@@ -9,15 +9,10 @@
   "creator": null,
   "parent": "auritus-43428879-7a14-4f95-b87c-657c647b9ee4",
   "labels": [],
-  "dependencies": [
-    {
-      "target": "auritus-b0f21778-cfaf-4fce-8b7d-b91248bed8eb",
-      "type": "blocked-by"
-    }
-  ],
+  "dependencies": [],
   "comments": [],
   "created_at": "2026-09-16T02:27:27.801892Z",
-  "updated_at": "2026-09-16T02:30:04.887827Z",
+  "updated_at": "2026-09-16T03:54:29.616931Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
