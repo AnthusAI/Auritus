@@ -3,18 +3,29 @@
   "title": "auritus job list has no way to page past the first result",
   "description": "Noticed while implementing auritus-7d8ffa. The admin \\`GET /admin/jobs\\`\nroute supports \\`next_token\\` pagination (and \\`AuritusClient.list_jobs\\`\nalready accepts it), but \\`auritus job list\\` never exposes a\n\\`--next-token\\` option and never prints the \\`next_token\\` it gets back. An\noperator with more jobs than the default page size has no way to see the\nrest from the CLI.\n\nAdd \\`--next-token\\` to \\`auritus job list\\`, and print the returned\n\\`next_token\\` (when present) so it can be passed to the next call.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 3,
   "assignee": null,
   "creator": null,
   "parent": "auritus-43428879-7a14-4f95-b87c-657c647b9ee4",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "307d7a11-db0c-4f63-989a-828a3cd99c2b",
+      "author": "home",
+      "text": "Implemented on fix/cli-job-list-pagination, merged to develop. auritus job list now accepts --next-token and prints the returned next_token as a copy-pasteable next-page command when the API response includes one. Independently re-verified: black/ruff, pytest (75 passed), behave (30 features, 118 scenarios), manual --help check.",
+      "created_at": "2026-09-16T07:29:23.403549Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-16T03:37:19.303710Z",
-  "updated_at": "2026-09-16T03:37:19.303746Z",
-  "closed_at": null,
+  "updated_at": "2026-09-16T07:29:23.448232Z",
+  "closed_at": "2026-09-16T07:29:23.448215Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
 }
