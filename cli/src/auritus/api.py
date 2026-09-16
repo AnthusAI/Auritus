@@ -241,3 +241,35 @@ class AuritusClient:
             f"/jobs/{content_hash}/presign-upload",
             json_body={},
         )
+
+    def list_jobs(
+        self,
+        *,
+        status: str | None = None,
+        limit: int | None = None,
+        next_token: str | None = None,
+    ) -> dict[str, Any]:
+        """List generation jobs with optional status filter and pagination.
+
+        :param status: Filter to a single job status, or ``None`` for all.
+        :param limit: Maximum jobs to return per page.
+        :param next_token: Pagination cursor from a prior call.
+        :returns: ``{"jobs": [...], "next_token": str | None}``.
+        """
+        params = []
+        if status:
+            params.append(f"status={status}")
+        if limit:
+            params.append(f"limit={limit}")
+        if next_token:
+            params.append(f"next_token={next_token}")
+        query = f"?{'&'.join(params)}" if params else ""
+        return self._request("GET", f"/admin/jobs{query}")
+
+    def get_admin_job(self, content_hash: str) -> dict[str, Any]:
+        """Fetch full admin telemetry for one job.
+
+        :param content_hash: The content hash identifying the job.
+        :returns: The job's admin-view fields.
+        """
+        return self._request("GET", f"/admin/jobs/{content_hash}")
