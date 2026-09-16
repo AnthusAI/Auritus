@@ -56,6 +56,17 @@ const modelExamples = [
     summary:
       "The same Gettysburg excerpt, spoken with Resemble AI's hybrid LLaMA-520M and Matcha-TTS flow matching.",
   },
+  {
+    href: "/examples/fish",
+    title: "Fish-Speech",
+    badge: "Dual-AR",
+    creator: "Fish Audio",
+    architecture: "Dual-AR Transformer + VQ-GAN",
+    sampleRate: "44.1 kHz",
+    license: "CC-BY-NC-SA-4.0",
+    summary:
+      "The same Gettysburg excerpt, spoken with Fish Audio's dual-autoregressive model with natural prosody and breathing.",
+  },
 ];
 
 const featureExamples = [

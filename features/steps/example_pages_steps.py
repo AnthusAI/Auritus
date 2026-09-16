@@ -85,6 +85,12 @@ def step_chatterbox_article(context) -> None:
     context.example_tts_backend = "chatterbox"
 
 
+@given("the Fish example page article")
+def step_fish_article(context) -> None:
+    context.root_html = GETTYSBURG_ARTICLE
+    context.example_tts_backend = "fish"
+
+
 @given("the ignore example page article")
 def step_ignore_article(context) -> None:
     context.root_html = """
