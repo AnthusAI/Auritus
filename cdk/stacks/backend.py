@@ -83,6 +83,8 @@ LAMBDA_ROOT = Path(__file__).resolve().parents[1] / "lambdas"
 DEFAULT_CLAIM_TIMEOUT_SECONDS = 900
 DEFAULT_RACE_SECONDS = 900
 DEFAULT_DELIVERY_GRACE_SECONDS = 300
+DEFAULT_WARM_START_THRESHOLD_SECONDS = 60
+DEFAULT_PROVISIONING_OVERHEAD_SECONDS = 90
 
 
 class BackendStack(Stack):
@@ -140,6 +142,22 @@ class BackendStack(Stack):
             ),
             sort_key=dynamodb.Attribute(
                 name="created_at",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            projection_type=dynamodb.ProjectionType.ALL,
+        )
+        # Correlates an AWS Batch "Job State Change" EventBridge event back
+        # to its job record. claimed_by is written as f"batch:{jobId}" by
+        # _claim_job (router) and independently by the Batch runner itself
+        # (worker-image/src/runner.py), so it's unique per Batch job. This
+        # is used instead of reading AURITUS_CONTENT_HASH off the event's
+        # container environment overrides, since AWS does not document
+        # whether that field reflects per-submission containerOverrides or
+        # only the job definition's original (unresolved) environment.
+        jobs.add_global_secondary_index(
+            index_name="claimed_by-index",
+            partition_key=dynamodb.Attribute(
+                name="claimed_by",
                 type=dynamodb.AttributeType.STRING,
             ),
             projection_type=dynamodb.ProjectionType.ALL,
@@ -705,6 +723,45 @@ class BackendStack(Stack):
             "BudgetAlarmRule",
             event_pattern=events.EventPattern(source=["aws.budgets"]),
             targets=[targets.LambdaFunction(budget_guard_fn)],
+        )
+
+        warm_start_threshold_seconds = int(
+            self.node.try_get_context("warm_start_threshold_seconds")
+            or DEFAULT_WARM_START_THRESHOLD_SECONDS
+        )
+        provisioning_overhead_seconds = int(
+            self.node.try_get_context("provisioning_overhead_seconds")
+            or DEFAULT_PROVISIONING_OVERHEAD_SECONDS
+        )
+        batch_telemetry_fn = lambda_.Function(
+            self,
+            "BatchTelemetryFn",
+            runtime=lambda_.Runtime.PYTHON_3_11,
+            handler="handler.handler",
+            code=lambda_.Code.from_asset(str(LAMBDA_ROOT / "batch_telemetry")),
+            timeout=Duration.seconds(30),
+            memory_size=256,
+            environment={
+                "JOBS_TABLE": jobs.table_name,
+                "CLAIMED_BY_INDEX": "claimed_by-index",
+                "WARM_START_THRESHOLD_SECONDS": str(warm_start_threshold_seconds),
+                "PROVISIONING_OVERHEAD_SECONDS": str(provisioning_overhead_seconds),
+            },
+        )
+        jobs.grant_read_write_data(batch_telemetry_fn)
+
+        events.Rule(
+            self,
+            "BatchTelemetryRule",
+            event_pattern=events.EventPattern(
+                source=["aws.batch"],
+                detail_type=["Batch Job State Change"],
+                detail={
+                    "status": ["SUCCEEDED", "FAILED"],
+                    "jobQueue": [job_queue_arn],
+                },
+            ),
+            targets=[targets.LambdaFunction(batch_telemetry_fn)],
         )
 
         daily_budget_limit = float(
