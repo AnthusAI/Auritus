@@ -311,10 +311,19 @@ def step_verify_get_returns_not_found(context) -> None:
 
 @then("the response is not found")
 def step_verify_response_not_found(context) -> None:
-    """Verify response status is 404."""
+    """Verify response status is 404 from the delete handler itself.
+
+    Asserts the specific ``job_not_found`` error body raised by
+    ``_delete_admin_job``, not just any 404 -- the route dispatcher's
+    generic fallback for an unmatched path also returns 404, which would
+    let this scenario pass even if the DELETE route were never wired up.
+    """
     assert (
         context.response["statusCode"] == 404
     ), f"Expected 404, got {context.response['statusCode']}"
+    assert (
+        context.response_body.get("error") == "job_not_found"
+    ), f"Expected job_not_found, got {context.response_body.get('error')}"
 
 
 @then("the response is forbidden")
