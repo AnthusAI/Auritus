@@ -3,17 +3,25 @@
   "title": "Operator sees costs in the CLI",
   "description": "An operator running `auritus worker` on their own GPU is exactly the person\nwho wants to know what the cloud fallback is costing when their worker is\noffline. Give them a cost command.\n\n## Feature\n\n```gherkin\nFeature: Viewing costs from the command line\n\n  Scenario: Operator sees a cost summary\n    Given costs exist for the last thirty days\n    When the operator runs \"auritus cost\"\n    Then the total gpu cost is printed\n    And the total platform cost is printed\n    And the total avoided cost is printed\n\n  Scenario: Operator scopes costs to a site\n    Given costs exist for two sites\n    When the operator runs \"auritus cost --site\" with one site\n    Then only that site's costs are printed\n\n  Scenario: Operator sees a daily breakdown\n    Given costs exist for the last seven days\n    When the operator runs \"auritus cost --daily\"\n    Then one row is printed per day\n\n  Scenario: Operator sees estimate against actual\n    Given a reconciled day exists\n    When the operator runs \"auritus cost --daily\"\n    Then the estimated and actual cost are both printed for that day\n\n  Scenario: Inspecting a job shows its cost\n    Given a Batch job completed with a GPU cost\n    When the operator runs \"auritus job show\" with its content hash\n    Then the job gpu cost and billed seconds are printed\n\n  Scenario: A locally processed job shows zero GPU cost and its avoided cost\n    Given a local job completed\n    When the operator runs \"auritus job show\" with its content hash\n    Then the job gpu cost is zero\n    And the job avoided cost is printed\n```\n\n## Implementation brief\n\n**`cli/src/auritus/api.py`** -- `get_costs(site_id=None, from_date=None, to_date=None, daily=False)`\ncalling `GET /admin/costs`.\n\n**`cli/src/auritus/commands/cost.py`** (new) -- a `cost` command group\nfollowing the shape of `commands/site.py`: catch `AuritusApiError`, print to\nstderr in red, `raise typer.Exit(code=1) from exc`. Options `--site`,\n`--daily`, `--from`, `--to`.\n\n**`cli/src/auritus/cli.py`** -- `app.add_typer(cost_cmd.app, name=\"cost\")`.\n\n**`cli/src/auritus/commands/job.py`** -- extend `job show` output (from the\nM10 story auritus-7d8ffa) with the cost attributes.\n\n**Formatting** -- print dollar amounts to four decimal places, not two. A\nsingle clip may cost a fraction of a cent, and rounding to cents renders most\nper-job costs as `$0.00`, which is the exact failure this epic exists to fix.\nTotals can round to cents.\n\n**Label estimates as estimates.** Every figure here except the reconciled\nactual is modelled. The output should say so once, plainly, rather than\npresenting modelled dollars in the same voice as an invoice.\n\n## Blocked on\n\nThe daily cost rollups story, for `GET /admin/costs`.\nJob-level output additionally assumes the M10 CLI story (auritus-7d8ffa).",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-c56c4a76-cf1f-434d-bb32-3b202ccc6302",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "28c75636-8e14-4108-8928-86443f7fc100",
+      "author": "home",
+      "text": "Implemented on feature/cli-costs, merged to develop. auritus cost (--site/--from/--to/--daily) prints GPU/platform/avoided cost as three separate labelled lines at 4 decimal places, plus a modelled-estimate disclaimer. job show now formats cost fields to 4 decimals and only shows avoided_cost_usd when its basis isn't 'batch_job'. Caught and fixed in review: the empty-result check was 'not total', but the real API always returns total populated with every field zeroed (summed from daily, never an empty dict) -- that check could never actually trigger, so a genuinely empty range would have printed a full zeroed-out summary instead of 'No cost data'. Fixed to check whether every total figure is actually zero; also had to reconcile with a pre-existing test that mocked an empty daily + nonzero total (impossible against the real API, since total is derived by summing daily) -- the corrected condition satisfies both realistic and that edge case. Independently re-verified: black/ruff, pytest (72 passed), behave (30 features, 116 scenarios).",
+      "created_at": "2026-09-16T07:01:29.141180Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-16T02:38:26.510553Z",
-  "updated_at": "2026-09-16T06:54:17.063012Z",
-  "closed_at": null,
+  "updated_at": "2026-09-16T07:01:29.184124Z",
+  "closed_at": "2026-09-16T07:01:29.184100Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {
