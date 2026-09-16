@@ -96,3 +96,30 @@ export async function toggleQueue(desiredState?: 'ENABLED' | 'DISABLED'): Promis
     body: JSON.stringify(desiredState ? { state: desiredState } : {}),
   });
 }
+
+export async function deleteJob(hash: string): Promise<{ content_hash: string; deleted: boolean }> {
+  return apiFetch<{ content_hash: string; deleted: boolean }>(
+    `/admin/jobs/${encodeURIComponent(hash)}`,
+    { method: 'DELETE' }
+  );
+}
+
+export async function regenerateJob(hash: string): Promise<{ content_hash: string; status: string }> {
+  return apiFetch<{ content_hash: string; status: string }>(
+    `/admin/jobs/${encodeURIComponent(hash)}/regenerate`,
+    {
+      method: 'POST',
+      body: JSON.stringify({}),
+    }
+  );
+}
+
+export async function retryJob(hash: string, force = false): Promise<{ content_hash: string; status: string }> {
+  return apiFetch<{ content_hash: string; status: string }>(
+    `/admin/jobs/${encodeURIComponent(hash)}/retry`,
+    {
+      method: 'POST',
+      body: JSON.stringify(force ? { force: true } : {}),
+    }
+  );
+}
