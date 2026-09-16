@@ -43,8 +43,30 @@ def _ensure_handler_loaded(context) -> None:
 
 
 def _ensure_aws_mocks(context) -> None:
-    """Initialize moto mocks and DynamoDB tables if not already done."""
-    if not hasattr(context, "_aws_mocks_initialized"):
+    """Initialize moto mocks and DynamoDB tables if not already done.
+
+    Gates on ``jobs_table`` rather than the underscore-prefixed
+    ``_aws_mocks_initialized`` flag some other step modules also set:
+    behave's ``Context`` stores underscore-prefixed attributes directly on
+    the context object (outside the per-scenario layer stack), so that flag
+    persists across every later scenario in the whole run once any step
+    module sets it -- while ``jobs_table`` itself is correctly scenario-
+    scoped and disappears when this scenario's layer pops. Gating here on
+    the flag would silently skip re-creating the tables (and never setting
+    ``context.jobs_table``) for this scenario whenever some other feature
+    happened to run first and touch that same flag name, independent of
+    feature file ordering. Exiting a still-active previous mock before
+    entering a new one keeps this file's own AWS state independent of
+    whatever earlier scenario left ``context._mock_aws`` (also underscore-
+    prefixed, and possibly still entered) pointing at.
+    """
+    if not hasattr(context, "jobs_table") or context.jobs_table is None:
+        if hasattr(context, "_mock_aws"):
+            try:
+                context._mock_aws.__exit__(None, None, None)
+            except Exception:
+                pass
+
         context._mock_aws = mock_aws()
         context._mock_aws.__enter__()
 

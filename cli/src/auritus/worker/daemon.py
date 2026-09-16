@@ -109,19 +109,53 @@ def run_worker(*, once: bool = False) -> None:
             typer.echo(
                 f"Generating audio for {content_hash[:16]} backend={job_backend}"
             )
-            backend = get_backend(job_backend)
             stop = threading.Event()
-            heartbeat = threading.Thread(
-                target=_heartbeat_loop,
-                args=(client, content_hash, owner, stop, heartbeat_interval),
-                daemon=True,
-            )
-            heartbeat.start()
+            heartbeat: threading.Thread | None = None
+            generation_exc: Exception | None = None
             try:
+                backend = get_backend(job_backend)
+                heartbeat = threading.Thread(
+                    target=_heartbeat_loop,
+                    args=(client, content_hash, owner, stop, heartbeat_interval),
+                    daemon=True,
+                )
+                heartbeat.start()
                 audio_bytes = backend.generate(text, meta)
+            except Exception as exc:
+                # Caught broadly and deliberately: TTS backends commonly crash
+                # the process from missing optional dependencies (misaki,
+                # num2words, phonemizer-fork, spacy, espeakng-loader, ...),
+                # and none of those are worth enumerating individually --
+                # every one of them must leave the job releasable rather than
+                # stuck in "claimed" forever, since GET /jobs/claimable
+                # excludes anything not pending.
+                generation_exc = exc
             finally:
                 stop.set()
-                heartbeat.join(timeout=1.0)
+                if heartbeat is not None:
+                    heartbeat.join(timeout=1.0)
+
+            if generation_exc is not None:
+                typer.secho(
+                    f"Generation failed for {content_hash[:16]}: {generation_exc}",
+                    fg=typer.colors.RED,
+                    err=True,
+                )
+                try:
+                    client.mark_failed(
+                        content_hash, reason=str(generation_exc)[:500], owner=owner
+                    )
+                except AuritusApiError as mark_exc:
+                    typer.secho(
+                        f"Failed to release claim for {content_hash[:16]} "
+                        f"after generation failure (job left claimed): {mark_exc}",
+                        fg=typer.colors.RED,
+                        err=True,
+                    )
+                processed = True
+                if once is True:
+                    return
+                continue
 
             upload = client.presign_upload(content_hash)
             upload_url = upload["upload_url"]
