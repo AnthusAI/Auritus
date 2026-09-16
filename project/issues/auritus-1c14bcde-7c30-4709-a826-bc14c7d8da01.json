@@ -3,17 +3,25 @@
   "title": "Batch fallback could steal any already-claimed job at any time, causing double-processing",
   "description": "Discovered while narrating every Pilobol.us article, running local worker and\nAWS Batch fallback side by side deliberately to test both paths. Confirmed\nafter the fact: at least one job (society-has-a-strangler-fig, hash\n30188669) shows worker_type=batch and completed_at in its final record even\nthough the local worker's own log clearly showed Claimed 30188669 followed\nby Completed 30188669 for that exact hash -- both workers did the real\nwork, and whichever's mark_done call landed last silently overwrote the\nother's result.\n\nRoot cause in cdk/lambdas/router/handler.py, _claim_job's ConditionExpression:\n\n  #status = :pending OR\n  (#status = :claimed AND (claim_deadline < :now_epoch OR claim_deadline < :now_str)) OR\n  (#status = :claimed AND :is_batch = :true_val)\n\n:is_batch and :true_val are both literal Python values computed before the\ncall (worker_type == batch), not DynamoDB attribute references -- the third\nclause reduces to status = claimed AND True for every single Batch claim\nattempt, unconditionally. Batch could claim (steal) a job at literally any\nmoment after it was already claimed by anyone else, deadline or not. Since\nthe Step Functions fallback execution starts at job creation time (not\nafter the local claim window expires -- see the architecture doc) and only\nwaits internally before its first claim attempt, this race window exists\non every single job that a local worker ever picks up before Batch's own\ninternal wait elapses -- which is the normal, common case, not an edge\ncase.\n\nSeparately, the deadline check itself was also broken: claim_deadline is\nwritten as a Decimal a few lines below and confirmed Decimal in every live\nrecord checked directly via DynamoDB scan, but the condition compared it\nagainst both a Decimal (:now_epoch) and a string (:now_str) in an OR --\ncomparing a Number attribute against a String literal with < is a type\nmismatch. This didn't show up as a visible production error (real DynamoDB\napparently tolerates or short-circuits it in this OR context), but it broke\noutright -- TypeError, not silently -- the moment a straightforward moto\nbased regression test exercised the same condition, which is what surfaced\nit.\n\nFixed in cdk/lambdas/router/handler.py:\n1. Removed the unconditional Batch-override clause entirely. The\n   remaining two clauses (claim if pending, or reclaim if the existing\n   claim has genuinely expired) are the correct, uniform mutex semantics\n   for every claimant -- no special-casing needed once Batch is made to\n   respect the same deadline everyone else does.\n2. Removed the :now_str half of the deadline comparison; compare only\n   against :now_epoch (Decimal), matching claim_deadline's actual stored\n   type.\n\nAdded a regression test, test_batch_cannot_steal_an_unexpired_local_claim\nin cdk/tests/test_router.py: creates a job, claims it as local, asserts a\nsubsequent Batch claim attempt on the same still-valid claim returns 409\nand leaves worker_type/claimed_by unchanged. Full router suite passes\n(17/17).\n\nThis needs an actual cdk deploy (Code.from_asset Lambda, not something that\nships via the Amplify site build) to reach the live function -- filing this\nnow, deploying separately right after.",
   "type": "bug",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "b0c255ff-2cab-4c78-b099-a5161ba97b52",
+      "author": "home",
+      "text": "Deployed and verified live: auritus deploy pushed the fixed RouterFn (only the Lambda code asset changed per cdk diff, confirmed before deploying). Live-fire test against production: created a job, claimed it as local (200, worker_type=local), then attempted to claim the same still-live job as batch -- correctly rejected with 409 already_claimed, worker_type stayed local. Test job released afterward.",
+      "created_at": "2026-09-16T02:05:17.844609Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-16T02:01:11.718512Z",
-  "updated_at": "2026-09-16T02:01:43.109791Z",
-  "closed_at": null,
+  "updated_at": "2026-09-16T02:05:17.874571Z",
+  "closed_at": "2026-09-16T02:05:17.874534Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
