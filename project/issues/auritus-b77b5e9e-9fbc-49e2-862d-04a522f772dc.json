@@ -11,10 +11,6 @@
   "labels": [],
   "dependencies": [
     {
-      "target": "auritus-bb0dac42-e57b-4f4c-9a68-d915c2af433a",
-      "type": "blocked-by"
-    },
-    {
       "target": "auritus-e452646d-fc5f-44a6-b370-6a667d5d9b1f",
       "type": "relates-to"
     },
@@ -25,7 +21,7 @@
   ],
   "comments": [],
   "created_at": "2026-09-16T02:37:28.754704Z",
-  "updated_at": "2026-09-16T02:39:02.399905Z",
+  "updated_at": "2026-09-16T06:05:01.541262Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
