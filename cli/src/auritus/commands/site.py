@@ -25,8 +25,11 @@ def create(
         typer.secho(str(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1) from exc
     site_key = site.get("site_key") or site.get("key")
-    typer.echo(f"site_id={site.get('id')}")
+    typer.echo(f"site_id={site.get('site_id')}")
     typer.echo(f"site_key={site_key}")
+    typer.echo(
+        "(save site_key now -- it is not shown again; site_id is used to revoke)"
+    )
     typer.echo("")
     typer.echo(
         format_embed_snippet(
@@ -49,15 +52,26 @@ def list_sites() -> None:
     if not sites:
         typer.echo("(no sites)")
         return
+    # The API's GET /sites response only carries site_id/label/disabled/
+    # created_at -- site_key is a secret shown once at `site create` time and
+    # is never re-exposed by list, so it is intentionally not printed here.
     for site in sites:
         typer.echo(
-            f"{site.get('id')}\torigin={site.get('origin')}\t"
-            f"key={site.get('site_key') or site.get('key')}"
+            f"site_id={site.get('site_id')}\tlabel={site.get('label')}\t"
+            f"disabled={site.get('disabled')}"
         )
 
 
 @app.command("revoke")
-def revoke(site_id: str = typer.Argument(..., help="Site id to revoke")) -> None:
+def revoke(
+    site_id: str = typer.Argument(
+        ...,
+        help=(
+            "site_id to revoke, as printed by `site create` or `site list` "
+            "(NOT the site_key used in embed snippets)."
+        ),
+    ),
+) -> None:
     """Revoke a site key."""
     try:
         client = AuritusClient()
