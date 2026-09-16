@@ -3,7 +3,7 @@
   "title": "Console job detail renders fabricated job data when the API call fails",
   "description": "`console/app/jobs/detail/page.tsx` line 22:\n\n```tsx\nconst data = await fetchJobDetail(hash).catch(() => ({\n  content_hash: hash,\n  status: 'done' as const,\n  worker_type: 'local' as const,\n  claimed_by: 'local:node-1:abcdef',\n  tts_backend: 'kokoro',\n  voice_id: 'af_heart',\n  text: 'Four score and seven years ago our fathers brought forth ...',\n  name: 'Gettysburg Excerpt',\n  byline: 'Abraham Lincoln',\n  created_at: '2026-09-13T14:10:00Z',\n  duration_seconds: 4.2,\n  audio_url: 'https://cdn.example.com/audio/sample.mp3',\n}));\n```\n\nEvery failure mode of the detail fetch -- expired token, 403, 404, network\nerror, API outage -- is swallowed and replaced with a hardcoded mock job. The\noperator sees a complete, plausible, entirely fictional record: a real content\nhash in the header, fake telemetry beneath it, and an audio player pointed at\n`cdn.example.com`. Nothing on screen indicates the data is invented.\n\nThis is worse than a blank error page. An operator investigating a wedged clip\nis shown `status: done` with a healthy local-worker attribution for a job that\nmay be failed, missing, or belong to another site. It will be believed,\nbecause there is no reason not to believe it.\n\nIt also disguises the auth expiry path: a 401 that should bounce to login\nrenders as a healthy job instead.\n\n## Fix\n\nDrop the mock entirely -- it looks like demo scaffolding that outlived its\npurpose. Let the error propagate to state and render three distinct outcomes:\nloading, error (with the message and a retry), and not found. `Unauthorized`\nfrom `apiFetch` should route to login, consistent with `AuthGuard`.\n\nAudit the other console pages in the same pass; if `jobs/page.tsx` or\n`page.tsx` carry similar `.catch()` fallbacks, they have the same defect.\n\n## Regression\n\n```gherkin\nFeature: Job detail error reporting in the web console\n\n  Scenario: The detail page reports a failed fetch\n    Given the admin job detail request fails\n    When the operator opens the job detail page\n    Then an error is shown\n    And no job telemetry is shown\n\n  Scenario: The detail page reports a missing job\n    Given no job exists for the requested content hash\n    When the operator opens the job detail page\n    Then a not found message is shown\n\n  Scenario: An expired session returns the operator to login\n    Given the operator session has expired\n    When the operator opens the job detail page\n    Then the operator is sent to the login page\n```\n\nCovered by Playwright under `console/tests/` with the admin route stubbed.",
   "type": "bug",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -12,9 +12,12 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-09-16T02:28:50.522796Z",
-  "updated_at": "2026-09-16T02:28:50.522833Z",
+  "updated_at": "2026-09-16T02:45:11.029536Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
 }

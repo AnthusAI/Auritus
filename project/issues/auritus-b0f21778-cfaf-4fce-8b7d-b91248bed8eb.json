@@ -3,7 +3,7 @@
   "title": "Smoother CLI UX for site key lifecycle (create/list/revoke)",
   "description": "Hit while wiring Pilobol.us to use Auritus instead of ElevenLabs Audio Native (2026-09-14). Three rough edges in the same session:\n\n1. 'auritus site create' output prints 'site_id=None' -- the API response\n   has no 'id' field, only 'site_key'. But 'auritus site revoke <ARG>' takes\n   a 'site_id' argument (per --help and commands/site.py::revoke), and the\n   printed site_id is useless for that call. Worked out empirically that\n   passing the site_key itself to 'site revoke' succeeds (revoke_site() just\n   DELETEs /sites/{arg}), so site_key IS the real identifier server-side --\n   but nothing in the CLI says so, and the site_id=None line is actively\n   misleading. Either stop printing site_id, or rename the revoke argument/\n   help text to site_key, or have create actually return a real id.\n\n2. 'auritus site revoke --help' crashes outright:\n   TypeError: TyperArgument.make_metavar() takes 1 positional argument but 2\n   were given\n   Full traceback bottoms out in typer/rich_utils.py rich_format_help ->\n   click get_usage_pieces -- looks like a typer/click version mismatch in\n   this env (miniconda3 site-packages) specific to Argument (vs Option)\n   metavar formatting. Every other --help (site create, site list, player)\n   worked fine; only the Argument-based revoke command's help path hits this.\n   Pin/bump the typer+click pair, or avoid the code path (e.g. give\n   site_id a default via Option instead of a bare Argument) so --help doesn't\n   500 on every command.\n\n3. 'auritus site list' prints unreadable rows for real, existing sites:\n   'None\\torigin=None\\tkey=None' x2 -- format string in the list command\n   isn't matching the actual response shape from the API (something like the\n   id/origin/key field names it expects don't match what /sites GET actually\n   returns). Should at minimum print the site_key so a developer can tell\n   their sites apart without guessing.\n\nNone of these blocked the integration -- worked around all three by reading\ncommands/site.py and api.py source directly -- but a developer without repo\naccess would be stuck. Low urgency, real friction.",
   "type": "task",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -12,9 +12,12 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-09-15T01:26:20.908127Z",
-  "updated_at": "2026-09-16T02:28:55.125442Z",
+  "updated_at": "2026-09-16T02:45:10.995663Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
 }
