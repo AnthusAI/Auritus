@@ -26,7 +26,7 @@ function JobDetailContent() {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
         if (errorMessage === 'Unauthorized') {
-          router.push('/login');
+          router.replace('/login');
         } else {
           setError(errorMessage);
         }
