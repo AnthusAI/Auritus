@@ -190,10 +190,7 @@ test.describe('Costs Page', () => {
       ],
     };
 
-    let requestedUrls: string[] = [];
-
     await page.route('**/admin/costs**', (route) => {
-      requestedUrls.push(route.request().url());
       route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -212,16 +209,24 @@ test.describe('Costs Page', () => {
     await page.goto(`${BASE_URL}/costs`);
     await page.waitForLoadState('networkidle');
 
-    // Select a site filter
+    // Select a site filter, waiting for the specific refetch it triggers
+    // rather than networkidle: under parallel test load, the state
+    // update -> re-render -> fetch dispatch can lag past a brief window
+    // where the network already looks idle from the initial page load,
+    // making networkidle resolve before the new request is even sent.
+    //
+    // Assert directly on the request waitForRequest already matched,
+    // rather than re-checking the separate `requestedUrls` array the
+    // route handler populates -- that push happens in an independent
+    // listener with no ordering guarantee relative to waitForRequest's
+    // own resolution, so re-checking it here raced against its own fill.
     const selectElement = page.locator('select');
-    await selectElement.selectOption('site-2');
+    const [sitedFetch] = await Promise.all([
+      page.waitForRequest((request) => request.url().includes('site_id=site-2')),
+      selectElement.selectOption('site-2'),
+    ]);
 
-    // Wait for the new request to complete
-    await page.waitForLoadState('networkidle');
-
-    // Verify that a request with site_id parameter was made
-    const sitedRequest = requestedUrls.find(url => url.includes('site_id=site-2'));
-    expect(sitedRequest).toBeTruthy();
+    expect(sitedFetch.url()).toContain('site_id=site-2');
   });
 
   test('should show empty state when daily array is empty', async ({ page }) => {
