@@ -15,8 +15,8 @@ fallback.
 3. A cloud backend (CDK) stores jobs behind a DynamoDB mutex. A local GPU
    worker can claim jobs; if none claims within a configurable timeout
    (default 15 minutes), Step Functions submits an AWS Batch GPU job.
-4. Pluggable TTS backends: Kokoro (default speech) and Qwen 3 CustomVoice.
-   Higgs remains a 440 Hz tone stub, not a speech demo.
+4. Pluggable TTS backends: Kokoro (default speech), Qwen 3 CustomVoice,
+   F5-TTS, Higgs Audio v3, and Chatterbox.
 
 ## How it works
 
@@ -40,8 +40,8 @@ and run `make diagrams`.
 ## Status
 
 The public site is live at [aurit.us](https://aurit.us). The home page and
-example pages play Kokoro and Qwen speech. Local GPU workers generate that audio when they claim
-jobs; the AWS Batch GPU image (Kokoro and Qwen) is the fallback after the
+example pages play Kokoro, Qwen, F5, Higgs, and Chatterbox speech. Local GPU workers generate that audio when they claim
+jobs; the AWS Batch GPU image is the fallback after the
 claim timeout. Operator CLI
 login is Cognito email and password. The CLI is not yet published to PyPI;
 install from source or a GitHub release. See the Kanbus board (`kbs now`)
