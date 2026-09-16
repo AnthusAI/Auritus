@@ -232,6 +232,52 @@ class BackendStack(Stack):
             time_to_live_attribute="ttl",
         )
 
+        # Daily cost rollups by site: partition key site_id, sort key date
+        # (YYYY-MM-DD). This composite key -- not a single "site_id#date"
+        # rollup_key string -- is what makes /admin/costs' per-site
+        # date-range read a native DynamoDB Query (site_id = X AND date
+        # BETWEEN from AND to) instead of assembling a range of exact
+        # partition keys, which the Query API cannot do against a plain
+        # partition key. The date-site_id-index GSI (partition date, sort
+        # site_id) exists for the complementary "all sites" read: bounded by
+        # the number of days requested rather than by table size or number
+        # of sites (see _get_admin_costs in the router Lambda for the query
+        # shapes this key schema enables).
+        #
+        # Deliberately NO time_to_live_attribute here, unlike every other
+        # table in this stack: cost history must outlive the job records it
+        # is derived from. A future job-retention story (auritus-e45264, not
+        # yet implemented) will expire AuritusJobs rows via TTL; if rollups
+        # also had a TTL, that retention pass would silently destroy the
+        # accounting this story exists to provide. Rollups are retained
+        # indefinitely by design.
+        cost_rollups = dynamodb.Table(
+            self,
+            "AuritusCostRollups",
+            partition_key=dynamodb.Attribute(
+                name="site_id",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            sort_key=dynamodb.Attribute(
+                name="date",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=RemovalPolicy.RETAIN,
+        )
+        cost_rollups.add_global_secondary_index(
+            index_name="date-site_id-index",
+            partition_key=dynamodb.Attribute(
+                name="date",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            sort_key=dynamodb.Attribute(
+                name="site_id",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            projection_type=dynamodb.ProjectionType.ALL,
+        )
+
         audio_bucket = s3.Bucket(
             self,
             "AuritusAudio",
@@ -416,11 +462,14 @@ class BackendStack(Stack):
                 "GPU_HOURLY_RATE_USD": str(gpu_hourly_rate_usd),
                 "PLATFORM_COST_PER_JOB_USD": str(platform_cost_per_job_usd),
                 "RATE_CARD_VERSION": rate_card_version,
+                "COST_ROLLUPS_TABLE": cost_rollups.table_name,
+                "COST_ROLLUPS_DATE_INDEX": "date-site_id-index",
             },
         )
         jobs.grant_read_write_data(router_fn)
         sites.grant_read_write_data(router_fn)
         alerts.grant_read_write_data(router_fn)
+        cost_rollups.grant_read_write_data(router_fn)
         audio_bucket.grant_read_write(router_fn)
         user_pool.grant(
             router_fn,
@@ -789,9 +838,11 @@ class BackendStack(Stack):
                 "PROVISIONING_OVERHEAD_SECONDS": str(provisioning_overhead_seconds),
                 "GPU_HOURLY_RATE_USD": str(gpu_hourly_rate_usd),
                 "RATE_CARD_VERSION": rate_card_version,
+                "COST_ROLLUPS_TABLE": cost_rollups.table_name,
             },
         )
         jobs.grant_read_write_data(batch_telemetry_fn)
+        cost_rollups.grant_read_write_data(batch_telemetry_fn)
 
         events.Rule(
             self,
