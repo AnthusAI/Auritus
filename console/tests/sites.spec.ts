@@ -19,8 +19,16 @@ test.describe('Sites Page', () => {
   }
 
   function setupMockRoute(page: any, handler: (method: string) => any) {
-    // Mock the /sites endpoint, distinguishing API calls from page navigation
-    page.route('/sites', (route: any) => {
+    // Mock the /sites endpoint, distinguishing API calls from page navigation.
+    // Must use a **-prefixed glob (not a bare '/sites' path) so this matches
+    // regardless of API origin: a bare relative pattern resolves against
+    // playwright.config.ts's baseURL (localhost:3000) only, so it silently
+    // stops matching -- and the real fetchSites() call goes out live and
+    // unmocked -- the moment NEXT_PUBLIC_AURITUS_API_ENDPOINT points
+    // anywhere else (e.g. a real deployed API in .env.local). Every other
+    // spec file in this directory already uses this **-prefixed convention
+    // for exactly this reason.
+    page.route('**/sites', (route: any) => {
       const request = route.request();
       const method = request.method();
 
