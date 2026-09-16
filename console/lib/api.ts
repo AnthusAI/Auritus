@@ -60,9 +60,25 @@ export interface DailyCost {
   local_duration_seconds: number;
 }
 
+export interface ReconciliationDay {
+  site_id: string;
+  date: string;
+  actual_cost_usd: number;
+  estimated_gpu_cost_usd: number;
+  variance_usd: number;
+  out_of_tolerance: boolean;
+  reconciled_at: string;
+}
+
 export interface CostSummary {
   daily: DailyCost[];
   total: Omit<DailyCost, 'site_id' | 'date'>;
+  // Account-wide actual-vs-estimated GPU cost, one row per reconciled day.
+  // AWS Cost Explorer cannot attribute spend per-site, so this is separate
+  // from `daily` rather than a per-site figure -- see the router's
+  // _get_admin_costs docstring. Only populated for the "all sites" query
+  // (no site_id filter); absent or empty otherwise.
+  reconciliation?: ReconciliationDay[];
 }
 
 const API_BASE = (process.env.NEXT_PUBLIC_AURITUS_API_ENDPOINT || '').replace(/\/+$/, '');

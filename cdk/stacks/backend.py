@@ -903,6 +903,57 @@ class BackendStack(Stack):
             targets=[targets.LambdaFunction(batch_telemetry_fn)],
         )
 
+        variance_threshold_percent = float(
+            self.node.try_get_context("variance_threshold_percent") or 20
+        )
+        reconciliation_lookback_days = int(
+            self.node.try_get_context("reconciliation_lookback_days") or 7
+        )
+        cost_reconciliation_fn = lambda_.Function(
+            self,
+            "CostReconciliationFn",
+            runtime=lambda_.Runtime.PYTHON_3_11,
+            handler="handler.handler",
+            code=lambda_.Code.from_asset(str(LAMBDA_ROOT / "cost_reconciliation")),
+            timeout=Duration.seconds(60),
+            memory_size=256,
+            environment={
+                "COST_ROLLUPS_TABLE": cost_rollups.table_name,
+                "COST_ROLLUPS_DATE_INDEX": "date-site_id-index",
+                "variance_threshold_percent": str(variance_threshold_percent),
+                "RECONCILIATION_LOOKBACK_DAYS": str(reconciliation_lookback_days),
+            },
+        )
+        cost_rollups.grant_read_write_data(cost_reconciliation_fn)
+        cost_reconciliation_fn.add_to_role_policy(
+            iam.PolicyStatement(
+                # ce:GetCostAndUsage has no resource-level permissions --
+                # AWS Cost Explorer's IAM actions only support "*" as the
+                # resource (there is no ARN format for a Cost Explorer
+                # query or report to scope this to). This mirrors the
+                # budget_guard_fn role's batch:UpdateJobQueue/
+                # DescribeJobQueues grant above, which uses resources=["*"]
+                # for the same reason -- some AWS APIs simply don't offer
+                # finer-grained resource ARNs.
+                actions=["ce:GetCostAndUsage"],
+                resources=["*"],
+            )
+        )
+
+        events.Rule(
+            self,
+            "CostReconciliationSchedule",
+            # Once daily at 06:00 UTC: comfortably after AWS Cost Explorer
+            # typically finishes updating a closed day's data (AWS
+            # generally refreshes Cost Explorer data at least once every
+            # 24 hours, usually earlier in the day), and outside the
+            # 00:00-02:00 UTC window other scheduled AWS billing/budget
+            # processes commonly run in, to reduce any chance of
+            # contending with them.
+            schedule=events.Schedule.cron(minute="0", hour="6"),
+            targets=[targets.LambdaFunction(cost_reconciliation_fn)],
+        )
+
         daily_budget_limit = float(
             self.node.try_get_context("daily_budget_usd") or 50.0
         )

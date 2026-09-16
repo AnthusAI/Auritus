@@ -1172,6 +1172,11 @@ _COST_TOTAL_FIELDS = (
     "avoided_cost_usd",
 )
 
+# Reserved site_id sentinel for the account-wide reconciliation row written
+# by the cost_reconciliation Lambda (see its module docstring). Real site
+# ids are UUID4 strings minted by _create_site, so this can never collide.
+ACCOUNT_SENTINEL_SITE_ID = "__account__"
+
 
 def _get_admin_costs(
     headers: dict[str, str], query_params: dict[str, str]
@@ -1209,7 +1214,21 @@ def _get_admin_costs(
         ISO date strings ``YYYY-MM-DD``, inclusive range). Defaults to the
         trailing ``DEFAULT_COST_RANGE_DAYS`` days ending today (UTC) when
         omitted.
-    :returns: ``{"daily": [...], "total": {...}}``.
+    :returns: ``{"daily": [...], "total": {...}, "reconciliation": [...]}``.
+        ``reconciliation`` is a new, purely additive top-level key (see
+        ``_ACCOUNT_SENTINEL`` handling below) rather than folding the
+        account-wide actual-cost row into ``daily`` -- ``daily`` is a list
+        of real per-site rows that the CLI (``cli/src/auritus/commands/
+        cost.py``) and console (``console/app/costs/page.tsx``) both already
+        sum, format, and render as one row per real site; mixing in one
+        more row keyed by the ``"__account__"`` sentinel would silently
+        double-count in every existing sum and require both of those
+        already-shipped consumers to learn to recognize and special-case
+        it. A new key changes neither existing consumer's behavior at all
+        unless they choose to read it. ``reconciliation`` is only populated
+        for the unfiltered ("all sites") query, since AWS Cost Explorer
+        cannot attribute actual spend to one site at all -- an actual-cost
+        figure has no meaning scoped to ``site_id``.
     :raises ValueError: If the resolved date range spans more than
         ``COST_QUERY_MAX_DAYS`` days.
     """
@@ -1231,6 +1250,7 @@ def _get_admin_costs(
         raise ValueError("date_range_too_large")
 
     daily: list[dict[str, Any]] = []
+    reconciliation: list[dict[str, Any]] = []
     if site_id:
         result = _cost_rollups.query(
             KeyConditionExpression=(
@@ -1252,7 +1272,16 @@ def _get_admin_costs(
                 ExpressionAttributeNames={"#d": "date"},
                 ExpressionAttributeValues={":day": day},
             )
-            daily.extend(result.get("Items") or [])
+            for row in result.get("Items") or []:
+                if row.get("site_id") == ACCOUNT_SENTINEL_SITE_ID:
+                    # The account-wide reconciliation row written by the
+                    # cost_reconciliation Lambda. It is not a real site's
+                    # cost data, so it is surfaced separately below instead
+                    # of joining `daily`'s per-site rows (see the
+                    # docstring's ``reconciliation`` explanation).
+                    reconciliation.append(row)
+                else:
+                    daily.append(row)
 
     total: dict[str, Any] = {field: Decimal(0) for field in _COST_TOTAL_FIELDS}
     for row in daily:
@@ -1260,8 +1289,11 @@ def _get_admin_costs(
             total[field] += row.get(field) or Decimal(0)
 
     daily.sort(key=lambda r: (str(r.get("date", "")), str(r.get("site_id", ""))))
+    reconciliation.sort(key=lambda r: str(r.get("date", "")))
 
-    return _response(200, {"daily": daily, "total": total})
+    return _response(
+        200, {"daily": daily, "total": total, "reconciliation": reconciliation}
+    )
 
 
 def _encode_cursor(key: dict[str, Any] | None) -> str | None:
