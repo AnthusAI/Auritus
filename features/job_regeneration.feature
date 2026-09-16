@@ -22,3 +22,9 @@ Feature: Forcing regeneration of already-generated audio
     Given a completed job with tracked token for regeneration
     When the operator forces regeneration of that content hash
     Then the regenerated job token is different from the previous token
+
+  Scenario: Regenerating a job clears its prior billing data and rollup flags
+    Given a completed Batch job with billing data and rollup flags for regeneration
+    When the operator forces regeneration of that content hash
+    Then the regenerated job has no billing attributes
+    And the regenerated job has no rollup idempotency flags

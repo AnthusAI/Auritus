@@ -1724,7 +1724,13 @@ def _regenerate_admin_job(content_hash: str, headers: dict[str, str]) -> dict[st
             "SET #status = :pending, job_token = :token, updated_at = :now "
             "REMOVE audio_key, claimed_by, claim_owner, claimed_at, "
             "claimed_at_epoch, claim_deadline, completed_at, failed_at, "
-            "duration_seconds, error_message, worker_type"
+            "duration_seconds, error_message, worker_type, "
+            "gpu_cost_usd, platform_cost_usd, cost_rate_usd_per_hour, "
+            "rate_card_version, avoided_cost_usd, avoided_cost_basis, "
+            "platform_cost_rolled_up, gpu_cost_rolled_up, "
+            "backend_timing_rolled_up, batch_created_at, batch_started_at, "
+            "batch_stopped_at, instance_type, container_seconds, "
+            "provisioning_seconds, billed_seconds"
         ),
         ExpressionAttributeNames={"#status": "status"},
         ExpressionAttributeValues={
@@ -1779,7 +1785,13 @@ def _retry_admin_job(
         UpdateExpression=(
             "SET #status = :pending, job_token = :token, updated_at = :now "
             "REMOVE claimed_by, claim_owner, claimed_at, claimed_at_epoch, "
-            "claim_deadline, failed_at, error_message, worker_type"
+            "claim_deadline, failed_at, error_message, worker_type, "
+            "gpu_cost_usd, platform_cost_usd, cost_rate_usd_per_hour, "
+            "rate_card_version, avoided_cost_usd, avoided_cost_basis, "
+            "platform_cost_rolled_up, gpu_cost_rolled_up, "
+            "backend_timing_rolled_up, batch_created_at, batch_started_at, "
+            "batch_stopped_at, instance_type, container_seconds, "
+            "provisioning_seconds, billed_seconds"
         ),
         ExpressionAttributeNames={"#status": "status"},
         ExpressionAttributeValues={

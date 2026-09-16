@@ -27,3 +27,9 @@ Feature: Recovering failed and stuck jobs
     Given a pending job for retry
     When the operator retries that content hash
     Then the response is a conflict
+
+  Scenario: Retrying a failed job clears its billing data and rollup flags
+    Given a failed job with billing data and rollup flags for retry
+    When the operator retries that content hash
+    Then the retried job has no billing attributes
+    And the retried job has no rollup idempotency flags

@@ -7,6 +7,7 @@ import json
 import os
 import sys
 from datetime import datetime, timezone
+from decimal import Decimal
 from unittest.mock import Mock
 
 import boto3
@@ -345,3 +346,104 @@ def step_verify_regenerated_job_token_changed(context) -> None:
     assert (
         new_token != context.previous_job_token
     ), f"Expected new token different from {context.previous_job_token}, but got the same"
+
+
+@given("a completed Batch job with billing data and rollup flags for regeneration")
+def step_create_completed_batch_job_with_billing(context) -> None:
+    """Create a completed Batch job with billing data and rollup flags."""
+    _ensure_aws_mocks(context)
+    _ensure_handler_loaded(context)
+
+    content_hash = "test-job-hash-regen-batch-001"
+    context.job_content_hash = content_hash
+    old_token = "test-token-batch-" + content_hash[-4:]
+    context.previous_job_token = old_token
+
+    item = {
+        "content_hash": content_hash,
+        "status": "done",
+        "tts_backend": "kokoro",
+        "voice_id": "af_heart",
+        "text": "Test text for batch job regeneration",
+        "name": "Batch Job Test",
+        "byline": "Test Author",
+        "site_key": "test-key-regeneration",
+        "site_id": "site-regeneration",
+        "job_token": old_token,
+        "created_at": _utc_now_iso(),
+        "updated_at": _utc_now_iso(),
+        "claimed_by": "batch:test-batch-job-id-123",
+        "worker_type": "batch",
+        "completed_at": _utc_now_iso(),
+        "audio_key": f"audio/{content_hash}.wav",
+        "duration_seconds": 10,
+        # Billing attributes from _mark_done and batch_telemetry
+        "gpu_cost_usd": Decimal("0.00146"),
+        "platform_cost_usd": Decimal("0.0005"),
+        "cost_rate_usd_per_hour": Decimal("0.526"),
+        "rate_card_version": "v1",
+        "avoided_cost_usd": Decimal("0"),
+        "avoided_cost_basis": "batch_job",
+        # Batch telemetry attributes
+        "batch_created_at": _utc_now_iso(),
+        "batch_started_at": _utc_now_iso(),
+        "batch_stopped_at": _utc_now_iso(),
+        "instance_type": "g4dn.xlarge",
+        "container_seconds": Decimal("5.0"),
+        "provisioning_seconds": Decimal("1.0"),
+        "billed_seconds": Decimal("6.0"),
+        # Idempotency flags
+        "platform_cost_rolled_up": True,
+        "gpu_cost_rolled_up": True,
+        "backend_timing_rolled_up": True,
+    }
+
+    context.jobs_table.put_item(Item=item)
+
+
+@then("the regenerated job has no billing attributes")
+def step_verify_no_billing_attributes(context) -> None:
+    """Verify billing attributes have been removed."""
+    result = context.jobs_table.get_item(Key={"content_hash": context.job_content_hash})
+    item = result.get("Item")
+    assert item is not None, f"Job {context.job_content_hash} does not exist"
+
+    billing_attrs = [
+        "gpu_cost_usd",
+        "platform_cost_usd",
+        "cost_rate_usd_per_hour",
+        "rate_card_version",
+        "avoided_cost_usd",
+        "avoided_cost_basis",
+        "batch_created_at",
+        "batch_started_at",
+        "batch_stopped_at",
+        "instance_type",
+        "container_seconds",
+        "provisioning_seconds",
+        "billed_seconds",
+    ]
+
+    for attr in billing_attrs:
+        assert (
+            attr not in item
+        ), f"Expected billing attribute '{attr}' to be removed, but it still exists"
+
+
+@then("the regenerated job has no rollup idempotency flags")
+def step_verify_no_rollup_flags(context) -> None:
+    """Verify rollup idempotency flags have been removed."""
+    result = context.jobs_table.get_item(Key={"content_hash": context.job_content_hash})
+    item = result.get("Item")
+    assert item is not None, f"Job {context.job_content_hash} does not exist"
+
+    rollup_flags = [
+        "platform_cost_rolled_up",
+        "gpu_cost_rolled_up",
+        "backend_timing_rolled_up",
+    ]
+
+    for flag in rollup_flags:
+        assert (
+            flag not in item
+        ), f"Expected rollup flag '{flag}' to be removed, but it still exists"
