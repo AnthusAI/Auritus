@@ -289,3 +289,28 @@ class AuritusClient:
         :returns: The job's admin-view fields.
         """
         return self._request("GET", f"/admin/jobs/{content_hash}")
+
+    def bulk_delete_jobs(
+        self,
+        *,
+        site_id: str | None = None,
+        status: str | None = None,
+        older_than_days: int | None = None,
+        dry_run: bool = True,
+    ) -> dict[str, Any]:
+        """Delete jobs matching a filter, dry-run by default.
+
+        :param site_id: Restrict to one site.
+        :param status: Restrict to one job status.
+        :param older_than_days: Restrict to jobs older than this many days.
+        :param dry_run: When True (the default), report matches without deleting.
+        :returns: ``{"matched": int, "deleted": int, "dry_run": bool}``.
+        """
+        body: dict[str, Any] = {"dry_run": dry_run}
+        if site_id:
+            body["site_id"] = site_id
+        if status:
+            body["status"] = status
+        if older_than_days is not None:
+            body["older_than_days"] = older_than_days
+        return self._request("POST", "/admin/jobs/bulk-delete", json_body=body)
