@@ -1,0 +1,32 @@
+{
+  "id": "auritus-26d26b0f-bc3b-4e15-bf43-09e4860af95a",
+  "title": "Operator retries a failed job and releases a stuck claim",
+  "description": "Two dead ends share one fix. A job in `failed` is terminal: nothing retries it.\nA job stuck in `claimed` -- a worker that crashed mid-generation, see\nauritus-294fa6 -- is worse, because `GET /jobs/claimable` correctly excludes\nnon-pending jobs, so neither a local worker nor the Batch fallback will ever\ntouch it again. Both states need a route back to `pending`.\n\nThis is P0 because it has already happened in production three times in one\nsession (auritus-294fa6), and the only recovery was hand-crafting a\n`PUT /jobs/{hash}/failed` with an operator bearer token.\n\nDistinct from forced regeneration: retry applies to jobs that never produced\naudio, does not delete an S3 object, and may be safely automatic for stale\nclaims. Share the reset helper with the regenerate story; do not fork it.\n\n## Feature\n\n```gherkin\nFeature: Recovering failed and stuck jobs\n\n  Scenario: Operator retries a failed job\n    Given a job exists with status \"failed\" and an error message\n    When the operator retries that content hash\n    Then the job status is \"pending\"\n    And the job has no error message\n    And the job appears in the claimable list\n\n  Scenario: Operator releases a claim held by a crashed worker\n    Given a job exists with status \"claimed\" by \"local:node-1\"\n    And the claim is older than the claim timeout\n    When the operator releases that content hash\n    Then the job status is \"pending\"\n    And the job has no claim owner\n    And the job appears in the claimable list\n\n  Scenario: Releasing a claim that is still live is rejected\n    Given a job exists with status \"claimed\" by \"local:node-1\"\n    And the claim was renewed within the claim timeout\n    When the operator releases that content hash\n    Then the response is a conflict\n    And the job is still claimed by \"local:node-1\"\n\n  Scenario: Operator force-releases a live claim\n    Given a job exists with status \"claimed\" by \"local:node-1\"\n    And the claim was renewed within the claim timeout\n    When the operator force-releases that content hash\n    Then the job status is \"pending\"\n```\n\n## Implementation brief\n\n**`cdk/lambdas/router/handler.py`**\n\n- Route: `POST /admin/jobs/{hash}/retry` -> `_retry_admin_job(content_hash, body, headers)`.\n  One route covers both cases; the stored status decides the guard.\n- `_retry_admin_job`:\n  - `_require_operator(headers)`; load item or `LookupError`.\n  - `status == \"failed\"` -> reset unconditionally.\n  - `status == \"claimed\"` -> reset only when the claim is stale\n    (`claimed_at` older than the claim timeout already used by\n    `_claim_job`; reuse that constant, do not redefine it) or when\n    `body.get(\"force\") is True`. Otherwise raise the conflict error.\n  - `status in (\"pending\", \"done\")` -> conflict; `done` belongs to regenerate.\n  - Reset via the shared helper introduced by the regenerate story:\n    `_reset_job_to_pending(content_hash, item, drop_audio=False)`. It clears\n    claim and failure attributes and issues a fresh job token; `drop_audio`\n    controls the S3 delete so regenerate passes `True` and retry passes `False`.\n  - Re-arm the fallback via `_arm_fallback`.\n\n**`cli/src/auritus/api.py`** — `def retry_job(self, content_hash: str, *, force: bool = False)`.\n\n**`features/job_management.feature`** — extend with the scenarios above.\n\n## Relationship to auritus-294fa6\n\nThat bug fixes the *cause* (the worker should mark its own job failed on any\nexception before exiting). This story provides the *cure* for jobs already\norphaned, and for any future crash that escapes the worker's handler -- a\n`kill -9` will always be able to orphan a claim. Both are needed. Land 294fa6's\nworker fix independently; it does not block this story.",
+  "type": "story",
+  "status": "open",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-43428879-7a14-4f95-b87c-657c647b9ee4",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "auritus-907209b3-1008-404f-b63f-2ce8d786981e",
+      "type": "blocked-by"
+    },
+    {
+      "target": "auritus-294fa6d1-5360-4ce9-8785-3b68559ce4b7",
+      "type": "relates-to"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-16T02:26:35.799170Z",
+  "updated_at": "2026-09-16T02:30:04.922715Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "auritus-2418445b-3317-4fa5-9136-811cfd2f3046",
+  "title": "Operator deletes a generated audio job",
+  "description": "An operator must be able to remove a generated clip and its audio artifact.\nToday nothing in the system can delete a job: `grep` for delete across the\nrepo returns only `_delete_site`. Audio accumulates in S3 forever.\n\nDeleting a job also deletes its S3 object. A subsequent `POST /jobs` for the\nsame content hash is then a clean create, which makes delete the crude form\nof regeneration (the deliberate form is auritus-<regenerate>).\n\n## Feature\n\n```gherkin\nFeature: Deleting a generated audio job\n\n  Scenario: Operator deletes a completed job and its audio\n    Given a job exists with status \"done\" and a stored audio object\n    When the operator deletes the job by content hash\n    Then the job record is removed\n    And the audio object is removed from the audio bucket\n    And requesting that job returns not found\n\n  Scenario: Deleting a job frees the content hash for regeneration\n    Given a job exists with status \"done\"\n    When the operator deletes the job by content hash\n    And the embed requests audio for the same content\n    Then a new job is created with status \"pending\"\n\n  Scenario: Deleting a job that does not exist\n    When the operator deletes a content hash with no job record\n    Then the response is not found\n    And no audio object is removed\n\n  Scenario: Deleting a job requires operator authentication\n    Given a job exists with status \"done\"\n    When a caller presents only a site key and deletes the job\n    Then the response is forbidden\n    And the job record still exists\n```\n\n## Implementation brief\n\n**`cdk/lambdas/router/handler.py`**\n\n- Add route dispatch: `if method == \"DELETE\" and path.startswith(\"/admin/jobs/\")`\n  -> `_delete_admin_job(content_hash, headers)`. Place it before the existing\n  `GET /admin/jobs/` prefix check is irrelevant (different method), but keep\n  it grouped with the other admin routes.\n- `def _delete_admin_job(content_hash: str, headers: dict[str, str]) -> dict[str, Any]:`\n  - `_require_operator(headers)`\n  - `item = _jobs.get_item(Key={\"content_hash\": content_hash}).get(\"Item\")`;\n    raise `LookupError(\"job_not_found\")` when absent.\n  - When `item.get(\"audio_key\")`, call\n    `_s3.delete_object(Bucket=AUDIO_BUCKET, Key=item[\"audio_key\"])`. Tolerate\n    a missing object (S3 delete is idempotent); do not swallow other errors.\n  - `_jobs.delete_item(Key={\"content_hash\": content_hash})`\n  - Return `_response(200, {\"content_hash\": content_hash, \"deleted\": True})`\n\n**`cdk/stacks/backend.py`** — the router Lambda's role currently has read/write\non the audio bucket via the existing grant; confirm `s3:DeleteObject` is\nincluded and add `audio_bucket.grant_delete(router_lambda)` if not.\n\n**`cli/src/auritus/api.py`** — add\n`def delete_job(self, content_hash: str) -> dict[str, Any]` calling\n`self._request(\"DELETE\", f\"/admin/jobs/{content_hash}\")`.\n\n**`features/`** — new `job_management.feature` carrying the scenarios above,\nwith steps in `features/steps/`.\n\n## Acceptance\n\n`make check` green, and the Gherkin scenarios above pass against the router\nhandler.",
+  "type": "story",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-43428879-7a14-4f95-b87c-657c647b9ee4",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-16T02:25:54.068460Z",
+  "updated_at": "2026-09-16T02:25:54.068484Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

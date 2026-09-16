@@ -1,0 +1,36 @@
+{
+  "id": "auritus-b6326163-d424-4d1f-8020-61203a077f8d",
+  "title": "Operator manages jobs from the web console",
+  "description": "The console is read-only apart from the Batch queue toggle. Job Explorer lists\njobs and the detail page inspects one, but neither can act on what it shows.\nAn operator who spots a wedged clip in the console has to leave for a terminal.\n\n## Feature\n\n```gherkin\nFeature: Managing jobs from the web console\n\n  Scenario: Operator deletes a job from the detail page\n    Given the operator is viewing a job with status \"done\"\n    When the operator chooses to delete the job and confirms\n    Then the job is deleted\n    And the operator returns to the job explorer\n\n  Scenario: Delete is guarded by confirmation\n    Given the operator is viewing a job with status \"done\"\n    When the operator chooses to delete the job and cancels\n    Then the job still exists\n\n  Scenario: Operator regenerates a job from the detail page\n    Given the operator is viewing a job with status \"done\"\n    When the operator chooses to regenerate the job\n    Then the job status shown becomes \"pending\"\n    And the audio player is no longer offered\n\n  Scenario: Operator retries a failed job from the detail page\n    Given the operator is viewing a job with status \"failed\"\n    When the operator chooses to retry the job\n    Then the job status shown becomes \"pending\"\n\n  Scenario: Actions offered match the job status\n    Given the operator is viewing a job with status \"pending\"\n    Then no regenerate action is offered\n    And no retry action is offered\n\n  Scenario: A failed action reports the reason\n    Given the operator is viewing a job with status \"claimed\" by a live worker\n    When the operator chooses to release the claim\n    Then the conflict reason is shown\n    And the job status shown is still \"claimed\"\n```\n\n## Implementation brief\n\n**`console/lib/api.ts`** — add `deleteJob(hash)`, `regenerateJob(hash)`,\n`retryJob(hash, force?)` alongside the existing `fetchJobDetail` /\n`toggleQueue`. Match the existing `apiFetch` error handling; do not add a\nsecond fetch wrapper.\n\n**`console/app/jobs/detail/page.tsx`** — an action row on the status card.\nGate each control on `job.status`:\n\n| Status | Delete | Regenerate | Retry / Release |\n|---|---|---|---|\n| done | yes | yes | no |\n| failed | yes | no | yes |\n| claimed | yes | no | yes (release, force when live) |\n| pending | yes | no | no |\n\nDelete and force-release go through a confirmation dialog. After a successful\nmutation, refetch the detail rather than patching local state optimistically.\nSurface the API error message on failure -- in particular the 409 conflict\ntext from the retry story, which is the whole point of the last scenario.\n\n**`console/app/jobs/page.tsx`** — a delete control per row is optional and out\nof scope here; the detail page is the management surface.\n\n**`features/`** — Playwright acceptance under `console/tests/`, consistent\nwith the existing console test setup, plus Gherkin if the behavior is\nexpressible at the API level.\n\n## Blocked on\n\nThe three API stories in this epic. Nothing to call until those land.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-43428879-7a14-4f95-b87c-657c647b9ee4",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "auritus-2418445b-3317-4fa5-9136-811cfd2f3046",
+      "type": "blocked-by"
+    },
+    {
+      "target": "auritus-907209b3-1008-404f-b63f-2ce8d786981e",
+      "type": "blocked-by"
+    },
+    {
+      "target": "auritus-26d26b0f-bc3b-4e15-bf43-09e4860af95a",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-16T02:27:12.084597Z",
+  "updated_at": "2026-09-16T02:30:04.821020Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
+}

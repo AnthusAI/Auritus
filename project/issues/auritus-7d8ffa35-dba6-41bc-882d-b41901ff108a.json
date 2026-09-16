@@ -1,0 +1,36 @@
+{
+  "id": "auritus-7d8ffa35-dba6-41bc-882d-b41901ff108a",
+  "title": "Operator manages jobs from the CLI",
+  "description": "The CLI cannot see jobs at all. `auritus` has login, logout, config, deploy,\nsite, player, worker, and killswitch -- there is no `job` command group. An\noperator debugging a wedged clip has to hand-craft curl calls with a Cognito\nbearer token, which is exactly what happened in auritus-294fa6.\n\nThe admin routes already exist for list and inspect; delete, regenerate, and\nretry arrive with the API stories in this epic. This story is the CLI surface\nover all five.\n\n## Feature\n\n```gherkin\nFeature: Managing jobs from the command line\n\n  Scenario: Operator lists recent jobs\n    Given jobs exist with several statuses\n    When the operator runs \"auritus job list\"\n    Then each job is printed with its content hash, status, and backend\n\n  Scenario: Operator filters jobs by status\n    Given jobs exist with several statuses\n    When the operator runs \"auritus job list --status failed\"\n    Then only failed jobs are printed\n\n  Scenario: Operator inspects one job\n    Given a job exists with status \"done\"\n    When the operator runs \"auritus job show\" with its content hash\n    Then the job text, backend, voice, timings, and audio url are printed\n\n  Scenario: Operator deletes a job from the command line\n    Given a job exists with status \"done\"\n    When the operator runs \"auritus job delete\" with its content hash and confirms\n    Then the job is deleted\n\n  Scenario: Deleting a job asks for confirmation\n    Given a job exists with status \"done\"\n    When the operator runs \"auritus job delete\" with its content hash and declines\n    Then the job still exists\n\n  Scenario: Operator regenerates a job from the command line\n    Given a job exists with status \"done\"\n    When the operator runs \"auritus job regenerate\" with its content hash\n    Then the job status is \"pending\"\n\n  Scenario: Operator retries a failed job from the command line\n    Given a job exists with status \"failed\"\n    When the operator runs \"auritus job retry\" with its content hash\n    Then the job status is \"pending\"\n```\n\n## Implementation brief\n\n**`cli/src/auritus/api.py`** — add the read methods to match the admin routes:\n`list_jobs(status=None, limit=None, next_token=None)` -> `GET /admin/jobs`,\nand `get_admin_job(content_hash)` -> `GET /admin/jobs/{hash}`. The mutating\nmethods are added by their own stories in this epic.\n\n**`cli/src/auritus/commands/job.py`** (new) — `app = typer.Typer(help=...)`\nwith commands `list`, `show`, `delete`, `regenerate`, `retry`. Follow the\nexisting shape in `commands/site.py`: catch `AuritusApiError`, print to stderr\nin red, `raise typer.Exit(code=1) from exc`.\n\n- `delete` takes `--yes` to skip the `typer.confirm` prompt.\n- `retry` takes `--force` for a live claim.\n- `list` takes `--status` and `--limit`.\n\n**`cli/src/auritus/cli.py`** — `app.add_typer(job_cmd.app, name=\"job\")`.\n\n**Do not use a bare `typer.Argument`** for the content hash. See\nauritus-b0f217 item 2: `--help` crashes on Argument-based commands in this\nenvironment (`TyperArgument.make_metavar()` signature mismatch). `cli.py` has\na compatibility shim for it, but confirm `auritus job show --help` actually\nrenders before declaring done -- that shim is why `site revoke --help` was\nreported broken.\n\n**`features/`** — extend `job_management.feature` or add\n`cli_job_management.feature` with the scenarios above.\n\n## Acceptance\n\n`make check` green; `auritus job --help` and every subcommand's `--help`\nrender without traceback.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-43428879-7a14-4f95-b87c-657c647b9ee4",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "auritus-2418445b-3317-4fa5-9136-811cfd2f3046",
+      "type": "blocked-by"
+    },
+    {
+      "target": "auritus-907209b3-1008-404f-b63f-2ce8d786981e",
+      "type": "blocked-by"
+    },
+    {
+      "target": "auritus-26d26b0f-bc3b-4e15-bf43-09e4860af95a",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-16T02:26:54.763107Z",
+  "updated_at": "2026-09-16T02:30:04.710583Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "auritus-43428879-7a14-4f95-b87c-657c647b9ee4",
+  "title": "M10 - Operator lifecycle management",
+  "description": "Auritus can create and read jobs, but it cannot manage them. There is no\ndelete, no forced regeneration, no retry, no claim release, and no retention\npolicy anywhere in the API, the CLI, or the web console. The only mutating\nmanagement operations that exist today are site revoke (CLI and API only) and\nthe Batch queue kill-switch.\n\nThis is not merely a missing convenience. Jobs are keyed on\n`content_hash = normalize(text) + voice_id + tts_backend`, and `_create_job`\nreturns `{existing: true}` for any pre-existing row regardless of its status.\nA job that lands in `failed`, or that sticks in `claimed` when a worker\ncrashes, is therefore permanently wedged: the embed re-requests that hash\nforever and always receives the dead row. No operator, by any route, can\nclear it. That page never narrates again.\n\n## Scope\n\n- Job lifecycle: delete, force-regenerate, retry, release stuck claim\n- Bulk operations scoped by site, status, and age\n- Site key management in the web console (no UI exists today)\n- Retention: job record TTL and audio object expiry\n- CLI parity: the CLI cannot list or inspect jobs at all\n\n## Current management surface\n\n| Capability | API | CLI | Console |\n|---|---|---|---|\n| Create site key | yes | yes | no |\n| List sites | yes | yes | no |\n| Revoke site | yes | yes | no |\n| Queue kill-switch | yes | yes | yes |\n| List/filter jobs | yes | no | yes |\n| Inspect one job | yes | no | yes |\n| Delete job | no | no | no |\n| Regenerate job | no | no | no |\n| Retry / release claim | no | no | no |\n| Retention policy | no | no | no |\n\n## Order of work\n\nThe admin routes are foundational; CLI commands and console UI both consume\nthem. Land the API stories first, then the surfaces, then retention.\n\n```mermaid\ngraph TD\n  A[Delete job] --> D[CLI job commands]\n  B[Force regenerate] --> D\n  C[Retry / release claim] --> D\n  A --> E[Console job actions]\n  B --> E\n  C --> E\n  A --> F[Bulk purge]\n  G[Site console UI]\n  H[Retention policy]\n```",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-16T02:25:32.375996Z",
+  "updated_at": "2026-09-16T02:25:32.376020Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
