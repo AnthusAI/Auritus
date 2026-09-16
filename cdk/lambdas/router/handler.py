@@ -96,6 +96,9 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         if method == "GET" and path.startswith("/admin/jobs/"):
             content_hash = path_params.get("hash") or path.removeprefix("/admin/jobs/")
             return _get_admin_job(content_hash, headers)
+        if method == "DELETE" and path.startswith("/admin/jobs/"):
+            content_hash = path_params.get("hash") or path.removeprefix("/admin/jobs/")
+            return _delete_admin_job(content_hash, headers)
         if method == "POST" and path == "/admin/queue/toggle":
             return _toggle_admin_queue(body, headers)
         return _response(404, {"error": "not_found"})
@@ -897,6 +900,25 @@ def _get_admin_job(content_hash: str, headers: dict[str, str]) -> dict[str, Any]
             "audio_url": _audio_url(audio_key) if audio_key else None,
         },
     )
+
+
+def _delete_admin_job(content_hash: str, headers: dict[str, str]) -> dict[str, Any]:
+    """Delete a job record and its audio artifact.
+
+    :param content_hash: The content hash identifying the job.
+    :param headers: Request headers for auth (operator-only).
+    :returns: 200 with the deleted content hash.
+    :raises LookupError: If no job exists for the given content hash.
+    """
+    _require_operator(headers)
+    item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
+    if not item:
+        raise LookupError("job_not_found")
+    audio_key = item.get("audio_key")
+    if audio_key:
+        _s3.delete_object(Bucket=AUDIO_BUCKET, Key=audio_key)
+    _jobs.delete_item(Key={"content_hash": content_hash})
+    return _response(200, {"content_hash": content_hash, "deleted": True})
 
 
 def _toggle_admin_queue(
