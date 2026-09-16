@@ -1,9 +1,9 @@
 'use client';
 
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { fetchJobDetail, JobDetail } from '../../../lib/api';
+import { fetchJobDetail, JobDetail, deleteJob, regenerateJob, retryJob } from '../../../lib/api';
 
 function JobDetailContent() {
   const router = useRouter();
@@ -12,30 +12,87 @@ function JobDetailContent() {
   const [job, setJob] = useState<JobDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionPending, setActionPending] = useState(false);
+  const [liveClaimConflict, setLiveClaimConflict] = useState(false);
+
+  const loadDetail = useCallback(async () => {
+    if (!hash) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const data = await fetchJobDetail(hash);
+      setJob(data);
+      setError(null);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      if (errorMessage === 'Unauthorized') {
+        router.replace('/login');
+      } else {
+        setError(errorMessage);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [hash, router]);
 
   useEffect(() => {
-    async function loadDetail() {
-      if (!hash) {
-        setLoading(false);
-        return;
-      }
-      try {
-        const data = await fetchJobDetail(hash);
-        setJob(data);
-        setError(null);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        if (errorMessage === 'Unauthorized') {
-          router.replace('/login');
-        } else {
-          setError(errorMessage);
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
     loadDetail();
-  }, [hash, router]);
+  }, [loadDetail]);
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this job? This action cannot be undone.')) {
+      return;
+    }
+    setActionPending(true);
+    setActionError(null);
+    setLiveClaimConflict(false);
+    try {
+      await deleteJob(hash);
+      router.push('/jobs');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setActionError(`Failed to delete job: ${errorMessage}`);
+    } finally {
+      setActionPending(false);
+    }
+  };
+
+  const handleRegenerate = async () => {
+    setActionPending(true);
+    setActionError(null);
+    setLiveClaimConflict(false);
+    try {
+      await regenerateJob(hash);
+      await loadDetail();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setActionError(`Failed to regenerate job: ${errorMessage}`);
+    } finally {
+      setActionPending(false);
+    }
+  };
+
+  const handleRetry = async (force = false) => {
+    setActionPending(true);
+    setActionError(null);
+    setLiveClaimConflict(false);
+    try {
+      await retryJob(hash, force);
+      await loadDetail();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      if (!force && errorMessage === 'claim_still_live') {
+        setLiveClaimConflict(true);
+        setActionError('This job has an active claim. Force-release to override it.');
+      } else {
+        setActionError(`Failed to retry job: ${errorMessage}`);
+      }
+    } finally {
+      setActionPending(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -82,6 +139,24 @@ function JobDetailContent() {
         </p>
       </div>
 
+      {actionError && (
+        <div style={{ background: 'var(--danger-bg)', color: 'var(--danger)', padding: '0.75rem 1rem', borderRadius: '4px', marginBottom: '1.5rem', border: '1px solid rgba(148, 60, 46, 0.2)' }}>
+          {actionError}
+          {liveClaimConflict && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <button
+                onClick={() => handleRetry(true)}
+                disabled={actionPending}
+                className="button"
+                style={{ padding: '0.5rem 0.75rem', background: 'var(--danger)', color: '#fff', border: 'none', marginTop: '0.5rem' }}
+              >
+                {actionPending ? 'Force-releasing...' : 'Force-release'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         {/* Left Card: Status & Narration Audio */}
         <div className="card">
@@ -91,6 +166,39 @@ function JobDetailContent() {
               <span className={`badge badge-worker-${job.worker_type}`}>
                 {job.worker_type} worker
               </span>
+            )}
+          </div>
+
+          {/* Action Buttons Row */}
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            {actionPending && <span style={{ fontSize: '0.875rem', color: 'var(--ink-muted)' }}>Processing...</span>}
+            <button
+              onClick={handleDelete}
+              disabled={actionPending}
+              className="button"
+              style={{ padding: '0.5rem 0.75rem', cursor: actionPending ? 'not-allowed' : 'pointer', opacity: actionPending ? 0.6 : 1 }}
+            >
+              {actionPending ? 'Deleting...' : 'Delete Job'}
+            </button>
+            {job.status === 'done' && (
+              <button
+                onClick={handleRegenerate}
+                disabled={actionPending}
+                className="button"
+                style={{ padding: '0.5rem 0.75rem', cursor: actionPending ? 'not-allowed' : 'pointer', opacity: actionPending ? 0.6 : 1 }}
+              >
+                {actionPending ? 'Regenerating...' : 'Regenerate'}
+              </button>
+            )}
+            {(job.status === 'failed' || job.status === 'claimed') && (
+              <button
+                onClick={() => handleRetry(false)}
+                disabled={actionPending || liveClaimConflict}
+                className="button"
+                style={{ padding: '0.5rem 0.75rem', cursor: actionPending || liveClaimConflict ? 'not-allowed' : 'pointer', opacity: actionPending || liveClaimConflict ? 0.6 : 1 }}
+              >
+                {actionPending ? 'Retrying...' : job.status === 'claimed' ? 'Release' : 'Retry'}
+              </button>
             )}
           </div>
 
