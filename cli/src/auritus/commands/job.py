@@ -80,6 +80,66 @@ def regenerate_job(
     typer.secho(f"Regeneration started for {content_hash}", fg=typer.colors.GREEN)
 
 
+@app.command("purge")
+def purge_jobs(
+    site: str = typer.Option(None, "--site", help="Restrict to one site id."),
+    status: str = typer.Option(None, "--status", help="Restrict to one job status."),
+    older_than_days: int = typer.Option(
+        None, "--older-than-days", help="Restrict to jobs older than this many days."
+    ),
+    yes: bool = typer.Option(
+        False, "--yes", help="Skip the dry-run confirmation and actually delete."
+    ),
+) -> None:
+    """Bulk-delete jobs matching a filter. Dry-run unless --yes is given."""
+    if not site and not status and older_than_days is None:
+        typer.secho(
+            "At least one of --site, --status, or --older-than-days is required.",
+            fg=typer.colors.RED,
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    try:
+        client = AuritusClient()
+        preview = client.bulk_delete_jobs(
+            site_id=site,
+            status=status,
+            older_than_days=older_than_days,
+            dry_run=True,
+        )
+    except AuritusApiError as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from exc
+
+    matched = preview.get("matched", 0)
+    typer.echo(f"{matched} job(s) match this filter.")
+
+    if not yes:
+        typer.echo("Re-run with --yes to delete them.")
+        return
+
+    if matched == 0:
+        typer.echo("Nothing to delete.")
+        return
+
+    if not typer.confirm(f"Delete {matched} jobs?"):
+        raise typer.Exit(code=0)
+
+    try:
+        result = client.bulk_delete_jobs(
+            site_id=site,
+            status=status,
+            older_than_days=older_than_days,
+            dry_run=False,
+        )
+    except AuritusApiError as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from exc
+
+    typer.secho(f"Deleted {result.get('deleted', 0)} job(s).", fg=typer.colors.GREEN)
+
+
 @app.command("retry")
 def retry_job(
     content_hash: str = typer.Option(..., "--hash", help="Job content hash."),

@@ -9,7 +9,7 @@ import os
 import secrets
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -121,6 +121,8 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
             return _retry_admin_job(content_hash, body, headers)
         if method == "POST" and path == "/admin/queue/toggle":
             return _toggle_admin_queue(body, headers)
+        if method == "POST" and path == "/admin/jobs/bulk-delete":
+            return _bulk_delete_admin_jobs(body, headers)
         return _response(404, {"error": "not_found"})
     except PermissionError as exc:
         return _response(403, {"error": str(exc)})
@@ -1065,6 +1067,25 @@ def _get_admin_job(content_hash: str, headers: dict[str, str]) -> dict[str, Any]
     )
 
 
+def _delete_job_record_and_audio(item: dict[str, Any]) -> None:
+    """Delete one job's S3 audio object (if any) and its DynamoDB record.
+
+    Shared deletion core for both the single-job and bulk-delete admin
+    routes. Callers are responsible for auth and for having already
+    loaded ``item`` -- this does not re-fetch or re-check anything, so a
+    bulk caller iterating many already-fetched items can invoke this
+    directly instead of paying for a redundant per-item ``get_item`` and
+    ``_require_operator`` call the way looping over ``_delete_admin_job``
+    itself would.
+
+    :param item: A full job record (must include ``content_hash``).
+    """
+    audio_key = item.get("audio_key")
+    if audio_key:
+        _s3.delete_object(Bucket=AUDIO_BUCKET, Key=audio_key)
+    _jobs.delete_item(Key={"content_hash": item["content_hash"]})
+
+
 def _delete_admin_job(content_hash: str, headers: dict[str, str]) -> dict[str, Any]:
     """Delete a job record and its audio artifact.
 
@@ -1077,11 +1098,149 @@ def _delete_admin_job(content_hash: str, headers: dict[str, str]) -> dict[str, A
     item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
     if not item:
         raise LookupError("job_not_found")
-    audio_key = item.get("audio_key")
-    if audio_key:
-        _s3.delete_object(Bucket=AUDIO_BUCKET, Key=audio_key)
-    _jobs.delete_item(Key={"content_hash": content_hash})
+    _delete_job_record_and_audio(item)
     return _response(200, {"content_hash": content_hash, "deleted": True})
+
+
+BULK_DELETE_MAX_MATCHES = 1000
+
+
+def _bulk_delete_admin_jobs(
+    body: dict[str, Any], headers: dict[str, str]
+) -> dict[str, Any]:
+    """Delete jobs matching a filter, dry-run by default.
+
+    This is the most destructive route in the product, so it is built to
+    fail safe in two independent ways: ``dry_run`` defaults to ``True``
+    when absent from the body (the caller must explicitly pass
+    ``dry_run: false`` to delete anything -- a typo'd or missing key never
+    deletes), and an unfiltered call is rejected outright rather than
+    treated as "match everything".
+
+    Matching strategy and its cost, spelled out because there is
+    deliberately NO index on ``site_id`` alone (see ``AuritusJobs`` in
+    ``cdk/stacks/backend.py`` -- only ``status-created_at-index`` and
+    ``claimed_by-index`` exist):
+
+    * If ``status`` is given, candidates come from a single, efficient
+      ``_query_jobs_by_status`` call against that status partition --
+      cheap regardless of table size.
+    * If ``status`` is NOT given (a bulk purge scoped only by ``site_id``
+      and/or ``older_than_days``), there is no query path that can filter
+      by ``site_id`` directly: doing so requires reading every job in
+      every status partition and filtering client-side in Python. This
+      implementation reuses ``_query_jobs_by_status`` across all
+      ``JOB_STATUSES`` for that read (rather than a raw ``Scan``) so it
+      goes through the same tested, correctly-paginated query path the
+      rest of this file already relies on, but it is NOT cheaper than a
+      full scan -- it still reads the entire table. This is acceptable
+      for a bulk admin operation that is invoked rarely (retiring a
+      publisher, cleaning up a bad backend), not on any hot path, but it
+      is not free, and it will get slower as the table grows. A
+      dedicated ``site_id`` GSI would fix this properly; it was not added
+      here because doing so is a live infrastructure change requiring a
+      real ``cdk deploy`` before it would work (the same caveat that
+      applied to the recently-added ``claimed_by-index``), which is out
+      of scope for landing this route.
+
+    :param body: ``{"site_id": str?, "status": str?, "older_than_days":
+        int?, "dry_run": bool}``. At least one of ``site_id``, ``status``,
+        or ``older_than_days`` is required.
+    :param headers: Request headers for auth (operator-only).
+    :returns: ``{"matched": int, "deleted": int, "dry_run": bool,
+        "truncated": bool}``. ``deleted`` equals ``matched`` when
+        ``dry_run`` is true (nothing is actually deleted in that case);
+        otherwise it is the number of jobs actually deleted. ``truncated``
+        is true when more jobs may match than the ``matched`` count
+        reported -- a single call caps how many candidate jobs it will
+        process (``BULK_DELETE_MAX_MATCHES``) to stay well inside a
+        Lambda's execution time budget; run the same filter again after a
+        truncated non-dry-run delete to remove the rest.
+    :raises ValueError: If no filter is supplied.
+    """
+    _require_operator(headers)
+
+    site_id = body.get("site_id")
+    status = body.get("status")
+    older_than_days = body.get("older_than_days")
+    dry_run = body.get("dry_run", True)
+
+    if not site_id and not status and older_than_days is None:
+        raise ValueError("filter_required")
+
+    cutoff_iso = None
+    if older_than_days is not None:
+        cutoff = datetime.now(timezone.utc) - timedelta(days=int(older_than_days))
+        cutoff_iso = cutoff.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    def _matches(candidate: dict[str, Any]) -> bool:
+        if site_id and candidate.get("site_id") != site_id:
+            return False
+        if (
+            cutoff_iso is not None
+            and str(candidate.get("created_at", "")) >= cutoff_iso
+        ):
+            return False
+        return True
+
+    matched: list[dict[str, Any]] = []
+    truncated = False
+
+    if status:
+        start_key: dict[str, Any] | None = None
+        while len(matched) < BULK_DELETE_MAX_MATCHES:
+            res = _query_jobs_by_status(
+                status,
+                limit=min(100, BULK_DELETE_MAX_MATCHES - len(matched)),
+                start_key=start_key,
+            )
+            for candidate_item in res.get("Items") or []:
+                if _matches(candidate_item):
+                    matched.append(candidate_item)
+                    if len(matched) >= BULK_DELETE_MAX_MATCHES:
+                        break
+            start_key = res.get("LastEvaluatedKey")
+            if not start_key:
+                break
+        if start_key:
+            truncated = True
+    else:
+        # No status filter: every status partition must be read in full to
+        # honor a site_id/age-only filter -- see the docstring above for
+        # why this cannot be made cheaper without a new GSI.
+        for one_status in JOB_STATUSES:
+            start_key = None
+            while True:
+                res = _query_jobs_by_status(one_status, limit=100, start_key=start_key)
+                for candidate_item in res.get("Items") or []:
+                    if _matches(candidate_item):
+                        if len(matched) >= BULK_DELETE_MAX_MATCHES:
+                            truncated = True
+                            break
+                        matched.append(candidate_item)
+                start_key = res.get("LastEvaluatedKey")
+                if not start_key or len(matched) >= BULK_DELETE_MAX_MATCHES:
+                    if start_key:
+                        truncated = True
+                    break
+            if len(matched) >= BULK_DELETE_MAX_MATCHES:
+                break
+
+    deleted_count = 0
+    if not dry_run:
+        for job_item in matched:
+            _delete_job_record_and_audio(job_item)
+            deleted_count += 1
+
+    return _response(
+        200,
+        {
+            "matched": len(matched),
+            "deleted": len(matched) if dry_run else deleted_count,
+            "dry_run": bool(dry_run),
+            "truncated": truncated,
+        },
+    )
 
 
 def _regenerate_admin_job(content_hash: str, headers: dict[str, str]) -> dict[str, Any]:
