@@ -209,6 +209,19 @@ class AuritusClient:
             "POST", f"/admin/jobs/{content_hash}/regenerate", json_body={}
         )
 
+    def retry_job(self, content_hash: str, *, force: bool = False) -> dict[str, Any]:
+        """Retry a failed job, or release a stuck claim, resetting it to pending.
+
+        :param content_hash: The content hash identifying the job.
+        :param force: Release a live claim rather than only a stale one.
+        :returns: The API response with the job reset to pending.
+        """
+        return self._request(
+            "POST",
+            f"/admin/jobs/{content_hash}/retry",
+            json_body={"force": force} if force else {},
+        )
+
     def disable_batch_queue(self) -> dict[str, Any]:
         """Emergency kill-switch: disable the Batch job queue."""
         return self._request(
