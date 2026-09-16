@@ -121,6 +121,7 @@ class FishBackend(TTSBackend):
             FishBackend._model = load_model(
                 FISH_MLX_MODEL,
                 lazy=False,
+                strict=False,
             )
         sample_rate = int(
             getattr(
@@ -170,14 +171,30 @@ def _to_wav(samples: list | Any, sample_rate: int = 24000) -> bytes:
     :returns: Serialized mono 16-bit WAV bytes.
     """
     buffer = io.BytesIO()
-    flat = list(samples)
-    with wave.open(buffer, "wb") as handle:
-        handle.setnchannels(1)
-        handle.setsampwidth(2)
-        handle.setframerate(sample_rate)
+    try:
+        import numpy as np
+
+        if isinstance(samples, np.ndarray):
+            clamped = np.clip(samples, -1.0, 1.0)
+            frames = (clamped * 32767.0).astype(np.int16).tobytes()
+        else:
+            flat = list(samples)
+            frames = struct.pack(
+                "<" + "h" * len(flat),
+                *[
+                    max(-32768, min(32767, int(float(sample) * 32767)))
+                    for sample in flat
+                ],
+            )
+    except ImportError:
+        flat = list(samples)
         frames = struct.pack(
             "<" + "h" * len(flat),
             *[max(-32768, min(32767, int(float(sample) * 32767))) for sample in flat],
         )
+    with wave.open(buffer, "wb") as handle:
+        handle.setnchannels(1)
+        handle.setsampwidth(2)
+        handle.setframerate(sample_rate)
         handle.writeframes(frames)
     return buffer.getvalue()
