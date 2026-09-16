@@ -1,0 +1,20 @@
+{
+  "id": "auritus-2e0bafc2-e2f9-4e14-b5bb-3df95cee7139",
+  "title": "Fish Speech TTS backend and example page",
+  "description": "Implement Fish Speech backend using mlx-audio on Apple Silicon and PyTorch on Linux GPU workers, create the example comparison page at /examples/fish, and document licensing.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-19ba7b16-6f43-4136-ad99-3b8e4b434c6c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-16T13:38:57.731143Z",
+  "updated_at": "2026-09-16T13:38:57.731178Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
