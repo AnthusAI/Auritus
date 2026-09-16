@@ -2,6 +2,142 @@
 
 <!-- version list -->
 
+## v0.18.0 (2026-09-16)
+
+### Bug Fixes
+
+- **admin**: Query per-status GSI partitions for unfiltered job listing
+  ([`11ddabc`](https://github.com/AnthusAI/Auritus/commit/11ddabcdc2d5f912be62ae7e6f285f89ae19acf2))
+
+- **cli**: Correct the cost command's empty-result detection
+  ([`6f7b201`](https://github.com/AnthusAI/Auritus/commit/6f7b201ab6b59ae8ab3977aa2c10ae19c6266822))
+
+- **cli**: Delegate the Argument make_metavar shim to typer, not click
+  ([`764ecdb`](https://github.com/AnthusAI/Auritus/commit/764ecdb5c8a73512273984752133a1430cc9fa9a))
+
+- **cli**: Fix site key lifecycle UX rough edges
+  ([`5545b85`](https://github.com/AnthusAI/Auritus/commit/5545b8559e197701651922051041863e2c545d55))
+
+- **console**: Fix a real-environment-only test failure and a race
+  ([`e62979d`](https://github.com/AnthusAI/Auritus/commit/e62979d8cc535039711594ded2db83de849f303c))
+
+- **console**: Show real errors on job detail fetch failure
+  ([`0550554`](https://github.com/AnthusAI/Auritus/commit/0550554a707242fa4b25585eb1a34165490750ba))
+
+- **console**: Use router.replace for the login redirect
+  ([`9a03ebf`](https://github.com/AnthusAI/Auritus/commit/9a03ebf8dbcc267d540a67cc0af8ae50d6df6cf2))
+
+- **router**: Regenerate and retry now clear billing attributes and idempotency flags
+  ([`0e1506c`](https://github.com/AnthusAI/Auritus/commit/0e1506c3e3c8d99c282c06e54da31595ba5067e8))
+
+- **router**: Stop mutating tts_backend on content hash collision
+  ([`6f8bfa7`](https://github.com/AnthusAI/Auritus/commit/6f8bfa7cb78f8ed80da43a5a6f70f8e48adce2c1))
+
+- **tts**: Load Fish Speech weights with strict=False and accelerate PCM WAV encoding
+  ([`3dffbd6`](https://github.com/AnthusAI/Auritus/commit/3dffbd6196cd0e01838c5bcea805f908200d718a))
+
+- **tts**: Properly remap Fish Speech weight keys and enforce strict MLX loading
+  ([`1981fca`](https://github.com/AnthusAI/Auritus/commit/1981fca341d28baab83b4776f75d2619da574e2f))
+
+- **worker**: Release claim and mark job failed when TTS generation crashes
+  ([`73cf6e6`](https://github.com/AnthusAI/Auritus/commit/73cf6e62b83e1aef87702fe17363bc5537cf73bb))
+
+### Chores
+
+- Exclude console Playwright report/result artifacts from git
+  ([`fc876f1`](https://github.com/AnthusAI/Auritus/commit/fc876f12bc4938012804cef4e7f98573d2e11645))
+
+- **kanbus**: Commit board state (issue)
+  ([`b271a7e`](https://github.com/AnthusAI/Auritus/commit/b271a7e0284b65f675f50944b6261ec9505a241b))
+
+- **kanbus**: Commit board state (issues)
+  ([`f77d90a`](https://github.com/AnthusAI/Auritus/commit/f77d90ae79fbd5851a85d3437b0bb711d264e35c))
+
+- **kanbus**: Commit board state (issues)
+  ([`441f6ed`](https://github.com/AnthusAI/Auritus/commit/441f6ed378f5b29e65b9caefdc3c8e13d05bf076))
+
+- **kanbus**: Commit board state (issues)
+  ([`0fb4395`](https://github.com/AnthusAI/Auritus/commit/0fb4395b3db490299aa944f2f5d2c45db1349f49))
+
+- **kanbus**: Commit board state (issues)
+  ([`01db3f2`](https://github.com/AnthusAI/Auritus/commit/01db3f27b9f843b34457df07dd2ccb616efb001f))
+
+- **kanbus**: Track Fish Speech TTS backend and example page
+  ([`18653bf`](https://github.com/AnthusAI/Auritus/commit/18653bf7b29bb80f48b25662e50d0117d6a068a7))
+
+### Code Style
+
+- Run black over new step definitions
+  ([`afea69d`](https://github.com/AnthusAI/Auritus/commit/afea69d0f99d7800f1e5b04f57e304a6861fc78e))
+
+- **console**: Use the app's own design tokens on the sites page
+  ([`9f6ef73`](https://github.com/AnthusAI/Auritus/commit/9f6ef73a52bff69b2fed99529a8ec1b70e1f739d))
+
+- **console**: Use the danger design token on the costs page error state
+  ([`4ab66c7`](https://github.com/AnthusAI/Auritus/commit/4ab66c71ca5c16dbf7f65bf56559a50f8a8aa607))
+
+### Features
+
+- Operator-forced job regeneration with stable content hash
+  ([`725d922`](https://github.com/AnthusAI/Auritus/commit/725d922087332b88e7df0f9ccb49b4264b377688))
+
+- **admin**: Add job deletion endpoint and client method
+  ([`4d02799`](https://github.com/AnthusAI/Auritus/commit/4d027998275acf7bfc14f8639ec66506fad554ee))
+
+- **admin**: Bulk-delete jobs by site, status, or age
+  ([`6f84064`](https://github.com/AnthusAI/Auritus/commit/6f840640445a03e46cc8067d794c1789ad34356e))
+
+- **batch**: Record Batch billed-instance timing on job records
+  ([`221c350`](https://github.com/AnthusAI/Auritus/commit/221c3500e56f96e4b34303215f49df3adc22d560))
+
+- **cli**: Add --next-token option to job list command for pagination
+  ([`5601aa6`](https://github.com/AnthusAI/Auritus/commit/5601aa66235a0855c94399bd716469f0aaae9bba))
+
+- **cli**: Add cost command for viewing estimated job costs
+  ([`9ae9ac6`](https://github.com/AnthusAI/Auritus/commit/9ae9ac69b3e9a5ce789ee598373095a09070fd5c))
+
+- **cli**: Add job command group for list, show, delete, regenerate, retry
+  ([`23a2405`](https://github.com/AnthusAI/Auritus/commit/23a2405e7a005aaa22a9aeeacd68e6e48823a28b))
+
+- **console**: Add job management actions to detail page
+  ([`b657f9e`](https://github.com/AnthusAI/Auritus/commit/b657f9e996c862c0a64d574dd0e483d611aa89be))
+
+- **console**: Add operator cost visibility in web console
+  ([`a18fe88`](https://github.com/AnthusAI/Auritus/commit/a18fe881f7f274b6f451eee7c26d61a94375510e))
+
+- **console**: Add site key management page
+  ([`a40a820`](https://github.com/AnthusAI/Auritus/commit/a40a82079ccc37591952af8b9106d8d31afc882a))
+
+- **cost**: Compute avoided cost for local jobs vs Batch fallback
+  ([`880c458`](https://github.com/AnthusAI/Auritus/commit/880c458973223f993c27565b09da4f14e1b47af6))
+
+- **cost**: Estimate GPU + platform cost per job from a configurable rate card
+  ([`3d0ab89`](https://github.com/AnthusAI/Auritus/commit/3d0ab897fb1f7a8efa8f03004e62e50c3a7e1cbf))
+
+- **cost**: Reconcile estimated GPU cost against the actual AWS bill
+  ([`e53f215`](https://github.com/AnthusAI/Auritus/commit/e53f215564d6f35a12b1aae310fb77a8d2f82671))
+
+- **costs**: Roll up job costs daily by site and worker type
+  ([`80e4db5`](https://github.com/AnthusAI/Auritus/commit/80e4db5ec6e705bd64091936b0282958be562f59))
+
+- **jobs**: Add retry endpoint for failed and stuck jobs
+  ([`1a2faa4`](https://github.com/AnthusAI/Auritus/commit/1a2faa4171ee78a7d2e4ad084d1836efb2baf2b1))
+
+- **retention**: Expire job records and audio on an opt-in retention policy
+  ([`3c8b7ee`](https://github.com/AnthusAI/Auritus/commit/3c8b7ee6af8b51eee644fda66dfc80930f2c1184))
+
+- **tts**: Add Fish Speech backend and example comparison page
+  ([`ca0fb0d`](https://github.com/AnthusAI/Auritus/commit/ca0fb0daabbdd0b7aab8210f91ac98af21d45db6))
+
+### Testing
+
+- **job-management**: Assert the specific job_not_found error body
+  ([`006b31f`](https://github.com/AnthusAI/Auritus/commit/006b31f66b19a61309e7f8f93cd7631abd174bbe))
+
+- **job-regeneration**: Assert against the API response, not the DB key
+  ([`dd4ef09`](https://github.com/AnthusAI/Auritus/commit/dd4ef09180d9ec5d8f29b6690adca3e2355673ae))
+
+
 ## v0.17.0 (2026-09-16)
 
 
