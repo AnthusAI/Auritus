@@ -3,17 +3,25 @@
   "title": "Local worker leaves jobs stuck in 'claimed' on crash; /admin/jobs list misses newest jobs",
   "description": "Discovered testing 'auritus worker --once' against the real production API\nwhile integrating Auritus into Pilobol.us (2026-09-14/15).\n\n1) Worker crash leaves the job permanently stuck in 'claimed', never\n   released or marked failed.\n\n   The local worker (cli/src/auritus/worker/daemon.py) claims a job, then\n   runs TTS generation. If generation raises (e.g. a missing optional\n   dependency -- see below), the process crashes with an unhandled\n   traceback and exits. Nothing in that path calls PUT /jobs/{hash}/failed\n   or otherwise releases the claim. The job is left in status=claimed\n   forever: GET /jobs/claimable correctly excludes it (it's not pending),\n   so no worker -- local or the AWS Batch fallback -- will ever pick it up\n   again. This happened to me three times in a row (missing misaki, then\n   num2words/phonemizer-fork, then spacy, then espeakng-loader -- Kokoro's\n   dependency chain is not fully captured by 'kokoro==0.9.4' alone on\n   Apple Silicon, which routes through mlx_audio's kokoro pipeline instead\n   of the plain PyPI kokoro package the worker-image Dockerfile installs\n   for Linux/GPU) each orphaning a different job. I had to manually PUT\n   .../failed with an operator Cognito bearer token (job_token alone in the\n   body was rejected with {\"message\":\"operator_auth_required\"} -- also\n   worth documenting, since it's not obvious from the route surface which\n   auth mode /failed expects from a worker vs. an operator).\n\n   Fix: wrap the generation call in worker/daemon.py in a try/except that\n   calls the failed endpoint (with the job_token the claim already holds)\n   before letting the process exit, on ANY exception -- not just TTS\n   backend errors.\n\n2) GET /admin/jobs appears to be an unsorted/size-limited scan, not a\n   query by recency -- it silently omits the newest jobs in the system.\n\n   After creating a job (confirmed via its own GET /jobs/{hash} lookup,\n   which is authoritative and correctly showed status=pending), it did not\n   appear anywhere in GET /admin/jobs's returned list of 25 jobs, even\n   though every job that list DID return was strictly older by\n   created_at than the missing one. This is what the user saw as 'nothing\n   in the console at localhost:3001/jobs' for their own newly-created job.\n   Looks like a DynamoDB Scan without a GSI on created_at, returning\n   whatever page the scan happens to hit rather than truly-most-recent-N.\n\n   Fix: query/scan with an index on created_at (or a sort key that\n   supports it) and return true most-recent-first, or at minimum increase\n   the scanned page size enough that a newly created job is guaranteed to\n   appear.\n\nFiled alongside auritus-0ae6d0 (data-auritus-api default) from the same\nintegration session.",
   "type": "bug",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-43428879-7a14-4f95-b87c-657c647b9ee4",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "8928b880-3bae-41c4-8281-3432a047a392",
+      "author": "home",
+      "text": "Fixed on fix/worker-crash-and-admin-jobs-listing, merged to develop. Two independent fixes: (1) cli/src/auritus/worker/daemon.py wraps backend resolution+generation in a broad except Exception, calling the new AuritusClient.mark_failed on any failure before continuing the poll loop, instead of crashing and leaving the job claimed forever. (2) _list_admin_jobs's unfiltered case replaced the Scan(Limit=N)+sort (which only sorted an already-arbitrary page) with per-status queries against the existing status-created_at-index GSI, merged via a provably-correct top-k-per-partition algorithm. First pass buffered full job records (untruncated text, job_token) across up to 4 statuses in the pagination cursor -- caught in review as a real production risk (cursor could exceed real HTTP/URL size limits, invisible to moto-based tests) and had zero multi-page test coverage. Sent back: fixed to a two-tier cursor (content_hash+created_at only when buffered; full body fetched lazily only for items that actually make an emitted page) -- confirmed 65x cursor size reduction (1.79MB to 27KB on a 400-job/4KB-text worst case) and independent of payload size thereafter. Added a 12-job/3-page pagination scenario; independently reverted the fix myself and confirmed both admin_job_listing scenarios genuinely fail without it. Full suite green: black/ruff, pytest (54 passed), behave (26 features, 98 scenarios).",
+      "created_at": "2026-09-16T03:53:55.036557Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-15T01:50:39.523259Z",
-  "updated_at": "2026-09-16T03:23:35.890207Z",
-  "closed_at": null,
+  "updated_at": "2026-09-16T03:53:55.083841Z",
+  "closed_at": "2026-09-16T03:53:55.083800Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {
