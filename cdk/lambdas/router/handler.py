@@ -43,6 +43,7 @@ COST_ROLLUPS_TABLE = os.environ.get("COST_ROLLUPS_TABLE", "")
 COST_ROLLUPS_DATE_INDEX = os.environ.get(
     "COST_ROLLUPS_DATE_INDEX", "date-site_id-index"
 )
+BACKEND_TIMING_TABLE = os.environ.get("BACKEND_TIMING_TABLE", "")
 # Bounds the number of per-day Query calls _get_admin_costs' "all sites"
 # path (no site_id filter) will issue for one request -- see that
 # function's docstring for why that path queries once per calendar day
@@ -64,6 +65,9 @@ _jobs = _dynamodb.Table(JOBS_TABLE)
 _sites = _dynamodb.Table(SITES_TABLE)
 _alerts = _dynamodb.Table(ALERTS_TABLE) if ALERTS_TABLE else None
 _cost_rollups = _dynamodb.Table(COST_ROLLUPS_TABLE) if COST_ROLLUPS_TABLE else None
+_backend_timing = (
+    _dynamodb.Table(BACKEND_TIMING_TABLE) if BACKEND_TIMING_TABLE else None
+)
 _cognito = boto3.client("cognito-idp")
 _ses = boto3.client("ses")
 _batch = boto3.client("batch")
@@ -330,6 +334,67 @@ def _record_rollup_contribution(
     return True
 
 
+def _compute_avoided_cost(
+    *, tts_backend: str | None, local_duration_seconds: int
+) -> tuple[Decimal, str]:
+    """Compute a local job's counterfactual "avoided cost".
+
+    Auritus exists so a publisher can run synthesis on their own GPU and
+    pay AWS nothing for it. This estimates what that same synthesis would
+    have cost had the Batch fallback won the race instead of the local
+    worker.
+
+    The naive approach -- multiply this job's own local wall-clock
+    ``duration_seconds`` by the GPU hourly rate -- measures "what this would
+    cost if Batch were exactly as fast as my machine", not "what Batch
+    would actually charge". The operator's hardware may be faster or slower
+    than the ``g4dn.xlarge`` Batch uses, so that figure is only weakly
+    defensible.
+
+    A better basis: the running AVERAGE of real, observed Batch
+    ``billed_seconds`` for the same ``tts_backend``, maintained by
+    ``batch_telemetry``'s ``_roll_up_backend_timing`` in
+    ``AuritusBackendTiming``. This is deliberately an average, not a true
+    median -- see that function's docstring for the trade-off -- but it is
+    still a far more defensible "typical Batch cost for this backend" than
+    one local machine's own timing.
+
+    Fallback: when there is no observed Batch sample yet for this backend
+    (``batch_sample_count`` is zero or the row doesn't exist), fall back to
+    this job's own local ``duration_seconds`` -- the simpler, less
+    defensible counterfactual -- rather than reporting no avoided cost at
+    all. Which basis was used is returned alongside the figure so it's
+    always auditable, not opaque.
+
+    :param tts_backend: The job's TTS backend, or ``None`` if unknown (goes
+        straight to the local-duration fallback, since there's no backend
+        row to look up).
+    :param local_duration_seconds: The job's own local wall-clock duration,
+        used verbatim as the fallback basis.
+    :returns: ``(avoided_cost_usd, basis)`` where ``basis`` is
+        ``"batch_average"`` or ``"local_duration_fallback"``.
+    """
+    avg_billed_seconds: Decimal | None = None
+    if tts_backend and _backend_timing is not None:
+        row = _backend_timing.get_item(Key={"tts_backend": tts_backend}).get("Item")
+        if row:
+            sample_count = row.get("batch_sample_count") or 0
+            if sample_count > 0:
+                avg_billed_seconds = (
+                    row.get("batch_billed_seconds_sum") or Decimal(0)
+                ) / Decimal(sample_count)
+
+    if avg_billed_seconds is not None:
+        basis = "batch_average"
+        basis_seconds = avg_billed_seconds
+    else:
+        basis = "local_duration_fallback"
+        basis_seconds = Decimal(local_duration_seconds)
+
+    avoided_cost_usd = basis_seconds * Decimal(GPU_HOURLY_RATE_USD) / Decimal(3600)
+    return avoided_cost_usd, basis
+
+
 def _roll_up_request_path_cost(
     content_hash: str,
     *,
@@ -338,6 +403,7 @@ def _roll_up_request_path_cost(
     date: str,
     platform_cost: Decimal,
     local_duration_seconds: int | None,
+    avoided_cost: Decimal | None = None,
 ) -> None:
     """Roll up the flat platform allowance charged on every job completion.
 
@@ -359,6 +425,20 @@ def _roll_up_request_path_cost(
     ``batch_job_count``. That is an accepted, documented gap rather than a
     silent double-count.
 
+    ``avoided_cost_usd`` rides along on this SAME contribution and the SAME
+    ``platform_cost_rolled_up`` flag, rather than a new flag of its own.
+    Both figures are written to the job record by the same caller
+    (``_mark_done``, unconditionally, in the same update) at the same point
+    in the request path -- there is no independent retry/redelivery source
+    for avoided cost the way batch_telemetry is an independent source for
+    GPU cost. Since the two figures are always known and finalized
+    together, gating them behind one flag is correct: whichever call wins
+    the flag claims both contributions atomically, and a retry that loses
+    the flag skips both, exactly as it already skips ``platform_cost_usd``
+    and ``local_job_count``. Introducing a third flag here would add
+    complexity without buying any additional safety, since nothing can
+    contribute ``avoided_cost_usd`` independently of this same call.
+
     :param content_hash: The job whose contribution is being recorded.
     :param site_id: The job's site, or ``None`` if unknown (skips the
         rollup entirely -- there is no key to roll up under).
@@ -368,6 +448,10 @@ def _roll_up_request_path_cost(
     :param platform_cost: The flat platform allowance charged.
     :param local_duration_seconds: ``duration_seconds`` for a local job
         (``_mark_done`` only), or ``None`` when not applicable.
+    :param avoided_cost: ``avoided_cost_usd`` for this job (``_mark_done``
+        only -- zero for Batch jobs, a computed figure for local jobs), or
+        ``None`` when not applicable (e.g. ``_mark_failed``, which does not
+        set ``avoided_cost_usd`` at all).
     """
     if not site_id or _cost_rollups is None:
         return
@@ -380,6 +464,9 @@ def _roll_up_request_path_cost(
         if local_duration_seconds is not None:
             add_parts.append("local_duration_seconds :duration")
             add_values[":duration"] = Decimal(local_duration_seconds)
+    if avoided_cost is not None:
+        add_parts.append("avoided_cost_usd :avoided_cost")
+        add_values[":avoided_cost"] = avoided_cost
 
     _record_rollup_contribution(
         content_hash,
@@ -666,6 +753,22 @@ def _mark_done(
     item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
     claimed_epoch = int(item.get("claimed_at_epoch", now_epoch)) if item else now_epoch
     duration_seconds = max(1, now_epoch - claimed_epoch)
+    worker_type = item.get("worker_type") if item else None
+
+    # avoided_cost_usd: the counterfactual "what would this synthesis have
+    # cost had the Batch fallback won the race instead". Only meaningful
+    # for a local job -- a Batch job that actually ran on Batch didn't
+    # avoid anything, so it always gets zero (written unconditionally below
+    # so the field reads as zero rather than absent, distinct from a failed
+    # job -- see _mark_failed -- where it is left unset because there is no
+    # completed synthesis to have a counterfactual for at all).
+    if worker_type == "local":
+        avoided_cost_usd, avoided_cost_basis = _compute_avoided_cost(
+            tts_backend=item.get("tts_backend") if item else None,
+            local_duration_seconds=duration_seconds,
+        )
+    else:
+        avoided_cost_usd, avoided_cost_basis = Decimal(0), "batch_job"
 
     # Cost accounting, written on every completion path (local or Batch):
     #
@@ -699,7 +802,9 @@ def _mark_done(
             "completed_at = :now, duration_seconds = :duration, "
             "gpu_cost_usd = :gpu_cost, platform_cost_usd = :platform_cost, "
             "cost_rate_usd_per_hour = :cost_rate, "
-            "rate_card_version = :rate_card_version "
+            "rate_card_version = :rate_card_version, "
+            "avoided_cost_usd = :avoided_cost, "
+            "avoided_cost_basis = :avoided_cost_basis "
             "REMOVE claim_deadline"
         ),
         ConditionExpression="#status IN (:claimed, :pending)",
@@ -715,16 +820,19 @@ def _mark_done(
             ":platform_cost": Decimal(PLATFORM_COST_PER_JOB_USD),
             ":cost_rate": Decimal(GPU_HOURLY_RATE_USD),
             ":rate_card_version": RATE_CARD_VERSION,
+            ":avoided_cost": avoided_cost_usd,
+            ":avoided_cost_basis": avoided_cost_basis,
         },
     )
 
     _roll_up_request_path_cost(
         content_hash,
         site_id=item.get("site_id") if item else None,
-        worker_type=item.get("worker_type") if item else None,
+        worker_type=worker_type,
         date=now[:10],
         platform_cost=Decimal(PLATFORM_COST_PER_JOB_USD),
         local_duration_seconds=duration_seconds,
+        avoided_cost=avoided_cost_usd,
     )
 
     return _response(
@@ -1061,6 +1169,7 @@ _COST_TOTAL_FIELDS = (
     "local_job_count",
     "billed_seconds",
     "local_duration_seconds",
+    "avoided_cost_usd",
 )
 
 
@@ -1401,6 +1510,8 @@ def _get_admin_job(content_hash: str, headers: dict[str, str]) -> dict[str, Any]
             "platform_cost_usd": item.get("platform_cost_usd"),
             "cost_rate_usd_per_hour": item.get("cost_rate_usd_per_hour"),
             "rate_card_version": item.get("rate_card_version"),
+            "avoided_cost_usd": item.get("avoided_cost_usd"),
+            "avoided_cost_basis": item.get("avoided_cost_basis"),
         },
     )
 

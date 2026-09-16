@@ -38,6 +38,15 @@ This handler also rolls up ``gpu_cost_usd`` and ``billed_seconds`` into the
 ``batch_job_count`` once per correlated Batch job. See ``_roll_up_gpu_cost``
 for the idempotency mechanism that keeps an at-least-once EventBridge
 redelivery from double-counting that cost.
+
+It also feeds ``billed_seconds`` into ``AuritusBackendTiming`` (keyed by
+``tts_backend``), a running AVERAGE -- not a true median -- of observed
+Batch billed seconds per backend. The router Lambda reads this average back
+to compute a local job's "avoided cost": what that job would have cost had
+the Batch fallback won the race instead of the local worker. See
+``_roll_up_backend_timing`` for why an average (not a median) was chosen,
+and for the separate idempotency guard that keeps this contribution safe
+from the same at-least-once EventBridge redelivery.
 """
 
 from __future__ import annotations
@@ -61,6 +70,7 @@ _dynamodb = boto3.resource("dynamodb")
 JOBS_TABLE = os.environ["JOBS_TABLE"]
 CLAIMED_BY_INDEX = os.environ.get("CLAIMED_BY_INDEX", "claimed_by-index")
 COST_ROLLUPS_TABLE = os.environ.get("COST_ROLLUPS_TABLE", "")
+BACKEND_TIMING_TABLE = os.environ.get("BACKEND_TIMING_TABLE", "")
 WARM_START_THRESHOLD_SECONDS = float(
     os.environ.get("WARM_START_THRESHOLD_SECONDS", "60")
 )
@@ -80,6 +90,9 @@ RATE_CARD_VERSION = os.environ.get("RATE_CARD_VERSION", "v1")
 
 _jobs = _dynamodb.Table(JOBS_TABLE)
 _cost_rollups = _dynamodb.Table(COST_ROLLUPS_TABLE) if COST_ROLLUPS_TABLE else None
+_backend_timing = (
+    _dynamodb.Table(BACKEND_TIMING_TABLE) if BACKEND_TIMING_TABLE else None
+)
 
 
 def _iso(epoch_ms: int | None) -> str | None:
@@ -229,6 +242,75 @@ def _roll_up_gpu_cost(
     )
 
 
+def _roll_up_backend_timing(
+    content_hash: str,
+    *,
+    tts_backend: str | None,
+    billed_seconds: Decimal,
+) -> None:
+    """Idempotently fold this job's billed seconds into its backend average.
+
+    ``AuritusBackendTiming`` (partition key ``tts_backend``, no sort key)
+    holds one row per TTS backend, accumulating ``batch_billed_seconds_sum``
+    and ``batch_sample_count`` forever via plain ``ADD``. The router Lambda
+    divides them at read time to get an average -- deliberately an AVERAGE,
+    not a true median (see the module docstring and the CDK stack's table
+    comment for why: a real streaming median needs a sorted structure or an
+    approximate-percentile algorithm, which is out of scope here, while an
+    average aggregates additively with the same ADD pattern already used
+    for cost rollups).
+
+    Idempotency uses the identical mechanism as ``_roll_up_gpu_cost`` --
+    claim a flag on the JOB record via a conditional ``UpdateItem`` before
+    touching the aggregate table -- but with its OWN flag,
+    ``backend_timing_rolled_up``, distinct from ``gpu_cost_rolled_up``. The
+    two contributions are written to two different tables for two different
+    purposes (GPU cost accounting vs. a cross-job timing statistic); gating
+    them on the same flag would mean a failure or retry pattern affecting
+    one contribution's write could block the other from ever being applied
+    (or, worse, whichever code path claims the shared flag "wins" and
+    silently skips the other's write on first attempt). Separate flags keep
+    the two idempotency guards independent, exactly as GPU cost rollup and
+    the router's own platform-cost rollup use independent flags for
+    independent contributions.
+
+    :param content_hash: The job whose billed-seconds sample is being
+        recorded.
+    :param tts_backend: The job's TTS backend, or ``None`` if unknown (skips
+        the rollup entirely -- there is no key to roll up under).
+    :param billed_seconds: This job's computed billed seconds.
+    """
+    if not tts_backend or _backend_timing is None:
+        return
+
+    try:
+        _jobs.update_item(
+            Key={"content_hash": content_hash},
+            UpdateExpression="SET backend_timing_rolled_up = :true_val",
+            ConditionExpression="attribute_not_exists(backend_timing_rolled_up)",
+            ExpressionAttributeValues={":true_val": True},
+        )
+    except ClientError as exc:
+        if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            _logger.info(
+                "batch_telemetry_backend_timing_already_recorded content_hash=%s",
+                content_hash,
+            )
+            return
+        raise
+
+    _backend_timing.update_item(
+        Key={"tts_backend": tts_backend},
+        UpdateExpression=(
+            "ADD batch_billed_seconds_sum :billed_seconds, batch_sample_count :one"
+        ),
+        ExpressionAttributeValues={
+            ":billed_seconds": billed_seconds,
+            ":one": 1,
+        },
+    )
+
+
 def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
     """Record Batch job timing facts onto the correlated job record.
 
@@ -328,6 +410,12 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         _logger.warning(
             "batch_telemetry_rollup_skipped_no_date content_hash=%s", content_hash
         )
+
+    _roll_up_backend_timing(
+        content_hash,
+        tts_backend=job.get("tts_backend"),
+        billed_seconds=Decimal(str(timing["billed_seconds"])),
+    )
 
     _logger.info(
         "batch_telemetry_recorded content_hash=%s batch_job_id=%s billed_seconds=%s",
