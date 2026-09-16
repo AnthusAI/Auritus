@@ -3,18 +3,29 @@
   "title": "Regenerate must clear Batch billing attributes once M11 telemetry lands",
   "description": "\\`_regenerate_admin_job\\` (cdk/lambdas/router/handler.py, from auritus-907209)\nREMOVEs every ephemeral attribute that \\`_claim_job\\`/\\`_mark_done\\`/\\`_mark_failed\\`\ncan write, so a regenerated job starts clean. It predates M11's batch billing\ntelemetry story (auritus-d43efe / auritus-bb0dac), which adds\n\\`batch_created_at\\`, \\`batch_started_at\\`, \\`batch_stopped_at\\`,\n\\`container_seconds\\`, \\`provisioning_seconds\\`, \\`billed_seconds\\`,\n\\`instance_type\\`, and later cost fields to job records.\n\nNone of those are in the regenerate REMOVE list. Once M11 lands, regenerating\na job that previously ran on Batch will keep its old billing/cost attributes\non the reset record -- a job now genuinely pending would still show a stale\nGPU cost from its prior run until it completes again (or forever, if it's\npicked up locally instead).\n\nExtend \\`_regenerate_admin_job\\`'s REMOVE clause to cover the M11 attributes\nwhen that epic's job-record schema exists. Add a regression scenario to\n\\`features/job_regeneration.feature\\` asserting a regenerated job has no\nleftover billing attributes.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 3,
   "assignee": null,
   "creator": null,
   "parent": "auritus-c56c4a76-cf1f-434d-bb32-3b202ccc6302",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "7274c2f2-684f-4f58-8be2-ebba27e14ca2",
+      "author": "home",
+      "text": "Implemented on fix/regenerate-clears-billing-attrs, merged to develop. Extended _regenerate_admin_job's and _retry_admin_job's REMOVE clauses with every billing/telemetry attribute (gpu_cost_usd, platform_cost_usd, cost_rate_usd_per_hour, rate_card_version, avoided_cost_usd, avoided_cost_basis, batch_created_at/started_at/stopped_at, instance_type, container_seconds, provisioning_seconds, billed_seconds) plus all three idempotency flags (platform_cost_rolled_up, gpu_cost_rolled_up, backend_timing_rolled_up). Agent independently found and fixed the identical gap in _retry_admin_job that I'd only asked it to check for, correctly reasoning that a stuck-claimed job could carry batch_telemetry flags from before it got stuck. Confirmed the idempotency-flag omission was a real under-counting bug, not just stale-data cosmetics: without clearing those flags, a regenerated/retried job's real cost on its next completion would be silently skipped by the rollup guards. Independently re-verified: reverted the fix myself and confirmed both new scenarios genuinely fail. Full suite green: black/ruff, pytest (72 passed), behave (30 features, 118 scenarios).",
+      "created_at": "2026-09-16T07:12:26.473831Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-16T03:14:10.564441Z",
-  "updated_at": "2026-09-16T03:14:10.564470Z",
-  "closed_at": null,
+  "updated_at": "2026-09-16T07:12:26.519042Z",
+  "closed_at": "2026-09-16T07:12:26.519020Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
 }
