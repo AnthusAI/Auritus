@@ -3,17 +3,25 @@
   "title": "Fish Speech TTS backend and example page",
   "description": "Implement Fish Speech backend using mlx-audio on Apple Silicon and PyTorch on Linux GPU workers, create the example comparison page at /examples/fish, and document licensing.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-19ba7b16-6f43-4136-ad99-3b8e4b434c6c",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "f0a057fa-ebd9-4b56-aa64-a0cf265dda4f",
+      "author": "home",
+      "text": "Implemented Fish Speech TTS backend across CLI and worker-image with voice resolution, breaks support, local cache checking to prevent download hangs, and synthetic fallback. Created /examples/fish comparison page and updated ModelCompareNav with 6 models. Verified with unit tests, behave scenarios, and Playwright acceptance tests. Generated and uploaded audio for Gettysburg excerpt (f7fee97f).",
+      "created_at": "2026-09-16T13:52:40.322489Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-16T13:38:57.731143Z",
-  "updated_at": "2026-09-16T13:38:57.731178Z",
-  "closed_at": null,
+  "updated_at": "2026-09-16T13:52:42.099349Z",
+  "closed_at": "2026-09-16T13:52:42.099317Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
