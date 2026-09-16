@@ -3,17 +3,25 @@
   "title": "Operator sees what the local worker saved",
   "description": "Auritus exists so a publisher can run synthesis on a GPU they control and pay\nAWS nothing. The local worker races the cloud fallback for exactly that\nreason. Nothing in the product currently demonstrates that it works.\n\nEvery locally processed job has a counterfactual: what that synthesis would\nhave cost had the Batch fallback won the race. Summed, that is the number\njustifying the entire architecture -- and the strongest evidence an operator\nhas that keeping a local worker running is worth it.\n\nIt is nearly free to compute once the rate card exists, since local jobs\nalready record `duration_seconds` and `worker_type`.\n\n## Feature\n\n```gherkin\nFeature: Savings from local worker processing\n\n  Scenario: A locally processed job records its avoided cost\n    Given the GPU rate is 0.526 dollars per hour\n    And a local job took 3600 seconds\n    When the job cost is calculated\n    Then the job avoided cost is 0.526 dollars\n\n  Scenario: Savings accumulate in the daily rollup\n    Given two local jobs complete for a site\n    Then the daily rollup avoided cost is the sum of both avoided costs\n\n  Scenario: A Batch job has no avoided cost\n    Given a job was claimed by a Batch worker\n    When the job cost is calculated\n    Then the job avoided cost is zero\n\n  Scenario: Operator sees cumulative savings\n    Given local jobs have avoided cost over thirty days\n    When the operator requests the cost summary\n    Then the summary reports total avoided cost\n    And the summary reports actual gpu cost\n```\n\n## Implementation brief\n\n**Counterfactual basis** -- a local job's `duration_seconds` is wall-clock on\nthe operator's own hardware, which may be faster or slower than a\n`g4dn.xlarge`. Multiplying local seconds by the GPU rate therefore measures\n\"what this would have cost if Batch were exactly as fast as my machine,\"\nwhich is not the same as \"what Batch would have charged.\"\n\nTwo options, and this needs an architect decision:\n\n1. **Local duration x GPU rate.** Trivial, but a slow local machine inflates\n   apparent savings and a fast one understates them.\n2. **Median observed Batch `billed_seconds` per backend x GPU rate.** Uses\n   real Batch timings for the same TTS backend as the counterfactual, which is\n   substantially more defensible. Requires enough Batch samples per backend to\n   have a median, with a fallback to option 1 until then.\n\nRecommend 2 with a documented fallback to 1. Either way the figure is modelled\nand must be labelled as an estimate, not a refund.\n\n**Implementation** -- `avoided_cost_usd` on the job record for local jobs,\naccumulated into the rollup's `avoided_cost_usd` via `ADD`, alongside actual\ncost. Surface both in `GET /admin/costs`: what you spent and what you did not.\n\n**Scope note** -- displaying this on the public aurit.us site was considered\nand deliberately excluded. Publishing a modelled savings figure as marketing\ninvites scrutiny the methodology should be ready for first. Console and CLI\nonly for now.\n\n## Blocked on\n\nThe per-job estimated cost story, for the rate card.",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-c56c4a76-cf1f-434d-bb32-3b202ccc6302",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "e5cac8e5-24bf-4b76-878c-024dffb17899",
+      "author": "home",
+      "text": "Implemented on feature/job-cost-savings, merged to develop. Architect decision made explicit before dispatch: a true streaming median can't be maintained incrementally without a sorted structure or approximate-percentile algorithm, so used a running AVERAGE of observed Batch billed_seconds per tts_backend instead (new AuritusBackendTiming table, partition key tts_backend only, no TTL -- a permanent statistic). Falls back to the job's own local duration when no Batch samples exist yet for that backend. avoided_cost_usd/avoided_cost_basis written on every _mark_done (0/'batch_job' for Batch jobs, computed for local, left entirely unset for _mark_failed since there's no completed synthesis to have a counterfactual for). Two idempotency flags: backend_timing_rolled_up (new, independent -- separate table, separate retry source from batch_telemetry) vs. avoided_cost riding on the existing platform_cost_rolled_up flag (correctly justified: both figures are computed and written together by the same single caller in _mark_done, no independent retry source exists for avoided_cost the way batch_telemetry is independent for GPU cost). Given the money-double-counting stakes, gave this the same scrutiny as the rollups story: independently disabled the new backend_timing_rolled_up guard myself and confirmed the sample count doubles (2 vs 1) without it, then restored and reconfirmed green. Full suite independently re-verified: black/ruff, cli pytest (59 passed), behave (30 features, 116 scenarios), cdk pytest (35 passed), cdk synth clean.",
+      "created_at": "2026-09-16T06:54:07.882059Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-16T02:37:47.598036Z",
-  "updated_at": "2026-09-16T06:41:50.756858Z",
-  "closed_at": null,
+  "updated_at": "2026-09-16T06:54:07.924137Z",
+  "closed_at": "2026-09-16T06:54:07.924113Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {
