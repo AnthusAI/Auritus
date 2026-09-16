@@ -32,6 +32,13 @@ def list_jobs(
         )
 
 
+def _format_cost_usd(value: float | int | None) -> str:
+    """Format a USD cost amount to 4 decimal places."""
+    if value is None:
+        return "0.0000"
+    return f"{float(value):.4f}"
+
+
 @app.command("show")
 def show_job(
     content_hash: str = typer.Option(..., "--hash", help="Job content hash."),
@@ -43,8 +50,21 @@ def show_job(
     except AuritusApiError as exc:
         typer.secho(str(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1) from exc
+
+    # Print all fields, with special formatting for cost fields
+    cost_fields = {"gpu_cost_usd", "platform_cost_usd", "cost_rate_usd_per_hour"}
     for key, value in job.items():
-        typer.echo(f"{key}={value}")
+        if key in cost_fields:
+            formatted_value = _format_cost_usd(value)
+            typer.echo(f"{key}={formatted_value}")
+        elif key == "avoided_cost_usd":
+            # Only print avoided_cost_usd when avoided_cost_basis is present and not "batch_job"
+            avoided_basis = job.get("avoided_cost_basis")
+            if avoided_basis and avoided_basis != "batch_job":
+                formatted_value = _format_cost_usd(value)
+                typer.echo(f"{key}={formatted_value}")
+        else:
+            typer.echo(f"{key}={value}")
 
 
 @app.command("delete")
