@@ -1,0 +1,20 @@
+{
+  "id": "auritus-565415f8-a78c-41ed-bd50-5d0b81b12c48",
+  "title": "DELETE /sites/{id} silently no-ops when the id does not exist",
+  "description": "Found while fixing auritus-b0f217. \\`_delete_site\\` in\n\\`cdk/lambdas/router/handler.py\\` does:\n\n\\`\\`\\`python\ndef _delete_site(site_id: str, headers: dict[str, str]) -> dict[str, Any]:\n    _require_operator(headers)\n    _sites.delete_item(Key={\"site_id\": site_id})\n    return _response(200, {\"site_id\": site_id, \"deleted\": True})\n\\`\\`\\`\n\nDynamoDB's \\`delete_item\\` succeeds silently whether or not the key exists.\nCalling \\`DELETE /sites/anything-at-all\\` returns \\`200 {\"deleted\": true}\\`\nregardless of whether a site with that id ever existed. This is how the\noriginal site-key-lifecycle bug report's claim (\"passing site_key to revoke\nworks\") went unnoticed for so long: it wasn't actually revoking anything,\njust returning a false-positive success.\n\n## Fix\n\nLoad the item first; raise \\`LookupError(\"site_not_found\")\\` when absent\n(matches the pattern already used by \\`_delete_admin_job\\` in the M10 epic).\nSmall, low-priority, not user-facing in a way anyone has hit yet.",
+  "type": "bug",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-16T02:55:12.223972Z",
+  "updated_at": "2026-09-16T02:55:12.223999Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
