@@ -109,6 +109,11 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
                 "/regenerate"
             ).removeprefix("/admin/jobs/")
             return _regenerate_admin_job(content_hash, headers)
+        if method == "POST" and path.endswith("/retry"):
+            content_hash = path_params.get("hash") or path.removesuffix(
+                "/retry"
+            ).removeprefix("/admin/jobs/")
+            return _retry_admin_job(content_hash, body, headers)
         if method == "POST" and path == "/admin/queue/toggle":
             return _toggle_admin_queue(body, headers)
         return _response(404, {"error": "not_found"})
@@ -977,6 +982,61 @@ def _regenerate_admin_job(content_hash: str, headers: dict[str, str]) -> dict[st
             "REMOVE audio_key, claimed_by, claim_owner, claimed_at, "
             "claimed_at_epoch, claim_deadline, completed_at, failed_at, "
             "duration_seconds, error_message, worker_type"
+        ),
+        ExpressionAttributeNames={"#status": "status"},
+        ExpressionAttributeValues={
+            ":pending": "pending",
+            ":token": job_token,
+            ":now": now,
+        },
+    )
+
+    _arm_fallback(content_hash, job_token, item.get("tts_backend", "kokoro"))
+
+    return _response(200, {"content_hash": content_hash, "status": "pending"})
+
+
+def _retry_admin_job(
+    content_hash: str, body: dict[str, Any], headers: dict[str, str]
+) -> dict[str, Any]:
+    """Retry a failed job, or release a stuck claim, resetting it to pending.
+
+    A failed job is always eligible. A claimed job is eligible only if its
+    stored claim deadline has passed (the worker holding it is presumed
+    dead), unless the caller explicitly forces the release of a live claim.
+
+    :param content_hash: The content hash identifying the job.
+    :param body: Request body; ``force: true`` releases a live claim.
+    :param headers: Request headers for auth (operator-only).
+    :returns: 200 with the job reset to pending.
+    :raises LookupError: If no job exists for the given content hash.
+    :raises ConflictError: If the job's status makes it ineligible.
+    """
+    _require_operator(headers)
+    item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
+    if not item:
+        raise LookupError("job_not_found")
+
+    status = item.get("status")
+    force = bool(body.get("force"))
+
+    if status == "claimed":
+        deadline = item.get("claim_deadline")
+        now_epoch = Decimal(int(time.time()))
+        is_stale = deadline is not None and Decimal(deadline) < now_epoch
+        if not is_stale and not force:
+            raise ConflictError("claim_still_live")
+    elif status != "failed":
+        raise ConflictError(f"job_is_{status}")
+
+    job_token = secrets.token_urlsafe(32)
+    now = _utc_now_iso()
+    _jobs.update_item(
+        Key={"content_hash": content_hash},
+        UpdateExpression=(
+            "SET #status = :pending, job_token = :token, updated_at = :now "
+            "REMOVE claimed_by, claim_owner, claimed_at, claimed_at_epoch, "
+            "claim_deadline, failed_at, error_message, worker_type"
         ),
         ExpressionAttributeNames={"#status": "status"},
         ExpressionAttributeValues={
