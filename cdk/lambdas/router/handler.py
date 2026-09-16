@@ -39,6 +39,11 @@ ALERTS_TABLE = os.environ.get("ALERTS_TABLE", "")
 
 KOKORO_DEFAULT_VOICE_ID = "af_heart"
 
+# The complete set of job lifecycle statuses, as also enumerated in
+# _get_admin_overview's counts dict. Shared here so the unfiltered admin
+# jobs listing queries the same statuses the overview reports on.
+JOB_STATUSES = ("pending", "claimed", "done", "failed")
+
 _jobs = _dynamodb.Table(JOBS_TABLE)
 _sites = _dynamodb.Table(SITES_TABLE)
 _alerts = _dynamodb.Table(ALERTS_TABLE) if ALERTS_TABLE else None
@@ -836,6 +841,147 @@ def _decode_cursor(token: str | None) -> dict[str, Any] | None:
     return None
 
 
+def _query_jobs_by_status(
+    status: str, *, limit: int, start_key: dict[str, Any] | None
+) -> dict[str, Any]:
+    """Query one status partition of ``status-created_at-index``, newest first."""
+    query_kwargs: dict[str, Any] = {
+        "IndexName": "status-created_at-index",
+        "KeyConditionExpression": "#s = :status",
+        "ExpressionAttributeNames": {"#s": "status"},
+        "ExpressionAttributeValues": {":status": status},
+        "ScanIndexForward": False,
+        "Limit": limit,
+    }
+    if start_key:
+        query_kwargs["ExclusiveStartKey"] = start_key
+    return _jobs.query(**query_kwargs)
+
+
+def _list_admin_jobs_unfiltered(
+    limit: int, cursor: dict[str, Any] | None
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    """Return the ``limit`` most recent jobs across every status, newest first.
+
+    A plain ``Scan`` with a ``Limit`` returns an arbitrary page of items in
+    whatever internal partition order DynamoDB happens to read them in --
+    NOT the most recently created items -- and sorting only that arbitrary
+    page by ``created_at`` afterwards does not fix that: a newly created job
+    can be entirely absent from the scanned page and never surface as
+    "most recent" at all. This was confirmed in production: a job that
+    ``GET /jobs/{hash}`` correctly reported as ``pending`` never appeared in
+    this unfiltered listing, even though every job the listing did return
+    was strictly older by ``created_at``.
+
+    Instead, since ``status-created_at-index`` (partition key ``status``,
+    sort key ``created_at``) is already queried correctly for the
+    status-filtered case, query it once per known status with
+    ``ScanIndexForward=False`` -- each such query IS genuinely sorted
+    newest-first -- and merge the (at most four) results in Python.
+
+    Pagination across a merge of independently paginated queries has no
+    single natural cursor. The approach here keeps, per status, a small
+    buffer of already-fetched-but-not-yet-emitted items alongside that
+    status's own DynamoDB ``ExclusiveStartKey``: on every page, any status
+    whose buffer is smaller than ``limit`` (the worst case, where every
+    emitted item could come from one status) is topped up with one more
+    query before merging, so a fetched item is only ever discarded from the
+    buffer once it has actually been emitted on some page. Page one is
+    always exactly correct; because nothing fetched is discarded before
+    being emitted, later pages are complete and free of both gaps and
+    duplicates too, modulo the ordinary snapshot-consistency caveat that
+    applies to any multi-query pagination against a table that is still
+    being written to between page fetches (a status's relative rank can
+    shift if enough new rows land in a different status between two of the
+    caller's page requests).
+
+    The buffer is deliberately two-tier so the cursor stays small: a
+    buffered-but-unemitted item is carried across pages as just its
+    ``content_hash`` and ``created_at`` (the only two fields the merge/sort
+    step actually needs), never its full body. Full bodies only exist
+    transiently in-memory for the current request, in two ways -- freshly
+    queried items arrive with a full body straight from the ``Query`` call
+    (query results are never trimmed), and items surviving from a prior
+    page's minimal cursor buffer get their full body fetched individually,
+    but ONLY for the ones that end up on this page's emitted set. Items that
+    remain buffered (fetched or carried over, but not emitted this page)
+    have any full body dropped again before being written back into the
+    next cursor. Without this, the cursor would embed up to
+    ``limit * len(JOB_STATUSES)`` full job records -- including untruncated
+    ``text`` and ``job_token`` -- base64-encoded into a ``next_token`` query
+    parameter, which risks exceeding real request/URL size limits that the
+    moto-based test suite has no way to catch.
+    """
+    per_status = cursor.get("per_status", {}) if cursor else {}
+
+    # buffers[status] holds "buffer entries": dicts always carrying
+    # content_hash and created_at (enough to sort), and carrying "item"
+    # (the full DynamoDB body) only when it is already in hand for free --
+    # i.e. for entries fetched fresh this request. Entries restored from
+    # the cursor's minimal buffer never carry "item" yet.
+    buffers: dict[str, list[dict[str, Any]]] = {}
+    start_keys: dict[str, Any] = {}
+    for status in JOB_STATUSES:
+        state = per_status.get(status) or {}
+        buffers[status] = [dict(entry) for entry in (state.get("buffer") or [])]
+        start_keys[status] = state.get("start_key")
+
+    for status in JOB_STATUSES:
+        exhausted = per_status.get(status) is not None and not start_keys[status]
+        if len(buffers[status]) < limit and not exhausted:
+            res = _query_jobs_by_status(
+                status, limit=limit, start_key=start_keys[status]
+            )
+            for item in res.get("Items") or []:
+                buffers[status].append(
+                    {
+                        "content_hash": item["content_hash"],
+                        "created_at": item.get("created_at", ""),
+                        "item": item,
+                    }
+                )
+            start_keys[status] = res.get("LastEvaluatedKey")
+
+    merged: list[dict[str, Any]] = []
+    for status in JOB_STATUSES:
+        merged.extend(buffers[status])
+    merged.sort(key=lambda x: str(x.get("created_at", "")), reverse=True)
+    page_entries = merged[:limit]
+
+    # Only now -- once it's known which buffered entries actually make it
+    # onto this page -- fetch full bodies for the ones that don't already
+    # have one (i.e. those that came from the cursor's minimal buffer
+    # rather than from a fresh query this request).
+    page: list[dict[str, Any]] = []
+    for entry in page_entries:
+        full_item = entry.get("item")
+        if full_item is None:
+            full_item = _jobs.get_item(Key={"content_hash": entry["content_hash"]}).get(
+                "Item"
+            )
+        if full_item is not None:
+            page.append(full_item)
+
+    emitted_ids = {entry["content_hash"] for entry in page_entries}
+    next_per_status: dict[str, Any] = {}
+    has_more = False
+    for status in JOB_STATUSES:
+        leftover = [
+            {
+                "content_hash": entry["content_hash"],
+                "created_at": entry.get("created_at", ""),
+            }
+            for entry in buffers[status]
+            if entry["content_hash"] not in emitted_ids
+        ]
+        next_per_status[status] = {"buffer": leftover, "start_key": start_keys[status]}
+        if leftover or start_keys[status]:
+            has_more = True
+
+    next_cursor = {"multi": True, "per_status": next_per_status} if has_more else None
+    return page, next_cursor
+
+
 def _list_admin_jobs(
     headers: dict[str, str], query_params: dict[str, str]
 ) -> dict[str, Any]:
@@ -843,32 +989,21 @@ def _list_admin_jobs(
     _require_operator(headers)
     status_filter = query_params.get("status")
     limit = min(100, max(1, int(query_params.get("limit") or 25)))
-    start_key = _decode_cursor(query_params.get("next_token"))
-
-    query_kwargs: dict[str, Any] = {"Limit": limit}
-    if start_key:
-        query_kwargs["ExclusiveStartKey"] = start_key
+    cursor = _decode_cursor(query_params.get("next_token"))
 
     if status_filter:
-        query_kwargs.update(
-            {
-                "IndexName": "status-created_at-index",
-                "KeyConditionExpression": "#s = :status",
-                "ExpressionAttributeNames": {"#s": "status"},
-                "ExpressionAttributeValues": {":status": status_filter},
-                "ScanIndexForward": False,
-            }
+        start_key = (
+            cursor if isinstance(cursor, dict) and not cursor.get("multi") else None
         )
-        res = _jobs.query(**query_kwargs)
+        res = _query_jobs_by_status(status_filter, limit=limit, start_key=start_key)
+        items = list(res.get("Items") or [])
+        next_token = _encode_cursor(res.get("LastEvaluatedKey"))
     else:
-        res = _jobs.scan(**query_kwargs)
-
-    items = res.get("Items") or []
-    if not status_filter:
-        items.sort(key=lambda x: str(x.get("created_at", "")), reverse=True)
-
-    last_evaluated = res.get("LastEvaluatedKey")
-    next_token = _encode_cursor(last_evaluated)
+        multi_cursor = (
+            cursor if isinstance(cursor, dict) and cursor.get("multi") else None
+        )
+        items, next_cursor = _list_admin_jobs_unfiltered(limit, multi_cursor)
+        next_token = _encode_cursor(next_cursor)
 
     formatted_jobs = []
     for item in items:
