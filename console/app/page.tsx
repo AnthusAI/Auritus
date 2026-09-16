@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { fetchOverview, fetchJobs, OverviewMetrics, JobSummary } from '../lib/api';
+import { fetchOverview, fetchJobs, fetchCosts, OverviewMetrics, JobSummary, CostSummary } from '../lib/api';
 
 export default function DashboardOverviewPage() {
   const [metrics, setMetrics] = useState<OverviewMetrics>({
@@ -12,6 +12,7 @@ export default function DashboardOverviewPage() {
     batch_queue_state: 'UNKNOWN',
     total_sampled_jobs: 0,
   });
+  const [costs, setCosts] = useState<CostSummary>({ daily: [], total: { gpu_cost_usd: 0, platform_cost_usd: 0, avoided_cost_usd: 0, batch_job_count: 0, local_job_count: 0, billed_seconds: 0, local_duration_seconds: 0 } });
   const [recentJobs, setRecentJobs] = useState<JobSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,12 +22,14 @@ export default function DashboardOverviewPage() {
       setLoading(true);
       setError(null);
       try {
-        const [overviewData, jobsData] = await Promise.all([
+        const [overviewData, jobsData, costsData] = await Promise.all([
           fetchOverview(),
           fetchJobs(),
+          fetchCosts(),
         ]);
         if (overviewData) setMetrics(overviewData);
         if (jobsData?.jobs) setRecentJobs(jobsData.jobs.slice(0, 8));
+        if (costsData) setCosts(costsData);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Failed to load dashboard data';
         setError(message);
@@ -46,6 +49,10 @@ export default function DashboardOverviewPage() {
             100
         )
       : 100;
+
+  const formatUSD = (value: number) => {
+    return `$${value.toFixed(4)}`;
+  };
 
   return (
     <div className="console-container">
@@ -113,6 +120,34 @@ export default function DashboardOverviewPage() {
             G4dn.xlarge GPU compute
           </div>
         </div>
+
+        <Link href="/costs" style={{ textDecoration: 'none' }}>
+          <div className="card" style={{ cursor: 'pointer', height: '100%', transition: 'background-color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--panel)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--card)'}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+              Batch GPU Cost
+            </div>
+            <div style={{ fontSize: '2.2rem', fontWeight: 700, fontFamily: 'Georgia, serif', color: 'var(--accent)' }}>
+              {formatUSD(costs.total.gpu_cost_usd)}
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', marginTop: '0.25rem' }}>
+              Click to explore &rarr;
+            </div>
+          </div>
+        </Link>
+
+        <Link href="/costs" style={{ textDecoration: 'none' }}>
+          <div className="card" style={{ cursor: 'pointer', height: '100%', transition: 'background-color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--panel)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--card)'}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+              Saved via Local Workers
+            </div>
+            <div style={{ fontSize: '2.2rem', fontWeight: 700, fontFamily: 'Georgia, serif', color: 'var(--success)' }}>
+              {formatUSD(costs.total.avoided_cost_usd)}
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', marginTop: '0.25rem' }}>
+              GPU hours avoided
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* Recent Activity Table */}
