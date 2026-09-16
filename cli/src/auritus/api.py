@@ -174,6 +174,22 @@ class AuritusClient:
         """Mark a job done after audio upload (alias for :meth:`mark_done`)."""
         return self.mark_done(content_hash, audio_key=audio_key, owner=owner)
 
+    def mark_failed(
+        self, content_hash: str, *, reason: str, owner: str
+    ) -> dict[str, Any]:
+        """Release a claim and mark a job failed after an unrecoverable error.
+
+        :param content_hash: The content hash identifying the job.
+        :param reason: A short, human-readable description of the failure.
+        :param owner: The claim owner releasing the job.
+        :returns: The API response with the job reset to ``failed``.
+        """
+        return self._request(
+            "PUT",
+            f"/jobs/{content_hash}/failed",
+            json_body={"reason": reason, "owner": owner},
+        )
+
     def create_site(self, *, origin: str, name: str = "") -> dict[str, Any]:
         """Mint a site key for an embed origin."""
         return self._request(
