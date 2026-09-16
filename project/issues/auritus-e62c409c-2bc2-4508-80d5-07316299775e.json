@@ -1,0 +1,20 @@
+{
+  "id": "auritus-e62c409c-2bc2-4508-80d5-07316299775e",
+  "title": "5 TTS backends (f5, fish, coqui, bark, qwen) have no break-marker support -- would read pause markers as literal text",
+  "description": "Kokoro, Higgs, and Chatterbox all correctly split on AURITUS_BREAK_MARKER\nand insert a real silence gap (see kokoro.py/higgs.py/chatterbox.py, and the\nnew shared auritus.tts.breaks / tts.breaks module both cli/ and\nworker-image/ backends now import it from). f5.py, fish.py, coqui.py,\nbark.py, and qwen.py have none of that -- they pass the raw text straight\nto their respective models, break markers included. Since the embed\ngenerator now inserts this marker automatically after every heading,\nparagraph, list item, and blockquote (as of the pause-insertion work this\nweek), any of these five backends fed real article content would\nsynthesize the literal string '[[auritus:break]]' as spoken text at every\nparagraph boundary.\n\nLower priority because none of the five is the default or currently\nselected by any real site's embed config (kokoro is Pilobol.us's only\nbackend in practice) -- but the gap is real and will bite the next\nintegration that picks one of them without knowing to check. Each backend\nneeds the same three-line fix kokoro/higgs/chatterbox already have:\nimport AURITUS_BREAK_MARKER/split_on_breaks from the shared breaks module,\niterate blocks, join with a tuned BREAK_SILENCE_SECONDS silence gap.",
+  "type": "bug",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-16T01:06:23.626533Z",
+  "updated_at": "2026-09-16T01:06:44.076120Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
