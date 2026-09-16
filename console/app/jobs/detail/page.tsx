@@ -257,6 +257,36 @@ function JobDetailContent() {
               <span style={{ color: 'var(--ink-muted)' }}>Completed At</span>
               <span className="mono" style={{ fontSize: '0.8rem' }}>{job.completed_at || '—'}</span>
             </div>
+            {job.gpu_cost_usd !== undefined && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--line)', paddingBottom: '0.4rem' }}>
+                <span style={{ color: 'var(--ink-muted)' }}>GPU Cost</span>
+                <strong>${job.gpu_cost_usd.toFixed(4)}</strong>
+              </div>
+            )}
+            {job.platform_cost_usd !== undefined && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--line)', paddingBottom: '0.4rem' }}>
+                <span style={{ color: 'var(--ink-muted)' }}>Platform Cost</span>
+                <strong>${job.platform_cost_usd.toFixed(4)}</strong>
+              </div>
+            )}
+            {job.cost_rate_usd_per_hour !== undefined && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--line)', paddingBottom: '0.4rem' }}>
+                <span style={{ color: 'var(--ink-muted)' }}>Cost Rate</span>
+                <strong>${job.cost_rate_usd_per_hour.toFixed(4)}/hr</strong>
+              </div>
+            )}
+            {job.rate_card_version && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--line)', paddingBottom: '0.4rem' }}>
+                <span style={{ color: 'var(--ink-muted)' }}>Rate Card Version</span>
+                <strong className="mono" style={{ fontSize: '0.8rem' }}>{job.rate_card_version}</strong>
+              </div>
+            )}
+            {job.avoided_cost_usd !== undefined && job.avoided_cost_basis !== 'batch_job' && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--line)', paddingBottom: '0.4rem' }}>
+                <span style={{ color: 'var(--ink-muted)' }}>Avoided Cost (Local)</span>
+                <strong style={{ color: 'var(--success)' }}>${job.avoided_cost_usd.toFixed(4)}</strong>
+              </div>
+            )}
             {job.error_message && (
               <div style={{ background: 'var(--danger-bg)', color: 'var(--danger)', padding: '0.75rem', borderRadius: '4px', marginTop: '0.5rem' }}>
                 <strong>Error:</strong> {job.error_message}

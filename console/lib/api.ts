@@ -40,6 +40,29 @@ export interface JobSummary {
 
 export interface JobDetail extends JobSummary {
   site_key?: string;
+  gpu_cost_usd?: number;
+  platform_cost_usd?: number;
+  cost_rate_usd_per_hour?: number;
+  rate_card_version?: string;
+  avoided_cost_usd?: number;
+  avoided_cost_basis?: string;
+}
+
+export interface DailyCost {
+  site_id: string;
+  date: string;
+  gpu_cost_usd: number;
+  platform_cost_usd: number;
+  avoided_cost_usd: number;
+  batch_job_count: number;
+  local_job_count: number;
+  billed_seconds: number;
+  local_duration_seconds: number;
+}
+
+export interface CostSummary {
+  daily: DailyCost[];
+  total: Omit<DailyCost, 'site_id' | 'date'>;
 }
 
 const API_BASE = (process.env.NEXT_PUBLIC_AURITUS_API_ENDPOINT || '').replace(/\/+$/, '');
@@ -146,4 +169,13 @@ export async function createSite(label: string): Promise<CreatedSite> {
 
 export async function revokeSite(siteId: string): Promise<{ site_id: string; deleted: boolean }> {
   return apiFetch(`/sites/${encodeURIComponent(siteId)}`, { method: 'DELETE' });
+}
+
+export async function fetchCosts(siteId?: string, from?: string, to?: string): Promise<CostSummary> {
+  const params = new URLSearchParams();
+  if (siteId) params.set('site_id', siteId);
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  return apiFetch<CostSummary>(`/admin/costs${query}`);
 }
