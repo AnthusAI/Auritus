@@ -2,13 +2,15 @@
 
 import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { fetchJobDetail, JobDetail } from '../../../lib/api';
 
 function JobDetailContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const hash = searchParams ? searchParams.get('hash') || '' : '';
   const [job, setJob] = useState<JobDetail | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,34 +20,41 @@ function JobDetailContent() {
         return;
       }
       try {
-        const data = await fetchJobDetail(hash).catch(() => ({
-          content_hash: hash,
-          status: 'done' as const,
-          worker_type: 'local' as const,
-          claimed_by: 'local:node-1:abcdef',
-          tts_backend: 'kokoro',
-          voice_id: 'af_heart',
-          text: 'Four score and seven years ago our fathers brought forth on this continent a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.',
-          name: 'Gettysburg Excerpt',
-          byline: 'Abraham Lincoln',
-          created_at: '2026-09-13T14:10:00Z',
-          claimed_at: '2026-09-13T14:10:01Z',
-          completed_at: '2026-09-13T14:10:05Z',
-          duration_seconds: 4.2,
-          audio_url: 'https://cdn.example.com/audio/sample.mp3',
-        }));
+        const data = await fetchJobDetail(hash);
         setJob(data);
+        setError(null);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        if (errorMessage === 'Unauthorized') {
+          router.replace('/login');
+        } else {
+          setError(errorMessage);
+        }
       } finally {
         setLoading(false);
       }
     }
     loadDetail();
-  }, [hash]);
+  }, [hash, router]);
 
   if (loading) {
     return (
       <div className="console-container" style={{ padding: '3rem 0', textAlign: 'center' }}>
         Loading job inspection...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="console-container" style={{ padding: '3rem 0' }}>
+        <div style={{ background: 'var(--danger-bg)', color: 'var(--danger)', padding: '1.5rem', borderRadius: '6px', marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', marginTop: 0 }}>Failed to load job details</h2>
+          <p style={{ marginBottom: 0, fontSize: '0.95rem' }}>{error}</p>
+        </div>
+        <Link href="/jobs" className="button">
+          &larr; Back to Job Explorer
+        </Link>
       </div>
     );
   }
