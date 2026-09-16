@@ -1,0 +1,28 @@
+{
+  "id": "auritus-1c69eda4-e124-49a9-bea4-7aae2e742e00",
+  "title": "Estimated costs reconcile against the actual AWS bill",
+  "description": "Everything else in this epic produces estimates. An estimate nobody ever\nchecks becomes wrong quietly -- a rate change, a region change, an instance\ntype change, or a provisioning allowance that was always too low, and the\nconsole reports confident figures that drift further from the invoice every\nmonth.\n\nPull the actual daily cost from Cost Explorer and store it beside the summed\nestimate. The delta is the product: it tells the operator how far to trust the\nper-job numbers, and it tells us when the rate card needs updating.\n\n## Feature\n\n```gherkin\nFeature: Reconciling estimated cost against actual AWS cost\n\n  Scenario: Actual daily cost is recorded alongside the estimate\n    Given estimated costs exist for a day\n    When the reconciliation runs for that day\n    Then the day records an actual cost from AWS\n    And the day records the variance against the estimate\n\n  Scenario: Reconciliation waits for AWS cost data to settle\n    Given a day that ended two hours ago\n    When the reconciliation runs\n    Then that day is not reconciled\n\n  Scenario: Operator sees estimate and actual together\n    Given a reconciled day exists\n    When the operator requests the cost summary\n    Then the summary reports both estimated and actual cost\n\n  Scenario: A large variance is surfaced\n    Given a reconciled day whose actual cost exceeds the estimate by more than the variance threshold\n    When the operator requests the cost summary\n    Then that day is flagged as out of tolerance\n```\n\n## Implementation brief\n\n**Scheduled Lambda** -- EventBridge rule, once daily, reconciling the day that\nclosed at least 24 hours ago. Cost Explorer data is not final immediately;\nreconciling too early produces a variance that is just latency.\n\n**`ce:GetCostAndUsage`** with `Granularity=DAILY`, grouped by `SERVICE`, or\nfiltered by a cost allocation tag. Be aware:\n\n- Cost Explorer charges roughly 0.01 USD per API request. One call per day is\n  negligible; a call per page load would not be. Never call it from a request\n  path -- only from the scheduled job, writing results to the rollup table.\n- Cost allocation tags must be activated in the billing console before they\n  appear in Cost Explorer, and activation is not retroactive. If tag-based\n  attribution is wanted, tag the Batch compute resources in CDK **and**\n  document the manual activation step, because a deployer who skips it gets\n  silently empty results rather than an error.\n- The AWS account may run more than Auritus. Filtering by service alone will\n  attribute unrelated EC2 spend to Auritus. Tag-based filtering is the correct\n  answer; service filtering is acceptable only for a dedicated account, and\n  the docs must say which assumption is in force.\n\n**Storage** -- extend the rollup records with `actual_cost_usd`,\n`reconciled_at`, and `variance_usd`. Reconciliation is account-wide while\nrollups are per-site, so actuals land on a distinct account-level rollup key\nrather than being split across sites by a guess. Per-site actual cost is not\nobtainable from Cost Explorer and should not be fabricated.\n\n**`variance_threshold_percent`** -- CDK context, for the out-of-tolerance flag.\n\n## Blocked on\n\nThe daily cost rollups story, which owns the records this extends.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-c56c4a76-cf1f-434d-bb32-3b202ccc6302",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "auritus-b77b5e9e-9fbc-49e2-862d-04a522f772dc",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-16T02:38:09.516518Z",
+  "updated_at": "2026-09-16T02:39:02.174593Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "auritus-23970f41-1703-4608-b02e-852f894e0586",
+  "title": "Operator sees costs in the CLI",
+  "description": "An operator running `auritus worker` on their own GPU is exactly the person\nwho wants to know what the cloud fallback is costing when their worker is\noffline. Give them a cost command.\n\n## Feature\n\n```gherkin\nFeature: Viewing costs from the command line\n\n  Scenario: Operator sees a cost summary\n    Given costs exist for the last thirty days\n    When the operator runs \"auritus cost\"\n    Then the total gpu cost is printed\n    And the total platform cost is printed\n    And the total avoided cost is printed\n\n  Scenario: Operator scopes costs to a site\n    Given costs exist for two sites\n    When the operator runs \"auritus cost --site\" with one site\n    Then only that site's costs are printed\n\n  Scenario: Operator sees a daily breakdown\n    Given costs exist for the last seven days\n    When the operator runs \"auritus cost --daily\"\n    Then one row is printed per day\n\n  Scenario: Operator sees estimate against actual\n    Given a reconciled day exists\n    When the operator runs \"auritus cost --daily\"\n    Then the estimated and actual cost are both printed for that day\n\n  Scenario: Inspecting a job shows its cost\n    Given a Batch job completed with a GPU cost\n    When the operator runs \"auritus job show\" with its content hash\n    Then the job gpu cost and billed seconds are printed\n\n  Scenario: A locally processed job shows zero GPU cost and its avoided cost\n    Given a local job completed\n    When the operator runs \"auritus job show\" with its content hash\n    Then the job gpu cost is zero\n    And the job avoided cost is printed\n```\n\n## Implementation brief\n\n**`cli/src/auritus/api.py`** -- `get_costs(site_id=None, from_date=None, to_date=None, daily=False)`\ncalling `GET /admin/costs`.\n\n**`cli/src/auritus/commands/cost.py`** (new) -- a `cost` command group\nfollowing the shape of `commands/site.py`: catch `AuritusApiError`, print to\nstderr in red, `raise typer.Exit(code=1) from exc`. Options `--site`,\n`--daily`, `--from`, `--to`.\n\n**`cli/src/auritus/cli.py`** -- `app.add_typer(cost_cmd.app, name=\"cost\")`.\n\n**`cli/src/auritus/commands/job.py`** -- extend `job show` output (from the\nM10 story auritus-7d8ffa) with the cost attributes.\n\n**Formatting** -- print dollar amounts to four decimal places, not two. A\nsingle clip may cost a fraction of a cent, and rounding to cents renders most\nper-job costs as `$0.00`, which is the exact failure this epic exists to fix.\nTotals can round to cents.\n\n**Label estimates as estimates.** Every figure here except the reconciled\nactual is modelled. The output should say so once, plainly, rather than\npresenting modelled dollars in the same voice as an invoice.\n\n## Blocked on\n\nThe daily cost rollups story, for `GET /admin/costs`.\nJob-level output additionally assumes the M10 CLI story (auritus-7d8ffa).",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-c56c4a76-cf1f-434d-bb32-3b202ccc6302",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "auritus-b77b5e9e-9fbc-49e2-862d-04a522f772dc",
+      "type": "blocked-by"
+    },
+    {
+      "target": "auritus-7d8ffa35-dba6-41bc-882d-b41901ff108a",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-16T02:38:26.510553Z",
+  "updated_at": "2026-09-16T02:39:02.252979Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "auritus-c56c4a76-cf1f-434d-bb32-3b202ccc6302",
+  "title": "M11 - Cost tracking and attribution",
+  "description": "Auritus has a daily AWS Budget and a kill-switch, but no idea what anything\ncosts. The budget is an account-wide blunt instrument: it fires at a dollar\nthreshold and disables the Batch queue. Nothing attributes spend to a job, a\nsite, or a backend, and nothing distinguishes the free path from the paid one.\n\nThat gap undercuts the product's central claim. Auritus exists so a publisher\ncan run synthesis on a GPU they control and pay AWS nothing; the local worker\nraces the cloud fallback precisely to avoid GPU spend. We cannot currently\nshow that this works.\n\n## What already exists\n\nMore than it appears. Per-job cost is tractable today because:\n\n- `_claim_job` records `worker_type` as `local` or `batch`\n- The Batch runner claims as `f\"batch:{AWS_BATCH_JOB_ID}\"`\n  (`worker-image/src/runner.py:117`), so **the AWS Batch job ID is already\n  stored** in `claimed_by` -- the join key to real billing data\n- The compute environment is a single fixed instance type (`g4dn.xlarge`),\n  EC2 on-demand, no Spot, `maxv_cpus=8` -- at most two concurrent instances\n  of one known rate, with no instance-type mix to model\n- `duration_seconds` is recorded per job\n\n## Approach: hybrid\n\nPer-job **estimates** from a rate card, for attribution and immediacy, plus a\ndaily **actual** from Cost Explorer displayed beside the summed estimate. The\ndelta between them calibrates the rate card and is itself useful information.\n\nEstimates alone drift silently. Cost Explorer alone cannot answer \"what did\nthis clip, or this site, cost\" -- per-job cost allocation tags are impractical\nat job cardinality. Neither half is sufficient.\n\n## Two accuracy traps\n\n**Container runtime is not billed time.** `duration_seconds` is\n`completed_at - claimed_at`. With `minv_cpus=0` every cold start bills for EC2\nboot, ECS agent registration, and a multi-gigabyte GPU image pull before the\ncontainer ever claims a job. On a cold start that overhead can exceed the\nsynthesis. Billed seconds must come from Batch's own `startedAt`/`stoppedAt`\nplus a provisioning allowance -- not from our claim timestamps.\n\n**Instance time is shared.** Two concurrent jobs on one `g4dn.xlarge` must not\neach be charged the full hourly rate. Per-job cost has to amortize across\nwhatever else ran on that instance.\n\n## Local is not free\n\nDynamoDB, Lambda, S3 storage, and CloudFront egress bill on every job\nregardless of who synthesized it. Small, but a console that prints \"$0.00\" for\nlocal jobs states something false. Report GPU cost and platform cost as\nseparate lines throughout.\n\n## Aggregation cannot ride on the current scan\n\n`_get_admin_overview` computes its KPIs from `_jobs.scan(Limit=100)`. That is\nalready the defect behind auritus-294fa6, where a 25-item page silently\nomitted the newest job in the system. Cost totals derived that way would be\nconfidently wrong rather than visibly incomplete. Rollups are written on\ncompletion, never scanned at read time.\n\n## Order of work\n\n```mermaid\ngraph TD\n  A[Batch billing telemetry] --> B[Per-job estimated cost]\n  B --> C[Daily cost rollups]\n  B --> D[Local worker savings]\n  C --> E[Cost Explorer reconciliation]\n  C --> F[Costs in the CLI]\n  C --> G[Costs in the web console]\n  D --> F\n  D --> G\n```",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-16T02:36:17.525185Z",
+  "updated_at": "2026-09-16T02:36:17.525220Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
