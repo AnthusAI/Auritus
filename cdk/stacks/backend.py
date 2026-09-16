@@ -107,6 +107,27 @@ DEFAULT_PLATFORM_COST_PER_JOB_USD = 0.0005
 
 DEFAULT_RATE_CARD_VERSION = "v1"
 
+# Retention window (days) for completed/failed job records (via DynamoDB TTL
+# on the jobs table's already-declared, previously-inert ``ttl`` attribute)
+# and their generated audio (via an S3 lifecycle expiration rule on
+# audio_bucket, using this exact same value -- see the single
+# ``retention_days`` variable below).
+#
+# Defaults to 0 (DISABLED), deliberately, even though every clip and every
+# job's full extracted narrated-page text is otherwise kept forever today
+# (a real cost and privacy liability). This codebase's existing posture is
+# conservative-by-default everywhere else: every DynamoDB table in this
+# stack uses RemovalPolicy.RETAIN, and audio_bucket is
+# auto_delete_objects=False. Silently starting to delete operator data by
+# default on every existing deployment that upgrades to this change would
+# be a surprising and potentially harmful default, sprung on operators who
+# never opted in. The mechanism is fully implemented and documented; an
+# operator opts in explicitly via --context retention_days=N once they've
+# made their own call on the tradeoff the story raises -- storage cost of
+# keeping clips forever vs. the GPU cost of regenerating an expired one the
+# next time a reader visits that page (see docs for the full writeup).
+DEFAULT_RETENTION_DAYS = 0
+
 
 class BackendStack(Stack):
     """Cloud backend for Auritus just-in-time TTS generation."""
@@ -141,6 +162,14 @@ class BackendStack(Stack):
         )
         rate_card_version = str(
             self.node.try_get_context("rate_card_version") or DEFAULT_RATE_CARD_VERSION
+        )
+
+        # Single source of truth for both the jobs-table TTL and the audio
+        # bucket's S3 lifecycle expiration -- see DEFAULT_RETENTION_DAYS
+        # above. Both are threaded from this one variable so they can never
+        # drift apart.
+        retention_days = int(
+            self.node.try_get_context("retention_days") or DEFAULT_RETENTION_DAYS
         )
 
         google_secret_arn = self.node.try_get_context("google_oauth_secret_arn")
@@ -319,6 +348,24 @@ class BackendStack(Stack):
             removal_policy=RemovalPolicy.RETAIN,
         )
 
+        # Lifecycle expiration mirrors the jobs table's ttl retention window
+        # exactly (same retention_days variable -- see its definition
+        # above), so a job record and the audio clip it points to expire on
+        # the same policy. Only added when retention is enabled: an empty
+        # lifecycle_rules list (the default, retention_days == 0) leaves the
+        # bucket with no expiration at all, rather than a disabled rule --
+        # simpler and avoids depending on whether CDK/S3 tolerate a
+        # zero-day expiration rule that's merely marked disabled.
+        lifecycle_rules = (
+            [
+                s3.LifecycleRule(
+                    enabled=True,
+                    expiration=Duration.days(retention_days),
+                )
+            ]
+            if retention_days > 0
+            else []
+        )
         audio_bucket = s3.Bucket(
             self,
             "AuritusAudio",
@@ -327,6 +374,7 @@ class BackendStack(Stack):
             enforce_ssl=True,
             removal_policy=RemovalPolicy.RETAIN,
             auto_delete_objects=False,
+            lifecycle_rules=lifecycle_rules,
         )
 
         distribution = cloudfront.Distribution(
@@ -506,6 +554,7 @@ class BackendStack(Stack):
                 "COST_ROLLUPS_TABLE": cost_rollups.table_name,
                 "COST_ROLLUPS_DATE_INDEX": "date-site_id-index",
                 "BACKEND_TIMING_TABLE": backend_timing.table_name,
+                "RETENTION_DAYS": str(retention_days),
             },
         )
         jobs.grant_read_write_data(router_fn)

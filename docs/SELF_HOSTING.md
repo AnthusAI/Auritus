@@ -44,6 +44,66 @@ Context knobs (optional):
 - `claim_timeout_seconds` — local worker race window before Batch fallback
 - `daily_site_quota` — per-site-key job creation cap
 - `account` / `region` — target AWS environment
+- `retention_days` — job/audio retention window in days; see
+  [Job and audio retention](#job-and-audio-retention) below
+
+`auritus deploy` itself does not accept arbitrary `--context` flags today, so
+to set any of the knobs above (including `retention_days`) either add them to
+the `"context"` object in `cdk/cdk.json` (persists across every future
+deploy), or run CDK directly instead of through the wrapper:
+
+```bash
+cd cdk
+npx --yes aws-cdk@2 deploy AuritusBackend --context retention_days=90
+```
+
+(`Makefile`'s `synth-cdk` target and `cli/src/auritus/commands/deploy.py` both
+invoke CDK this same way — `npx --yes aws-cdk@2 ...` — so this is the
+project's normal path to CDK, just with an extra `--context` flag the wrapper
+doesn't expose.)
+
+## Job and audio retention
+
+By default, **retention is disabled** (`retention_days=0`, or unset): every
+generated audio clip and every job record — including the full extracted
+text of the narrated page — is kept forever. Nothing in this stack ever
+deletes them on its own.
+
+This default is deliberate, not an oversight: every DynamoDB table in this
+stack uses `RemovalPolicy.RETAIN` and the audio bucket is
+`auto_delete_objects=False`, so a self-hosting operator who upgrades to a
+version of Auritus with this feature does not silently start losing data
+they never asked to expire. Retention is opt-in.
+
+To enable it, set `retention_days` to a positive integer (days) via one of
+the two methods above, e.g. `retention_days=90`. This does two things,
+both driven from that single value so they can never drift apart:
+
+- **Job records**: the jobs DynamoDB table's `ttl` attribute is stamped on
+  every job that reaches a terminal state (`done` or `failed`) with an
+  expiry `retention_days` days after that job finished. Regenerating or
+  retrying a job clears any stale `ttl` left over from its previous
+  outcome — the new expiry is set the normal way once the job completes
+  again.
+- **Audio**: an S3 lifecycle rule on the audio bucket expires objects
+  `retention_days` days after they were written, independently of the job
+  record's own TTL.
+
+Two things to know before enabling this in production:
+
+- **DynamoDB TTL deletion is not instant.** AWS documents it as a
+  background sweep that typically deletes expired items within 48 hours
+  of their TTL timestamp, not at the exact moment it passes. Don't build
+  anything that assumes an expired job record disappears the instant its
+  `ttl` elapses.
+- **An expired page re-triggers generation, and re-incurs GPU cost.** Once
+  a job record and/or its audio has expired and been swept, a reader who
+  visits the page again causes Auritus to synthesize the clip from
+  scratch — the same GPU (or local worker) cost as the first time it was
+  generated. Retention is a storage-cost/privacy tradeoff against that
+  regeneration cost, not a free cleanup: an operator with high-traffic,
+  long-lived pages that keep getting revisited after their retention
+  window should weigh that cost before picking a short `retention_days`.
 
 ## 3. Operator login
 
