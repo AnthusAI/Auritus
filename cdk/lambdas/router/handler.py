@@ -39,6 +39,19 @@ ALERTS_TABLE = os.environ.get("ALERTS_TABLE", "")
 GPU_HOURLY_RATE_USD = os.environ.get("GPU_HOURLY_RATE_USD", "0.526")
 PLATFORM_COST_PER_JOB_USD = os.environ.get("PLATFORM_COST_PER_JOB_USD", "0.0005")
 RATE_CARD_VERSION = os.environ.get("RATE_CARD_VERSION", "v1")
+COST_ROLLUPS_TABLE = os.environ.get("COST_ROLLUPS_TABLE", "")
+COST_ROLLUPS_DATE_INDEX = os.environ.get(
+    "COST_ROLLUPS_DATE_INDEX", "date-site_id-index"
+)
+# Bounds the number of per-day Query calls _get_admin_costs' "all sites"
+# path (no site_id filter) will issue for one request -- see that
+# function's docstring for why that path queries once per calendar day
+# rather than scanning the rollup table.
+COST_QUERY_MAX_DAYS = 366
+# Default lookback window when /admin/costs is called with no "from"/"to"
+# -- matches the "what did last month cost" framing this story exists for
+# without forcing every dashboard load to specify an explicit range.
+DEFAULT_COST_RANGE_DAYS = 31
 
 KOKORO_DEFAULT_VOICE_ID = "af_heart"
 
@@ -50,6 +63,7 @@ JOB_STATUSES = ("pending", "claimed", "done", "failed")
 _jobs = _dynamodb.Table(JOBS_TABLE)
 _sites = _dynamodb.Table(SITES_TABLE)
 _alerts = _dynamodb.Table(ALERTS_TABLE) if ALERTS_TABLE else None
+_cost_rollups = _dynamodb.Table(COST_ROLLUPS_TABLE) if COST_ROLLUPS_TABLE else None
 _cognito = boto3.client("cognito-idp")
 _ses = boto3.client("ses")
 _batch = boto3.client("batch")
@@ -103,6 +117,9 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
             return _delete_site(site_id, headers)
         if method == "GET" and path == "/admin/overview":
             return _get_admin_overview(headers)
+        if method == "GET" and path == "/admin/costs":
+            query_params = event.get("queryStringParameters") or {}
+            return _get_admin_costs(headers, query_params)
         if method == "GET" and path == "/admin/jobs":
             query_params = event.get("queryStringParameters") or {}
             return _list_admin_jobs(headers, query_params)
@@ -243,6 +260,133 @@ def _increment_quota(site_id: str) -> None:
         ),
         ConditionExpression="attribute_exists(site_id)",
         ExpressionAttributeValues={":day": day, ":zero": 0, ":one": 1},
+    )
+
+
+def _record_rollup_contribution(
+    content_hash: str,
+    flag_attr: str,
+    rollup_key: dict[str, Any],
+    add_expression: str,
+    add_values: dict[str, Any],
+) -> bool:
+    """Idempotently apply one job's cost contribution to its daily rollup.
+
+    A single job's cost can reach the rollup from more than one caller
+    (this router's own completion routes, plus batch_telemetry's
+    independent, at-least-once-delivered write for the same job). Blindly
+    running ``ADD`` against the rollup row every time a caller runs would
+    double-count real money on any retry or redelivery.
+
+    The fix: before touching the rollup table at all, this claims a flag
+    (``flag_attr``) on the JOB record itself via a conditional
+    ``UpdateItem`` that only succeeds if the flag is not already set.
+    DynamoDB's single-item conditional writes are strongly consistent and
+    atomic, so for a given job and a given ``flag_attr``, exactly one
+    caller -- ever, across any number of concurrent or retried
+    invocations -- can win that write. Only the winner proceeds to apply
+    the ``ADD`` to the rollup table; every other (or later, retried)
+    caller sees ``ConditionalCheckFailedException`` and returns having
+    changed nothing.
+
+    The two steps are deliberately ordered flag-first, rollup-second: if a
+    crash happens between them, the job is left flagged as rolled up but
+    the rollup total is short by that one contribution. That is
+    under-counting, not double-counting -- the safer failure direction for
+    a cost ledger, and one a reconciliation pass can in principle detect
+    and repair, unlike a double-counted total which looks indistinguishable
+    from a correct one.
+
+    :param content_hash: The job whose contribution is being recorded.
+    :param flag_attr: Name of the boolean flag attribute on the job record
+        that guards this specific contribution (callers use distinct flags
+        for distinct contributions, e.g. the flat platform allowance vs.
+        Batch GPU cost, so one does not block the other).
+    :param rollup_key: The rollup table's key, e.g. ``{"site_id": ...,
+        "date": ...}``.
+    :param add_expression: A DynamoDB ``UpdateExpression`` starting with
+        ``ADD`` for the rollup table.
+    :param add_values: ``ExpressionAttributeValues`` for ``add_expression``.
+    :returns: True if this call actually applied the contribution, False
+        if it was a no-op because an earlier call already had.
+    """
+    try:
+        _jobs.update_item(
+            Key={"content_hash": content_hash},
+            UpdateExpression=f"SET {flag_attr} = :true_val",
+            ConditionExpression=f"attribute_not_exists({flag_attr})",
+            ExpressionAttributeValues={":true_val": True},
+        )
+    except ClientError as exc:
+        if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            return False
+        raise
+
+    _cost_rollups.update_item(
+        Key=rollup_key,
+        UpdateExpression=add_expression,
+        ExpressionAttributeValues=add_values,
+    )
+    return True
+
+
+def _roll_up_request_path_cost(
+    content_hash: str,
+    *,
+    site_id: str | None,
+    worker_type: str | None,
+    date: str,
+    platform_cost: Decimal,
+    local_duration_seconds: int | None,
+) -> None:
+    """Roll up the flat platform allowance charged on every job completion.
+
+    Called from both ``_mark_done`` and ``_mark_failed`` -- every job that
+    finishes via this router (success or failure, local or Batch) is
+    charged the same flat platform allowance, so this always contributes
+    ``platform_cost_usd``. Batch GPU cost is NOT rolled up here: it isn't
+    known on the request path at all (see the cost-accounting comment on
+    ``_mark_done``), and is rolled up separately by batch_telemetry.
+
+    ``batch_job_count`` is likewise NOT incremented here for Batch jobs,
+    even though this path does run for them. batch_telemetry is the
+    authoritative counter for Batch jobs (see its module docstring and
+    ``_roll_up_gpu_cost`` there) -- incrementing here too would double
+    count. The trade-off, stated plainly: if a Batch job completes via
+    this router but batch_telemetry's EventBridge event never arrives or
+    never correlates (e.g. the job never actually reached Batch), that job
+    contributes its platform cost to the rollup but never increments
+    ``batch_job_count``. That is an accepted, documented gap rather than a
+    silent double-count.
+
+    :param content_hash: The job whose contribution is being recorded.
+    :param site_id: The job's site, or ``None`` if unknown (skips the
+        rollup entirely -- there is no key to roll up under).
+    :param worker_type: ``"local"`` or ``"batch"``, or ``None``.
+    :param date: The rollup date (``YYYY-MM-DD``), derived from the same
+        completion timestamp already used for the job record.
+    :param platform_cost: The flat platform allowance charged.
+    :param local_duration_seconds: ``duration_seconds`` for a local job
+        (``_mark_done`` only), or ``None`` when not applicable.
+    """
+    if not site_id or _cost_rollups is None:
+        return
+
+    add_parts = ["platform_cost_usd :platform_cost"]
+    add_values: dict[str, Any] = {":platform_cost": platform_cost}
+    if worker_type == "local":
+        add_parts.append("local_job_count :one")
+        add_values[":one"] = 1
+        if local_duration_seconds is not None:
+            add_parts.append("local_duration_seconds :duration")
+            add_values[":duration"] = Decimal(local_duration_seconds)
+
+    _record_rollup_contribution(
+        content_hash,
+        "platform_cost_rolled_up",
+        {"site_id": site_id, "date": date},
+        "ADD " + ", ".join(add_parts),
+        add_values,
     )
 
 
@@ -573,6 +717,16 @@ def _mark_done(
             ":rate_card_version": RATE_CARD_VERSION,
         },
     )
+
+    _roll_up_request_path_cost(
+        content_hash,
+        site_id=item.get("site_id") if item else None,
+        worker_type=item.get("worker_type") if item else None,
+        date=now[:10],
+        platform_cost=Decimal(PLATFORM_COST_PER_JOB_USD),
+        local_duration_seconds=duration_seconds,
+    )
+
     return _response(
         200,
         {
@@ -592,6 +746,10 @@ def _mark_failed(
     reason = body.get("reason") or "unknown_error"
     owner = body.get("owner")
     now = _utc_now_iso()
+    # Loaded only for the rollup's site_id/worker_type -- the update below
+    # is still the sole source of truth for the job record itself, guarded
+    # by its own ConditionExpression exactly as before this story.
+    item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
     # See the comment in _mark_done: a failed job is still costed. GPU cost
     # starts at 0 (correct and final for local jobs; a placeholder for
     # Batch jobs, overwritten by batch_telemetry's independent, correct
@@ -633,6 +791,19 @@ def _mark_failed(
         ExpressionAttributeNames={"#status": "status"},
         ExpressionAttributeValues=attr_values,
     )
+
+    resolved_worker_type = attr_values.get(":wtype") or (
+        item.get("worker_type") if item else None
+    )
+    _roll_up_request_path_cost(
+        content_hash,
+        site_id=item.get("site_id") if item else None,
+        worker_type=resolved_worker_type,
+        date=now[:10],
+        platform_cost=Decimal(PLATFORM_COST_PER_JOB_USD),
+        local_duration_seconds=None,
+    )
+
     return _response(
         200,
         {
@@ -867,6 +1038,121 @@ def _get_admin_overview(headers: dict[str, str]) -> dict[str, Any]:
             "total_sampled_jobs": len(items),
         },
     )
+
+
+def _daterange(from_date: str, to_date: str) -> list[str]:
+    """Return every ``YYYY-MM-DD`` date from ``from_date`` to ``to_date``, inclusive."""
+    start = datetime.strptime(from_date, "%Y-%m-%d")
+    end = datetime.strptime(to_date, "%Y-%m-%d")
+    if end < start:
+        return []
+    days = []
+    current = start
+    while current <= end:
+        days.append(current.strftime("%Y-%m-%d"))
+        current += timedelta(days=1)
+    return days
+
+
+_COST_TOTAL_FIELDS = (
+    "gpu_cost_usd",
+    "platform_cost_usd",
+    "batch_job_count",
+    "local_job_count",
+    "billed_seconds",
+    "local_duration_seconds",
+)
+
+
+def _get_admin_costs(
+    headers: dict[str, str], query_params: dict[str, str]
+) -> dict[str, Any]:
+    """Return daily cost rollups, optionally scoped to one site.
+
+    Reads only the pre-aggregated ``AuritusCostRollups`` table, written
+    incrementally by ``_mark_done``/``_mark_failed`` and by
+    ``batch_telemetry`` on every job completion -- never the jobs table.
+    See ``_get_admin_overview`` above for the defect class this
+    deliberately avoids: a size-limited ``Scan`` over jobs silently misses
+    recent data as the table grows (auritus-294fa6).
+
+    Query shape depends on whether ``site_id`` is given, because the
+    rollup table's key (partition ``site_id``, sort ``date``) is built for
+    the single-site case:
+
+    * With ``site_id``: one native ``Query`` -- ``site_id = X AND date
+      BETWEEN from AND to`` -- against the table's own key. Cheap
+      regardless of how much history exists.
+    * Without ``site_id`` (the "all sites" summary): there is no query
+      that returns every site for a date range off of a (site_id, date)
+      key. Instead this queries the ``date-site_id-index`` GSI once per
+      calendar day in the requested range (capped at
+      ``COST_QUERY_MAX_DAYS``) -- bounded by the number of days asked
+      for, never by the number of sites or the size of the rollup table.
+      An operator requesting a full year of unfiltered history pays for
+      ~365 cheap indexed Query calls rather than for a table Scan; see
+      ``_bulk_delete_admin_jobs``'s docstring for the same site_id-only
+      tension resolved the other way there, because the jobs table has no
+      per-day index to exploit and this rollup table does.
+
+    :param headers: Request headers for auth (operator-only).
+    :param query_params: ``site_id`` (optional), ``from``/``to`` (optional,
+        ISO date strings ``YYYY-MM-DD``, inclusive range). Defaults to the
+        trailing ``DEFAULT_COST_RANGE_DAYS`` days ending today (UTC) when
+        omitted.
+    :returns: ``{"daily": [...], "total": {...}}``.
+    :raises ValueError: If the resolved date range spans more than
+        ``COST_QUERY_MAX_DAYS`` days.
+    """
+    _require_operator(headers)
+    if _cost_rollups is None:
+        raise ValueError("cost_rollups_not_configured")
+
+    site_id = query_params.get("site_id")
+    to_date = query_params.get("to") or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    from_date = query_params.get("from")
+    if not from_date:
+        from_dt = datetime.strptime(to_date, "%Y-%m-%d") - timedelta(
+            days=DEFAULT_COST_RANGE_DAYS - 1
+        )
+        from_date = from_dt.strftime("%Y-%m-%d")
+
+    days = _daterange(from_date, to_date)
+    if len(days) > COST_QUERY_MAX_DAYS:
+        raise ValueError("date_range_too_large")
+
+    daily: list[dict[str, Any]] = []
+    if site_id:
+        result = _cost_rollups.query(
+            KeyConditionExpression=(
+                "site_id = :sid AND #d BETWEEN :from_date AND :to_date"
+            ),
+            ExpressionAttributeNames={"#d": "date"},
+            ExpressionAttributeValues={
+                ":sid": site_id,
+                ":from_date": from_date,
+                ":to_date": to_date,
+            },
+        )
+        daily = list(result.get("Items") or [])
+    else:
+        for day in days:
+            result = _cost_rollups.query(
+                IndexName=COST_ROLLUPS_DATE_INDEX,
+                KeyConditionExpression="#d = :day",
+                ExpressionAttributeNames={"#d": "date"},
+                ExpressionAttributeValues={":day": day},
+            )
+            daily.extend(result.get("Items") or [])
+
+    total: dict[str, Any] = {field: Decimal(0) for field in _COST_TOTAL_FIELDS}
+    for row in daily:
+        for field in _COST_TOTAL_FIELDS:
+            total[field] += row.get(field) or Decimal(0)
+
+    daily.sort(key=lambda r: (str(r.get("date", "")), str(r.get("site_id", ""))))
+
+    return _response(200, {"daily": daily, "total": total})
 
 
 def _encode_cursor(key: dict[str, Any] | None) -> str | None:

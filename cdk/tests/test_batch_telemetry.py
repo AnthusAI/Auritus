@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+import json
 import os
 import sys
 from decimal import Decimal
@@ -38,6 +39,18 @@ def batch_telemetry() -> Any:
             ],
             BillingMode="PAY_PER_REQUEST",
         )
+        dynamodb.create_table(
+            TableName="cost_rollups",
+            KeySchema=[
+                {"AttributeName": "site_id", "KeyType": "HASH"},
+                {"AttributeName": "date", "KeyType": "RANGE"},
+            ],
+            AttributeDefinitions=[
+                {"AttributeName": "site_id", "AttributeType": "S"},
+                {"AttributeName": "date", "AttributeType": "S"},
+            ],
+            BillingMode="PAY_PER_REQUEST",
+        )
         os.environ.update(
             {
                 "JOBS_TABLE": "jobs",
@@ -46,6 +59,7 @@ def batch_telemetry() -> Any:
                 "PROVISIONING_OVERHEAD_SECONDS": "90",
                 "GPU_HOURLY_RATE_USD": "0.526",
                 "RATE_CARD_VERSION": "v1",
+                "COST_ROLLUPS_TABLE": "cost_rollups",
                 "AWS_DEFAULT_REGION": "us-east-1",
             }
         )
@@ -55,9 +69,26 @@ def batch_telemetry() -> Any:
         )
         sys.path.insert(0, lambdas_dir)
         module = importlib.import_module("handler")
-        yield module
-        sys.path.remove(lambdas_dir)
-        sys.modules.pop("handler", None)
+        try:
+            yield module
+        finally:
+            sys.path.remove(lambdas_dir)
+            sys.modules.pop("handler", None)
+            # COST_ROLLUPS_TABLE (and CLAIMED_BY_INDEX/the warm-start knobs,
+            # which only this module reads) must not leak past this test:
+            # os.environ is process-wide, and test_router.py's own fixture
+            # never sets COST_ROLLUPS_TABLE at all, so a leftover value
+            # pointing at "cost_rollups" -- a table that doesn't exist in
+            # ITS mock -- made router tests fail with
+            # ResourceNotFoundException whenever this file's tests ran
+            # first in the same pytest session.
+            for key in (
+                "COST_ROLLUPS_TABLE",
+                "CLAIMED_BY_INDEX",
+                "WARM_START_THRESHOLD_SECONDS",
+                "PROVISIONING_OVERHEAD_SECONDS",
+            ):
+                os.environ.pop(key, None)
 
 
 def test_compute_timing_cold_start_adds_provisioning_overhead(
@@ -180,6 +211,96 @@ def test_handler_computes_gpu_cost_from_billed_seconds_and_rate(
     # batch_telemetry never writes the flat platform allowance -- that's
     # the router's job, charged on every job regardless of worker type.
     assert "platform_cost_usd" not in item
+
+
+def test_handler_rolls_up_gpu_cost_by_site_and_date(batch_telemetry: Any) -> None:
+    """A completed Batch job's gpu cost and count land in that site's daily rollup."""
+    jobs = boto3.resource("dynamodb", region_name="us-east-1").Table("jobs")
+    rollups = boto3.resource("dynamodb", region_name="us-east-1").Table("cost_rollups")
+    jobs.put_item(
+        Item={
+            "content_hash": "rollup-job-1",
+            "status": "claimed",
+            "claimed_by": "batch:job-rollup-1",
+            "site_id": "site-a",
+            "created_at": "2026-01-15T10:00:00Z",
+        }
+    )
+
+    created_at_ms = 1_700_000_000_000
+    event = {
+        "detail": {
+            "jobId": "job-rollup-1",
+            "status": "SUCCEEDED",
+            "createdAt": created_at_ms,
+            "startedAt": created_at_ms + 5_000,
+            "stoppedAt": created_at_ms + 5_000 + 3_600_000,
+            "container": {"instanceType": "g4dn.xlarge"},
+        }
+    }
+
+    result = batch_telemetry.handler(event, None)
+    assert result["status"] == "recorded"
+
+    job_item = jobs.get_item(Key={"content_hash": "rollup-job-1"})["Item"]
+    assert job_item["gpu_cost_rolled_up"] is True
+
+    rollup_item = rollups.get_item(Key={"site_id": "site-a", "date": "2026-01-15"})[
+        "Item"
+    ]
+    assert rollup_item["gpu_cost_usd"] == Decimal("0.526")
+    assert rollup_item["billed_seconds"] == Decimal("3600")
+    assert rollup_item["batch_job_count"] == Decimal("1")
+
+
+def test_handler_retried_delivery_does_not_double_count_gpu_cost(
+    batch_telemetry: Any,
+) -> None:
+    """A genuine EventBridge at-least-once redelivery must not double the rollup.
+
+    This calls the exact same handler with the exact same event twice --
+    that IS what an at-least-once redelivery looks like on the wire, not a
+    simulation of one. If the idempotency guard were missing or broken,
+    the second call would add gpu_cost_usd/billed_seconds/batch_job_count
+    a second time.
+    """
+    jobs = boto3.resource("dynamodb", region_name="us-east-1").Table("jobs")
+    rollups = boto3.resource("dynamodb", region_name="us-east-1").Table("cost_rollups")
+    jobs.put_item(
+        Item={
+            "content_hash": "rollup-job-retry",
+            "status": "claimed",
+            "claimed_by": "batch:job-rollup-retry",
+            "site_id": "site-b",
+            "created_at": "2026-02-01T09:00:00Z",
+        }
+    )
+
+    created_at_ms = 1_700_000_000_000
+    event = {
+        "detail": {
+            "jobId": "job-rollup-retry",
+            "status": "SUCCEEDED",
+            "createdAt": created_at_ms,
+            "startedAt": created_at_ms + 5_000,
+            "stoppedAt": created_at_ms + 5_000 + 3_600_000,
+            "container": {"instanceType": "g4dn.xlarge"},
+        }
+    }
+
+    first = batch_telemetry.handler(event, None)
+    second = batch_telemetry.handler(json.loads(json.dumps(event)), None)
+
+    assert first["status"] == "recorded"
+    assert second["status"] == "recorded"  # the job's own fields still rewrite fine
+
+    rollup_item = rollups.get_item(Key={"site_id": "site-b", "date": "2026-02-01"})[
+        "Item"
+    ]
+    # Not doubled: exactly one job's worth of cost/seconds/count.
+    assert rollup_item["gpu_cost_usd"] == Decimal("0.526")
+    assert rollup_item["billed_seconds"] == Decimal("3600")
+    assert rollup_item["batch_job_count"] == Decimal("1")
 
 
 def test_handler_skips_cleanly_when_no_job_matches(batch_telemetry: Any) -> None:

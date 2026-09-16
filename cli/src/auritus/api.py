@@ -290,6 +290,30 @@ class AuritusClient:
         """
         return self._request("GET", f"/admin/jobs/{content_hash}")
 
+    def get_costs(
+        self,
+        *,
+        site_id: str | None = None,
+        from_date: str | None = None,
+        to_date: str | None = None,
+    ) -> dict[str, Any]:
+        """Fetch daily cost rollups, optionally scoped to one site.
+
+        :param site_id: Restrict to one site.
+        :param from_date: ISO date (``YYYY-MM-DD``), inclusive range start.
+        :param to_date: ISO date (``YYYY-MM-DD``), inclusive range end.
+        :returns: ``{"daily": [...], "total": {...}}``.
+        """
+        params = []
+        if site_id:
+            params.append(f"site_id={site_id}")
+        if from_date:
+            params.append(f"from={from_date}")
+        if to_date:
+            params.append(f"to={to_date}")
+        query = f"?{'&'.join(params)}" if params else ""
+        return self._request("GET", f"/admin/costs{query}")
+
     def bulk_delete_jobs(
         self,
         *,

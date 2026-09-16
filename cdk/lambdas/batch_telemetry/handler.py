@@ -32,6 +32,12 @@ the redundant correlation path that already exists: the Batch runner
 ``claimed_by = f"batch:{AWS_BATCH_JOB_ID}"``, which is unique per Batch job.
 This handler queries the ``claimed_by-index`` GSI on the jobs table for
 ``claimed_by = f"batch:{event['detail']['jobId']}"``.
+
+This handler also rolls up ``gpu_cost_usd`` and ``billed_seconds`` into the
+``AuritusCostRollups`` table (keyed by site/date), incrementing
+``batch_job_count`` once per correlated Batch job. See ``_roll_up_gpu_cost``
+for the idempotency mechanism that keeps an at-least-once EventBridge
+redelivery from double-counting that cost.
 """
 
 from __future__ import annotations
@@ -45,6 +51,7 @@ from typing import Any
 
 import boto3
 from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 
 _logger = logging.getLogger()
 _logger.setLevel(logging.INFO)
@@ -53,6 +60,7 @@ _dynamodb = boto3.resource("dynamodb")
 
 JOBS_TABLE = os.environ["JOBS_TABLE"]
 CLAIMED_BY_INDEX = os.environ.get("CLAIMED_BY_INDEX", "claimed_by-index")
+COST_ROLLUPS_TABLE = os.environ.get("COST_ROLLUPS_TABLE", "")
 WARM_START_THRESHOLD_SECONDS = float(
     os.environ.get("WARM_START_THRESHOLD_SECONDS", "60")
 )
@@ -71,6 +79,7 @@ GPU_HOURLY_RATE_USD = os.environ.get("GPU_HOURLY_RATE_USD", "0.526")
 RATE_CARD_VERSION = os.environ.get("RATE_CARD_VERSION", "v1")
 
 _jobs = _dynamodb.Table(JOBS_TABLE)
+_cost_rollups = _dynamodb.Table(COST_ROLLUPS_TABLE) if COST_ROLLUPS_TABLE else None
 
 
 def _iso(epoch_ms: int | None) -> str | None:
@@ -143,6 +152,81 @@ def _find_job_by_batch_job_id(batch_job_id: str) -> dict[str, Any] | None:
     )
     items = response.get("Items") or []
     return items[0] if items else None
+
+
+def _roll_up_gpu_cost(
+    content_hash: str,
+    *,
+    site_id: str | None,
+    date: str,
+    gpu_cost_usd: Decimal,
+    billed_seconds: Decimal,
+) -> None:
+    """Idempotently roll up this job's GPU cost into its daily/site rollup.
+
+    This is the highest-stakes idempotency guard in the whole cost-rollup
+    feature: EventBridge delivers "at least once", so this handler can
+    genuinely run more than once for the same underlying Batch job
+    state-change (a redelivery, or two overlapping invocations), and GPU
+    cost is real money -- not a flat, cheap-to-double-count allowance.
+
+    The mechanism matches the router Lambda's
+    ``_record_rollup_contribution`` exactly, for the same reason: claim a
+    flag (``gpu_cost_rolled_up``) on the JOB record via a conditional
+    ``UpdateItem`` that only succeeds once per job, and only apply the
+    rollup table's ``ADD`` after winning that claim. A retried delivery
+    finds the flag already set, gets ``ConditionalCheckFailedException``,
+    and does nothing further -- it does NOT re-add ``gpu_cost_usd`` a
+    second time. The job's own timing/cost fields (written just before
+    this is called, unconditionally) are naturally idempotent on retry
+    since a redelivered event carries the same ``detail`` and therefore
+    recomputes the same values; only the rollup's additive ``ADD`` needed
+    this extra guard.
+
+    ``batch_job_count`` is incremented here too, exactly once per real
+    Batch job that this handler successfully correlates -- see the
+    docstring on the router's ``_roll_up_request_path_cost`` for why the
+    router deliberately does not also increment it.
+
+    :param content_hash: The job whose GPU cost is being recorded.
+    :param site_id: The job's site, or ``None`` if unknown (skips the
+        rollup entirely).
+    :param date: The rollup date (``YYYY-MM-DD``), derived from the job's
+        own ``created_at`` -- see the call site for why.
+    :param gpu_cost_usd: The computed GPU cost for this job.
+    :param billed_seconds: The computed billed seconds for this job.
+    """
+    if not site_id or _cost_rollups is None:
+        return
+
+    try:
+        _jobs.update_item(
+            Key={"content_hash": content_hash},
+            UpdateExpression="SET gpu_cost_rolled_up = :true_val",
+            ConditionExpression="attribute_not_exists(gpu_cost_rolled_up)",
+            ExpressionAttributeValues={":true_val": True},
+        )
+    except ClientError as exc:
+        if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            _logger.info(
+                "batch_telemetry_rollup_already_recorded content_hash=%s",
+                content_hash,
+            )
+            return
+        raise
+
+    _cost_rollups.update_item(
+        Key={"site_id": site_id, "date": date},
+        UpdateExpression=(
+            "ADD gpu_cost_usd :gpu_cost, billed_seconds :billed_seconds, "
+            "batch_job_count :one"
+        ),
+        ExpressionAttributeValues={
+            ":gpu_cost": gpu_cost_usd,
+            ":billed_seconds": billed_seconds,
+            ":one": 1,
+        },
+    )
 
 
 def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
@@ -219,6 +303,31 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         UpdateExpression="SET " + ", ".join(set_clauses),
         ExpressionAttributeValues=expression_values,
     )
+
+    # Roll up the GPU cost by site/date. The date is derived from the job's
+    # own created_at (when it actually ran), not from this EventBridge
+    # event's own delivery time -- a job that spans midnight should be
+    # attributed to the day it ran on, not the day its telemetry happened
+    # to arrive. In practice these are the same day for the overwhelming
+    # majority of jobs (synthesis jobs run in seconds to low minutes), so
+    # this only matters for the rare job straddling UTC midnight -- but
+    # getting it right costs nothing here, so there's no reason to take the
+    # (event-arrival-time) shortcut.
+    site_id = job.get("site_id")
+    created_at = job.get("created_at")
+    rollup_date = (created_at or _iso(created_at_ms) or "")[:10]
+    if rollup_date:
+        _roll_up_gpu_cost(
+            content_hash,
+            site_id=site_id,
+            date=rollup_date,
+            gpu_cost_usd=gpu_cost_usd,
+            billed_seconds=Decimal(str(timing["billed_seconds"])),
+        )
+    else:
+        _logger.warning(
+            "batch_telemetry_rollup_skipped_no_date content_hash=%s", content_hash
+        )
 
     _logger.info(
         "batch_telemetry_recorded content_hash=%s batch_job_id=%s billed_seconds=%s",
