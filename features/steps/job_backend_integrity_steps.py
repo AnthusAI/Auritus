@@ -28,7 +28,12 @@ def _ensure_handler_loaded(context) -> None:
     if not hasattr(context, "_handler_loaded"):
         # Remove any cached module
         sys.modules.pop("handler", None)
-        sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "cdk", "lambdas", "router"))
+        sys.path.insert(
+            0,
+            os.path.join(
+                os.path.dirname(__file__), "..", "..", "cdk", "lambdas", "router"
+            ),
+        )
         handler = importlib.import_module("handler")
         # Mock external AWS service calls
         handler._sfn = Mock()
@@ -94,17 +99,19 @@ def _ensure_aws_mocks(context) -> None:
         s3.create_bucket(Bucket="audio")
 
         # Set environment variables
-        os.environ.update({
-            "JOBS_TABLE": "jobs",
-            "SITES_TABLE": "sites",
-            "AUDIO_BUCKET": "audio",
-            "CLOUDFRONT_DOMAIN": "audio.example.com",
-            "FALLBACK_STATE_MACHINE_ARN": "arn:aws:states:us-east-1:123456789012:stateMachine:fallback",
-            "FALLBACK_SECONDS": "900",
-            "DAILY_SITE_QUOTA": "100",
-            "BATCH_JOB_QUEUE_NAME": "test-queue",
-            "AWS_DEFAULT_REGION": "us-east-1",
-        })
+        os.environ.update(
+            {
+                "JOBS_TABLE": "jobs",
+                "SITES_TABLE": "sites",
+                "AUDIO_BUCKET": "audio",
+                "CLOUDFRONT_DOMAIN": "audio.example.com",
+                "FALLBACK_STATE_MACHINE_ARN": "arn:aws:states:us-east-1:123456789012:stateMachine:fallback",
+                "FALLBACK_SECONDS": "900",
+                "DAILY_SITE_QUOTA": "100",
+                "BATCH_JOB_QUEUE_NAME": "test-queue",
+                "AWS_DEFAULT_REGION": "us-east-1",
+            }
+        )
 
         # Create sites table and insert test site
         sites = boto3.resource("dynamodb", region_name="us-east-1").Table("sites")
@@ -119,7 +126,9 @@ def _ensure_aws_mocks(context) -> None:
             }
         )
 
-        context.jobs_table = boto3.resource("dynamodb", region_name="us-east-1").Table("jobs")
+        context.jobs_table = boto3.resource("dynamodb", region_name="us-east-1").Table(
+            "jobs"
+        )
         context.sites_table = sites
         context._aws_mocks_initialized = True
 
@@ -198,10 +207,12 @@ def step_create_job_with_collision(context, new_backend: str) -> None:
     context.response_body = _decode_response_body(context.response)
 
 
-@then("the stored job still has backend \"{expected_backend}\"")
+@then('the stored job still has backend "{expected_backend}"')
 def step_verify_backend_unchanged(context, expected_backend: str) -> None:
     """Verify that the job's backend was not changed."""
-    item = context.jobs_table.get_item(Key={"content_hash": context.existing_content_hash}).get("Item")
+    item = context.jobs_table.get_item(
+        Key={"content_hash": context.existing_content_hash}
+    ).get("Item")
     assert item is not None, f"Job with hash {context.existing_content_hash} not found"
     actual_backend = item.get("tts_backend")
     assert (
@@ -212,7 +223,9 @@ def step_verify_backend_unchanged(context, expected_backend: str) -> None:
 @then("the stored job still points at the original audio")
 def step_verify_audio_unchanged(context) -> None:
     """Verify that the job's audio_key still points to the original audio."""
-    item = context.jobs_table.get_item(Key={"content_hash": context.existing_content_hash}).get("Item")
+    item = context.jobs_table.get_item(
+        Key={"content_hash": context.existing_content_hash}
+    ).get("Item")
     assert item is not None, f"Job with hash {context.existing_content_hash} not found"
     actual_audio_key = item.get("audio_key")
     assert (
