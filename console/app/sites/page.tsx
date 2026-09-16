@@ -131,14 +131,14 @@ export default function SitesPage() {
 
       {/* Success Message with Created Site Details */}
       {createdSite && (
-        <div className="card" style={{ marginBottom: '1.5rem', borderLeft: '4px solid #52c41a', background: '#f6ffed' }}>
+        <div className="card" style={{ marginBottom: '1.5rem', borderLeft: '4px solid var(--success)', background: 'var(--success-bg)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <h3 style={{ marginTop: 0, marginBottom: '0.5rem', color: '#52c41a' }}>Site Key Created Successfully</h3>
+              <h3 style={{ marginTop: 0, marginBottom: '0.5rem', color: 'var(--success)' }}>Site Key Created Successfully</h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--ink-muted)', marginBottom: '0.75rem' }}>
                 Site ID: <span className="mono" style={{ fontSize: '0.8rem', background: '#fff', padding: '0.2rem 0.4rem', borderRadius: '3px' }}>{createdSite.site_id}</span>
               </p>
-              <p style={{ fontSize: '0.75rem', marginBottom: '1rem', color: '#666', fontWeight: 600 }}>
+              <p style={{ fontSize: '0.75rem', marginBottom: '1rem', color: 'var(--ink-muted)', fontWeight: 600 }}>
                 Save this site key now — it will not be shown again!
               </p>
               <div style={{ background: '#fff', padding: '0.8rem', borderRadius: '3px', marginBottom: '0.8rem', overflow: 'auto' }}>
@@ -161,7 +161,7 @@ export default function SitesPage() {
                 <button onClick={handleCopySnippet} className="button" style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}>
                   Copy Snippet
                 </button>
-                {copyFeedback && <span style={{ fontSize: '0.8rem', color: '#52c41a', alignSelf: 'center' }}>{copyFeedback}</span>}
+                {copyFeedback && <span style={{ fontSize: '0.8rem', color: 'var(--success)', alignSelf: 'center' }}>{copyFeedback}</span>}
               </div>
             </div>
             <button
@@ -176,15 +176,15 @@ export default function SitesPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="card" style={{ marginBottom: '1.5rem', borderLeft: '4px solid #cf1322', background: '#fff2f0' }}>
+        <div className="card" style={{ marginBottom: '1.5rem', borderLeft: '4px solid var(--danger)', background: 'var(--danger-bg)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <h3 style={{ marginTop: 0, marginBottom: '0.5rem', color: '#cf1322' }}>Error</h3>
-              <p style={{ fontSize: '0.875rem', color: '#cf1322', margin: 0 }}>{error}</p>
+              <h3 style={{ marginTop: 0, marginBottom: '0.5rem', color: 'var(--danger)' }}>Error</h3>
+              <p style={{ fontSize: '0.875rem', color: 'var(--danger)', margin: 0 }}>{error}</p>
             </div>
             <button
               onClick={() => setError(null)}
-              style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#cf1322', padding: '0.25rem' }}
+              style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--danger)', padding: '0.25rem' }}
             >
               ×
             </button>
@@ -207,7 +207,7 @@ export default function SitesPage() {
           <tbody>
             {error && !sites.length ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: '2.5rem', color: '#cf1322' }}>
+                <td colSpan={5} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--danger)' }}>
                   Error loading sites: {error}
                 </td>
               </tr>
@@ -242,7 +242,7 @@ export default function SitesPage() {
                     <button
                       onClick={() => handleRevokeSite(site.site_id)}
                       className="button"
-                      style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', background: '#fff2f0', color: '#cf1322', border: '1px solid #ffccc7' }}
+                      style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', background: 'var(--danger-bg)', color: 'var(--danger)', border: '1px solid rgba(148, 60, 46, 0.3)' }}
                     >
                       Revoke
                     </button>
