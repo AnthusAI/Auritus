@@ -3,17 +3,25 @@
   "title": "Operator manages site keys from the web console",
   "description": "The console has no site management whatsoever -- `console/app/` contains\n`jobs`, `workers`, `login`, and `callback`, and nothing else. Minting a site\nkey, the single action every new publisher needs, is CLI-only. An operator\nonboarding a site from a browser cannot do it.\n\nThe API already has `POST /sites`, `GET /sites`, and `DELETE /sites/{id}`.\nThis is a surface story, not a backend one.\n\n## Feature\n\n```gherkin\nFeature: Managing site keys from the web console\n\n  Scenario: Operator lists site keys\n    Given site keys exist for two origins\n    When the operator opens the sites page\n    Then each site is listed with its origin and site key\n\n  Scenario: Operator mints a site key\n    Given the operator is on the sites page\n    When the operator creates a site for origin \"https://example.com\"\n    Then the new site key is listed\n    And the embed snippet for that site key is shown\n\n  Scenario: Operator copies the embed snippet\n    Given a site key exists\n    When the operator copies its embed snippet\n    Then the snippet contains that site key\n\n  Scenario: Operator revokes a site key\n    Given a site key exists\n    When the operator revokes it and confirms\n    Then it is no longer listed\n\n  Scenario: Revoking a site key is guarded by confirmation\n    Given a site key exists\n    When the operator revokes it and cancels\n    Then it is still listed\n```\n\n## Implementation brief\n\n**`console/lib/api.ts`** — `fetchSites()`, `createSite(origin, name)`,\n`revokeSite(identifier)`, plus a `Site` interface.\n\n**`console/app/sites/page.tsx`** (new) — list, a create form (origin, optional\nname), a per-row revoke with confirmation, and the embed snippet with a copy\ncontrol. Wrap in `AuthGuard` like the other pages.\n\n**`console/components/Header.tsx`** — add the Sites nav entry.\n\n**Embed snippet** — `cli/src/auritus/embed.py::format_embed_snippet` is the\ncanonical shape. Port it faithfully to TypeScript rather than improvising a\nsecond snippet format; a divergence here ships broken copy-paste to\npublishers. Consider whether the router should return the snippet so there is\none source of truth.\n\n## Blocked on auritus-b0f217\n\nThat task establishes what a site's real identifier actually is. Today\n`site create` prints `site_id=None` because the API response has no `id`\nfield, and `site revoke` works only because it passes whatever argument it\ngets straight into `DELETE /sites/{arg}` and the site key happens to resolve.\nThe console must not be built on that ambiguity -- it needs to know which\nvalue to put in the revoke call. Settle b0f217 first.",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-43428879-7a14-4f95-b87c-657c647b9ee4",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "d1996b71-66be-4c08-804f-09f42bd68008",
+      "author": "home",
+      "text": "Implemented on feature/console-sites-page, merged to develop. New /sites page: create form, list with site_id/label/created_at/status, revoke with confirmation, and a one-time success callout showing the site_key plus the embed snippet (ported faithfully from cli/src/auritus/embed.py) with copy-to-clipboard -- correctly never re-displayed since GET /sites never returns site_key again. Header nav updated. Two things caught and fixed in review: (1) the agent's branch was created before feature/console-job-actions merged, and rebasing surfaced a real conflict in console/lib/api.ts where the stale diff would have deleted deleteJob/regenerateJob/retryJob -- resolved by keeping both; (2) the branch had accidentally committed Playwright's playwright-report/ and test-results/ output (only site/'s equivalents were gitignored, not console/'s) -- untracked them and extended .gitignore, which also protects the two prior console Playwright stories going forward. Also fixed a real style defect: the page used hardcoded Ant-Design-style hex colors (#52c41a, #cf1322, etc.) instead of this app's own --success/--danger/--ink-muted tokens that every other console page uses -- would have looked visually inconsistent. Independently re-verified: lint, tsc clean; ran the actual Playwright suite myself, 19/19 passing including all pre-existing job-detail tests (confirming the merge-conflict resolution didn't regress anything).",
+      "created_at": "2026-09-16T05:53:09.613996Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-16T02:27:27.801892Z",
-  "updated_at": "2026-09-16T03:54:39.528887Z",
-  "closed_at": null,
+  "updated_at": "2026-09-16T05:53:09.657519Z",
+  "closed_at": "2026-09-16T05:53:09.657495Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {
