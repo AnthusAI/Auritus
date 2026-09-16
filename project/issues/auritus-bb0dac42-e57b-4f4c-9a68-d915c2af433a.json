@@ -3,7 +3,7 @@
   "title": "Jobs carry an estimated cost from a configurable rate card",
   "description": "Turn billed seconds into dollars, and store the result on the job so cost is\nattributable per clip, per site, and per backend without recomputation.\n\nTwo cost components, always reported separately:\n\n- **GPU cost** -- `billed_seconds x hourly_rate / 3600`. Zero for local jobs.\n- **Platform cost** -- DynamoDB, Lambda, S3 storage, CloudFront egress. Small\n  per job but never zero, and charged for local jobs too.\n\nA console that prints \"$0.00\" for a locally processed job states something\nfalse. Local synthesis avoids the GPU line, not the platform line.\n\n## Feature\n\n```gherkin\nFeature: Estimated cost per job\n\n  Scenario: A Batch job is costed from its billed seconds\n    Given the GPU rate is 0.526 dollars per hour\n    And a Batch job recorded 3600 billed seconds\n    When the job cost is calculated\n    Then the job gpu cost is 0.526 dollars\n\n  Scenario: A locally processed job has no GPU cost\n    Given a job was claimed by a local worker\n    When the job cost is calculated\n    Then the job gpu cost is zero\n    And the job platform cost is greater than zero\n\n  Scenario: A job records the rate card it was costed against\n    Given the GPU rate is 0.526 dollars per hour\n    When the job cost is calculated\n    Then the job records the rate and the rate card version\n\n  Scenario: Changing the rate card does not restate historical jobs\n    Given a job was costed at 0.526 dollars per hour\n    When the rate card is changed to 0.40 dollars per hour\n    Then the existing job still records 0.526 dollars per hour\n\n  Scenario: A failed Batch job is still costed\n    Given a Batch job failed after 600 billed seconds\n    When the job cost is calculated\n    Then the job gpu cost is greater than zero\n```\n\nHistorical jobs must not be silently restated when the rate card changes --\na cost report that changes retroactively is not a cost report. Stamp the rate\nonto the record at calculation time.\n\n## Implementation brief\n\n**Rate card** -- CDK context, surfaced to Lambdas as environment variables:\n\n- `gpu_hourly_rate_usd` -- default for `g4dn.xlarge` on-demand in us-east-1.\n  **Verify the current published price at implementation time rather than\n  trusting a constant in this description**; it is roughly 0.526 but that is\n  from memory, region-specific, and subject to change.\n- `platform_cost_per_job_usd` -- a flat modelled allowance. Deriving true\n  per-job DynamoDB/Lambda/S3/CloudFront cost is not worth the complexity; a\n  flat estimate the reconciliation story can calibrate is honest and cheap.\n- `rate_card_version` -- a string stamped onto every costed job.\n\n**`cdk/lambdas/batch_telemetry/handler.py`** -- calculate and write\n`gpu_cost_usd`, `platform_cost_usd`, `cost_rate_usd_per_hour`,\n`rate_card_version` when billed seconds are recorded.\n\n**`cdk/lambdas/router/handler.py`** -- `_mark_done` and `_mark_failed` write\n`gpu_cost_usd = 0` and the platform cost for local jobs. Batch jobs get their\nGPU cost from the telemetry Lambda, which may arrive after `_mark_done`; the\ntwo writes must not clobber each other. Use separate attributes and distinct\n`update_item` calls, not a read-modify-write of a single cost blob.\n\n**Store costs as DynamoDB `Decimal`**, never float. `_json_default` already\nconverts `Decimal` for responses. Fractions of a cent accumulated across\nthousands of jobs in binary floating point will not sum correctly, and this\nis money.\n\n**`docs/`** -- document the methodology: what is estimated, what is measured,\nwhat the platform allowance covers, and that these are modelled figures rather\nthan invoice lines. Anyone reading a dollar figure in the console needs to\nknow which it is.\n\n## Blocked on\n\nThe Batch billing telemetry story, which supplies `billed_seconds`.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -19,10 +19,18 @@
       "type": "relates-to"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "8ef9f2a6-e602-4a1f-abf0-1a71d9a1a67c",
+      "author": "home",
+      "text": "Implemented on feature/job-cost-estimate, merged to develop. _mark_done/_mark_failed now write gpu_cost_usd (0, overwritten by batch_telemetry for Batch jobs), platform_cost_usd (flat allowance, every job), cost_rate_usd_per_hour, and rate_card_version, via extended (not replaced) UpdateExpressions so neither writer clobbers the other. batch_telemetry independently computes and writes the real gpu_cost_usd/rate/version for Batch jobs in pure Decimal arithmetic, self-consistent regardless of write order versus mark_done (documented as a known ordering limitation, not a false guarantee). GPU rate defaulted to $0.526/hr for g4dn.xlarge on-demand us-east-1, sourced from two independent third-party pricing aggregators (moderate confidence, not confirmed against AWS's own pricing API or a real invoice -- documented plainly in code, override via gpu_hourly_rate_usd context). Platform allowance ($0.0005/job) explicitly labelled as an unmeasured placeholder. auritus job show now surfaces all four cost fields. Independently re-verified: reverted the router changes myself and confirmed all 3 scenarios genuinely fail (tied to the actual cost fields, not a bare status code). Full suite green: black/ruff, cli pytest (59 passed), behave (28 features, 106 scenarios), cdk pytest (33 passed), cdk synth clean.",
+      "created_at": "2026-09-16T06:04:42.507193Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-16T02:37:07.298596Z",
-  "updated_at": "2026-09-16T03:14:10.606400Z",
-  "closed_at": null,
+  "updated_at": "2026-09-16T06:04:42.551795Z",
+  "closed_at": "2026-09-16T06:04:42.551767Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {
