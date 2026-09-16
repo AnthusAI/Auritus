@@ -10,11 +10,22 @@
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "256afb97-79f0-4ece-9479-4272013b2245",
+      "author": "home",
+      "text": "Phase A production verification complete (2026-09-16). Full wipe of pre-existing\n27 jobs, recreated across the matrix:\n\n- Local-worker path (demo site a83f51e6): kokoro x2, qwen x1, all completed via\n  a real local worker after fixing a corrupted torch install (missing\n  libtorch_cpu.dylib -- unrelated environment issue, not a code bug). Rollup:\n  gpu_cost_usd=$0, platform_cost_usd=$0.0025, avoided_cost_usd=$0.0175,\n  job_count=5 (includes 2 transient failures before retry, correctly counted).\n\n- AWS Batch path (new dedicated test site 50ae9519): chatterbox + higgs,\n  deliberately left unclaimed by any local worker, correctly fell through the\n  900s Step Functions fallback and completed via real Batch jobs. Rollup:\n  gpu_cost_usd=$0.0277 (nonzero, from real batch_telemetry), platform_cost_usd\n  =$0.0010, avoided_cost_usd=$0 (correctly suppressed), avoided_cost_basis=\n  batch_job on both.\n\n- Per-site isolation confirmed: `auritus cost --site <test_site> --daily`\n  returns only that site's 2 jobs, cleanly separated from the demo site's\n  rollup.\n\nFound and fixed one real production bug in the process (auritus-d62743,\nalready closed): the M10/M11 admin routes were never wired to API Gateway.\n\nNot verifiable same-day: Cost Explorer reconciliation (auritus-c56c4a's\ncost_reconciliation Lambda) -- Cost Explorer data isn't final for ~24h and\nthe Lambda only reconciles days closed that long ago. Follow up tomorrow\n(2026-09-17) with `auritus cost --daily` to confirm a reconciled row appears\nfor 2026-09-16 with `actual_cost_usd` populated and close to the $0.0277 +\n$0.0035 estimated total.",
+      "created_at": "2026-09-16T16:33:34.071756Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-16T02:36:17.525185Z",
-  "updated_at": "2026-09-16T02:36:17.525220Z",
+  "updated_at": "2026-09-16T16:33:34.071769Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
 }
