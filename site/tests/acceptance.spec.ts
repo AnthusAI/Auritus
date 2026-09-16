@@ -434,6 +434,20 @@ test("Chatterbox example posts the same Gettysburg excerpt with Chatterbox", asy
   expect(body.text).not.toContain("This page speaks that excerpt");
 });
 
+test("Fish example posts the same Gettysburg excerpt with Fish", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  const createJobRequest = waitForJobPost(page);
+  await page.goto("/examples/fish");
+  const body = (await createJobRequest).postDataJSON() as JobPostBody;
+  expect(body.tts_backend).toBe("fish");
+  expect(body.voice_id).toBe("narrator");
+  expect(body.text).toContain("Four score and seven years ago");
+  expect(body.text).toContain("Now we are engaged in a great civil war");
+  expect(body.text).not.toContain("This page speaks that excerpt");
+});
+
 test("Kokoro, Qwen, and F5 examples POST the same spoken text", async ({
   browser,
 }) => {
@@ -503,7 +517,7 @@ test("client navigation boots a new job for the destination page", async ({
 test("ModelCompareNav renders all models and active states", async ({
   page,
 }) => {
-  await page.goto("/examples/chatterbox");
+  await page.goto("/examples/fish");
 
   // Check topbar
   await expect(page.locator(".model-nav-back")).toHaveText("← All Examples");
@@ -512,31 +526,31 @@ test("ModelCompareNav renders all models and active states", async ({
   // Check stepper
   const prevBtn = page.locator(".model-stepper-btn").first();
   const nextBtn = page.locator(".model-stepper-btn").last();
-  await expect(prevBtn).toHaveText("‹ Higgs-v3");
+  await expect(prevBtn).toHaveText("‹ Chatterbox");
   await expect(nextBtn).toHaveText("Kokoro-82M ›");
-  await expect(page.locator(".model-stepper-indicator")).toHaveText("5 of 5");
+  await expect(page.locator(".model-stepper-indicator")).toHaveText("6 of 6");
 
   // Check model pills
   const pills = page.locator(".model-pill");
-  await expect(pills).toHaveCount(5);
+  await expect(pills).toHaveCount(6);
 
   const activePill = page.locator(".model-pill.active");
-  await expect(activePill).toContainText("Chatterbox");
-  await expect(activePill).toContainText("520M");
+  await expect(activePill).toContainText("Fish-Speech");
+  await expect(activePill).toContainText("Dual-AR");
 
   // Check spec strip
   const specStrip = page.locator(".model-spec-strip");
   await expect(specStrip).toBeVisible();
-  await expect(specStrip).toContainText("LLaMA-520M + Matcha-TTS Flow");
-  await expect(specStrip).toContainText("Resemble AI");
-  await expect(specStrip).toContainText("24 kHz Mono");
-  await expect(specStrip).toContainText("Apache-2.0");
+  await expect(specStrip).toContainText("Dual-AR Transformer + VQ-GAN");
+  await expect(specStrip).toContainText("Fish Audio");
+  await expect(specStrip).toContainText("44.1 kHz Mono");
+  await expect(specStrip).toContainText("CC-BY-NC-SA-4.0");
 
-  // Click Prev model (Higgs)
+  // Click Prev model (Chatterbox)
   await prevBtn.click();
-  await expect(page).toHaveURL("/examples/higgs");
-  await expect(page.locator(".model-pill.active")).toContainText("Higgs-v3");
-  await expect(page.locator(".model-stepper-indicator")).toHaveText("4 of 5");
+  await expect(page).toHaveURL("/examples/chatterbox");
+  await expect(page.locator(".model-pill.active")).toContainText("Chatterbox");
+  await expect(page.locator(".model-stepper-indicator")).toHaveText("5 of 6");
 });
 
 test("ModelCompareNav dropdown is present for responsive viewports", async ({

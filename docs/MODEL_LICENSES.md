@@ -17,6 +17,8 @@ Recorded 13 September 2026.
 | Qwen 3 | Qwen3-TTS-12Hz-1.7B-CustomVoice | Apache-2.0 on the [model card](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice) and [qwen-tts](https://pypi.org/project/qwen-tts/0.1.1/) | Yes under Apache-2.0, with attribution | Wheels only (`qwen-tts==0.1.1`) | **Required** | Card cited 13 Sep 2026 |
 | Higgs | bosonai/higgs-audio-v3-tts-4b | Boson Research & Non-Commercial | Non-commercial only (Boson license) | Not in image build | **Required** | Card cited 15 Sep 2026 |
 | F5-TTS | SWivid/F5-TTS, mlx-community/F5-TTS | MIT on the [model card](https://huggingface.co/SWivid/F5-TTS) and code | Yes under MIT | Wheels only | **Required** | Card cited 14 Sep 2026 |
+| Chatterbox | ResembleAI/chatterbox, mlx-community/chatterbox-fp16 | Apache-2.0 on the model card | Yes under Apache-2.0 | Wheels only | **Required** | Card cited 15 Sep 2026 |
+| Fish Speech | fishaudio/fish-speech-1.5, mlx-community/fishaudio-s2-pro-8bit-mlx | CC-BY-NC-SA-4.0 | Non-commercial research only | Wheels only | **Required** | Card cited 16 Sep 2026 |
 
 ## Kokoro
 

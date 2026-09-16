@@ -9,6 +9,7 @@ Feature: Pluggable TTS backends
     And registered backends include "kokoro"
     And registered backends include "f5"
     And registered backends include "chatterbox"
+    And registered backends include "fish"
 
   Scenario: Qwen resolves from tts_backend without loading a model
     Given tts_backend "qwen"
@@ -29,6 +30,11 @@ Feature: Pluggable TTS backends
     Given tts_backend "chatterbox"
     When the TTS backend is resolved from the registry
     Then the resolved backend name is "chatterbox"
+
+  Scenario: Fish resolves from tts_backend without loading a model
+    Given tts_backend "fish"
+    When the TTS backend is resolved from the registry
+    Then the resolved backend name is "fish"
 
   @integration
   Scenario: Job requests the Qwen backend

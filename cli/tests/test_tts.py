@@ -5,6 +5,7 @@ from __future__ import annotations
 from auritus.tts import get_backend
 from auritus.tts.chatterbox import resolve_chatterbox_voice
 from auritus.tts.f5 import resolve_f5_voice
+from auritus.tts.fish import resolve_fish_voice
 from auritus.tts.higgs import resolve_higgs_voice
 from auritus.tts.kokoro import resolve_kokoro_voice
 from auritus.tts.qwen import resolve_qwen_voice
@@ -89,6 +90,26 @@ def test_chatterbox_backend_empty_text_raises() -> None:
     chatterbox = get_backend("chatterbox")
     with pytest.raises(ValueError, match="Cannot generate audio for empty text"):
         chatterbox.generate("", {})
+
+
+def test_fish_backend_resolves_without_generate() -> None:
+    fish = get_backend("fish")
+    assert fish.name == "fish"
+
+
+def test_fish_resolve_voice_defaults_to_narrator() -> None:
+    assert resolve_fish_voice({}) == "narrator"
+    assert resolve_fish_voice({"voice_id": ""}) == "narrator"
+    assert resolve_fish_voice({"voice_id": "default"}) == "default"
+    assert resolve_fish_voice({"voice_id": "custom"}) == "custom"
+
+
+def test_fish_backend_empty_text_raises() -> None:
+    import pytest
+
+    fish = get_backend("fish")
+    with pytest.raises(ValueError, match="Cannot generate audio for empty text"):
+        fish.generate("", {})
 
 
 def test_unknown_backend_raises() -> None:

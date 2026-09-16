@@ -16,7 +16,7 @@ fallback.
    worker can claim jobs; if none claims within a configurable timeout
    (default 15 minutes), Step Functions submits an AWS Batch GPU job.
 4. Pluggable TTS backends: Kokoro (default speech), Qwen 3 CustomVoice,
-   F5-TTS, Higgs Audio v3, and Chatterbox.
+   F5-TTS, Higgs Audio v3, Chatterbox, and Fish Speech.
 
 ## How it works
 
@@ -40,7 +40,7 @@ and run `make diagrams`.
 ## Status
 
 The public site is live at [aurit.us](https://aurit.us). The home page and
-example pages play Kokoro, Qwen, F5, Higgs, and Chatterbox speech. Local GPU workers generate that audio when they claim
+example pages play Kokoro, Qwen, F5, Higgs, Chatterbox, and Fish Speech. Local GPU workers generate that audio when they claim
 jobs; the AWS Batch GPU image is the fallback after the
 claim timeout. Operator CLI
 login is Cognito email and password. The CLI is not yet published to PyPI;

@@ -50,10 +50,17 @@ Recorded 13 September 2026 against the backends Auritus actually ships.
 - Weights license: **Apache-2.0**
 - Platform policy: `mlx-audio` native on Apple Silicon; PyTorch on CUDA. Model weights fetched at runtime.
 
+## Fish Speech (Fish Audio)
+
+- Checkpoint: [fishaudio/fish-speech-1.5](https://huggingface.co/fishaudio/fish-speech-1.5) and [mlx-community/fishaudio-s2-pro-8bit-mlx](https://huggingface.co/mlx-community/fishaudio-s2-pro-8bit-mlx)
+- Code: `mlx-audio` on Apple Silicon, `fish_speech` on Linux/CUDA
+- Architecture: Dual-AR Transformer (S2-Pro) + VQ-GAN audio codec
+- Weights license: **CC-BY-NC-SA-4.0** (Personal & Non-Commercial Research)
+- Usage restriction: Commercial deployments require licensing from Fish Audio. Model weights fetched at runtime.
 
 ## Decision for the current ship
 
-- Public examples and Batch jobs support **Kokoro**, **Qwen**, **F5**, **Higgs**, and **Chatterbox**.
+- Public examples and Batch jobs support **Kokoro**, **Qwen**, **F5**, **Higgs**, **Chatterbox**, and **Fish Speech**.
 - The Batch image may install open pip packages. It must not COPY large
   third-party weight blobs from the repository.
 - PyPI publish of the Auritus CLI remains a separate story (`a01473`) and is

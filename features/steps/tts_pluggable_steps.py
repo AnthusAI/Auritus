@@ -17,7 +17,7 @@ def step_load_registry(context) -> None:
 
     context.registered_backends = [
         get_backend(name).name
-        for name in ("higgs", "qwen", "kokoro", "f5", "chatterbox")
+        for name in ("higgs", "qwen", "kokoro", "f5", "chatterbox", "fish")
     ]
 
 

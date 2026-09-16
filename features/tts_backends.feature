@@ -63,3 +63,13 @@ Feature: Pluggable TTS backends
     When the Chatterbox voice is resolved for synthesis
     Then the Chatterbox voice_id is "default"
 
+  Scenario: Fish uses narrator when voice_id is omitted
+    Given a Fish job without an explicit voice_id
+    When the Fish voice is resolved for synthesis
+    Then the Fish voice_id is "narrator"
+
+  Scenario: Fish maps empty voice_id to narrator
+    Given a Fish job with voice_id ""
+    When the Fish voice is resolved for synthesis
+    Then the Fish voice_id is "narrator"
+

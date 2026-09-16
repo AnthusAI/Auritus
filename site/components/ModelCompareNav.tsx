@@ -3,7 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-export type TTSModelId = "kokoro" | "qwen" | "f5" | "higgs" | "chatterbox";
+export type TTSModelId =
+  | "kokoro"
+  | "qwen"
+  | "f5"
+  | "higgs"
+  | "chatterbox"
+  | "fish";
 
 export interface ModelInfo {
   id: TTSModelId;
@@ -72,6 +78,17 @@ export const TTS_MODELS: readonly ModelInfo[] = [
     sampleRate: "24 kHz",
     license: "Apache-2.0",
     latencyNote: "Hybrid autoregressive + flow matching",
+  },
+  {
+    id: "fish",
+    name: "Fish-Speech",
+    badge: "Dual-AR",
+    href: "/examples/fish",
+    creator: "Fish Audio",
+    architecture: "Dual-AR Transformer + VQ-GAN",
+    sampleRate: "44.1 kHz",
+    license: "CC-BY-NC-SA-4.0",
+    latencyNote: "Natural human prosody and breath modeling",
   },
 ] as const;
 
