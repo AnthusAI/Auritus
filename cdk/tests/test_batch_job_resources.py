@@ -48,8 +48,30 @@ def test_batch_gpu_job_fits_g4dn_xlarge() -> None:
                 {
                     "AllocationStrategy": "BEST_FIT_PROGRESSIVE",
                     "InstanceTypes": ["g4dn.xlarge"],
+                    "LaunchTemplate": Match.object_like(
+                        {
+                            "Version": "$Latest",
+                        }
+                    ),
                 }
             ),
+        },
+    )
+
+    template.has_resource_properties(
+        "AWS::EC2::LaunchTemplate",
+        {
+            "LaunchTemplateData": {
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/xvda",
+                        "Ebs": {
+                            "VolumeSize": 100,
+                            "VolumeType": "gp3",
+                        },
+                    }
+                ]
+            }
         },
     )
 
