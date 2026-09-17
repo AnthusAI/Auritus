@@ -1,0 +1,28 @@
+{
+  "id": "auritus-61220824-4c8f-4672-9ea4-4e3eb1eac44f",
+  "title": "Steve Jobs commencement speech excerpt with pull quote for example pages",
+  "description": "Replace the Gettysburg Address on Auritus example pages with a longer excerpt from Steve Jobs's 2005 Stanford Commencement Address featuring a pull quote.",
+  "type": "story",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "5326c2e7-05d0-424f-87ec-be69bd835024",
+      "author": "home",
+      "text": "Replaced Gettysburg Address on example pages with Steve Jobs commencement address excerpt (Option 2: Love, Loss & Great Work) and styled editorial pull quote. Verified via behave (31 features / 125 scenarios passed), next build (22/22 static pages), tsc, eslint, vitest, pytest, and CDK synth.",
+      "created_at": "2026-09-17T11:22:49.016299Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-17T11:10:08.901569Z",
+  "updated_at": "2026-09-17T11:22:53.703415Z",
+  "closed_at": "2026-09-17T11:22:53.703391Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AuritusEmbed } from "@/components/AuritusEmbed";
 import { AuritusPlayerHost } from "@/components/AuritusPlayerHost";
-import { GettysburgExcerpt } from "@/components/GettysburgExcerpt";
+import { JobsCommencementExcerpt } from "@/components/JobsCommencementExcerpt";
 
 export default function ThemedExamplePage() {
   return (
@@ -23,17 +23,17 @@ export default function ThemedExamplePage() {
         <Link href="/examples/qwen">Qwen</Link>
       </nav>
       <AuritusPlayerHost
-        name="Gettysburg Address"
-        byline="Abraham Lincoln, 1863 — themed Kokoro"
+        name="Stanford Commencement Address"
+        byline="Steve Jobs, 2005 — themed Kokoro"
       />
       <article className="example-article">
-        <GettysburgExcerpt backendLabel="Kokoro (af_heart) and a custom player theme" />
+        <JobsCommencementExcerpt backendLabel="Kokoro (af_heart) and a custom player theme" />
       </article>
       <AuritusEmbed
         siteKey="demo-site-key"
         apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
-        name="Gettysburg Address"
-        byline="Abraham Lincoln, 1863 — themed Kokoro"
+        name="Stanford Commencement Address"
+        byline="Steve Jobs, 2005 — themed Kokoro"
         ttsBackend="kokoro"
         voiceId="af_heart"
         root=".example-article"
