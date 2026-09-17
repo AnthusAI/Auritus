@@ -3,17 +3,25 @@
   "title": "Link commencement speech excerpt to official Stanford source",
   "description": "Add a link in the example page attribution pointing to the official Stanford News transcript of Steve Jobs's 2005 Commencement Address.",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "979ada12-5f33-4411-a5c5-7b6a460b95a0",
+      "author": "home",
+      "text": "Linked commencement speech excerpt to the official Stanford News transcript (https://news.stanford.edu/2005/06/14/jobs-061505/) in the example byline and footer attribution. Both links are marked with data-auritus-ignore so spoken TTS text is unaffected. Verified with behave, pytest, and site build.",
+      "created_at": "2026-09-17T14:48:01.315529Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-17T14:46:04.805548Z",
-  "updated_at": "2026-09-17T14:46:06.627714Z",
-  "closed_at": null,
+  "updated_at": "2026-09-17T14:48:03.975455Z",
+  "closed_at": "2026-09-17T14:48:03.975435Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
