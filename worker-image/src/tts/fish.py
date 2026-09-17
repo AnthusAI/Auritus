@@ -17,9 +17,9 @@ from tts.breaks import AURITUS_BREAK_MARKER, split_on_breaks
 
 __all__ = [
     "AURITUS_BREAK_MARKER",
-    "split_on_breaks",
     "FishBackend",
     "resolve_fish_voice",
+    "split_on_breaks",
 ]
 
 FISH_DEFAULT_VOICE = "narrator"
@@ -150,6 +150,7 @@ class FishBackend(TTSBackend):
             return self._generate_fallback(text, meta)
 
         from pathlib import Path
+
         import fish_speech
         from huggingface_hub import snapshot_download
 
@@ -354,6 +355,7 @@ def _launch_thread_safe_queue(
     """
     import queue
     import threading
+
     import torch
     from fish_speech.models.text2semantic.inference import (
         DualARTransformer,
@@ -376,7 +378,7 @@ def _launch_thread_safe_queue(
                 if device == "cuda" and torch.cuda.is_available():
                     torch.cuda.set_device(0)
                 with torch.device(device):
-                    max_length = 2048
+                    max_length = 8192
                     model = DualARTransformer.from_pretrained(
                         checkpoint_path, load_weights=True, max_length=max_length
                     )
