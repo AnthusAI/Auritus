@@ -1,0 +1,20 @@
+{
+  "id": "auritus-27ac5e33-0e2d-432a-8869-7213ebc3cb42",
+  "title": "Exclude example page headline from spoken audio and change title to Don't Settle",
+  "description": "Change example page content title to Don't Settle and mark the headline with data-auritus-ignore so it is excluded from the spoken audio along with the pull quote and footer.",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-17T14:31:59.026131Z",
+  "updated_at": "2026-09-17T14:32:04.038109Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
