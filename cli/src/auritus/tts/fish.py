@@ -88,8 +88,8 @@ class FishBackend(TTSBackend):
         if FishBackend._is_mlx:
             try:
                 return self._generate_mlx(text, meta)
-            except Exception:
-                # Fall back safely if weights or dependencies are unavailable
+            except ImportError:
+                # Fall back safely if dependencies are unavailable
                 return self._generate_fallback(text, meta)
         return self._generate_fallback(text, meta)
 

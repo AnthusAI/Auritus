@@ -139,13 +139,13 @@ class ChatterboxBackend(TTSBackend):
 
         if ChatterboxBackend._model is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
+            print(f"[chatterbox] resolved device={device}", flush=True)
             ChatterboxBackend._model = ChatterboxTTS.from_pretrained(
-                CHATTERBOX_TORCH_MODEL,
                 device=device,
             )
         blocks = split_on_breaks(text)
         all_chunks: list[np.ndarray] = []
-        sample_rate = 24000
+        sample_rate = int(getattr(ChatterboxBackend._model, "sr", 24000))
         silence = np.zeros(int(sample_rate * BREAK_SILENCE_SECONDS), dtype=np.float32)
         for i, block in enumerate(blocks):
             if i > 0:

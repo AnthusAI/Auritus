@@ -35,7 +35,8 @@ RUNTIME_PACKAGES = {
         "transformers",
         ["transformers>=5.5.0", "torch", "torchaudio", "soundfile"],
     ),
-    "fish": ("fish_speech", ["fish-speech", "torch", "soundfile"]),
+    # Fish Speech is Apple Silicon only via MLX; non-Apple platforms use
+    # fallback audio by design, so do not attempt pip install of nonexistent wheels.
     "coqui": ("TTS", ["TTS", "torch", "soundfile"]),
     "bark": ("transformers", ["transformers", "torch", "soundfile"]),
     # Previously missing entirely: chatterbox.py's _generate_torch imported

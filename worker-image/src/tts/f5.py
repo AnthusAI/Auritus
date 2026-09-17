@@ -103,6 +103,7 @@ class F5Backend(TTSBackend):
         :param meta: Job metadata.
         :returns: WAV audio bytes.
         """
+        import os
         import numpy as np
         import torch
         from f5_tts.api import F5TTS
@@ -113,7 +114,25 @@ class F5Backend(TTSBackend):
             F5Backend._model = F5TTS(device=device)
         voice = resolve_f5_voice(meta)
         _ = voice
-        wav, sr, _ = F5Backend._model.infer(text=text)
+        ref_file = meta.get("ref_file")
+        ref_text = meta.get("ref_text")
+        if not ref_file:
+            import f5_tts
+
+            pkg_dir = os.path.dirname(f5_tts.__file__)
+            candidate = os.path.join(
+                pkg_dir, "infer", "examples", "basic", "basic_ref_en.wav"
+            )
+            if os.path.exists(candidate):
+                ref_file = candidate
+                if not ref_text:
+                    ref_text = "Some call me nature, others call me mother nature."
+        infer_kwargs: dict[str, Any] = {"gen_text": text}
+        if ref_file:
+            infer_kwargs["ref_file"] = ref_file
+        if ref_text:
+            infer_kwargs["ref_text"] = ref_text
+        wav, sr, _ = F5Backend._model.infer(**infer_kwargs)
         audio_np = np.array(wav).reshape(-1)
         return _to_wav(audio_np, sample_rate=int(sr) if sr else 24000)
 
