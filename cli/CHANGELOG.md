@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.19.0 (2026-09-17)
+
+### Chores
+
+- **kanbus**: Commit board state (comment)
+  ([`12b8aa4`](https://github.com/AnthusAI/Auritus/commit/12b8aa43f0a4bd8f44f99a33618f8b23b6132869))
+
+### Features
+
+- **site**: Replace Gettysburg demo with Steve Jobs commencement address and pull quote
+  ([`4bcf80d`](https://github.com/AnthusAI/Auritus/commit/4bcf80d8bbe035e2699b7da660a2b680abee2d01))
+
+
 ## v0.18.0 (2026-09-16)
 
 ### Bug Fixes
