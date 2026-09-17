@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
 BACKEND="${AURITUS_TTS_BACKEND:-${TTS_BACKEND:-kokoro}}"
 
 if [ "$BACKEND" = "qwen" ] && [ -d "/opt/venv-qwen" ]; then

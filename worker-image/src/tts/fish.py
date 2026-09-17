@@ -182,9 +182,11 @@ class FishBackend(TTSBackend):
             with initialize_config_dir(version_base="1.3", config_dir=config_dir):
                 cfg = compose(config_name="modded_dac_vq")
             decoder_model = instantiate(cfg)
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
             codec_path = Path(ckpt_dir) / "codec.pth"
             state_dict = torch.load(
-                codec_path, map_location=device, mmap=True, weights_only=True
+                codec_path, map_location="cpu", mmap=True, weights_only=True
             )
             if "state_dict" in state_dict:
                 state_dict = state_dict["state_dict"]
@@ -374,14 +376,15 @@ def _launch_thread_safe_queue(
                 if device == "cuda" and torch.cuda.is_available():
                     torch.cuda.set_device(0)
                 with torch.device(device):
+                    max_length = 2048
                     model = DualARTransformer.from_pretrained(
-                        checkpoint_path, load_weights=True
+                        checkpoint_path, load_weights=True, max_length=max_length
                     )
                     model = model.to(device=device, dtype=precision)
                     decode_one_token = decode_one_token_ar
                     model.setup_caches(
                         max_batch_size=1,
-                        max_seq_len=model.config.max_seq_len,
+                        max_seq_len=max_length,
                         dtype=next(model.parameters()).dtype,
                     )
             finally:
