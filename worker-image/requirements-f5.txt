@@ -3,5 +3,4 @@ numpy>=1.26,<3
 torch==2.6.0
 torchaudio==2.6.0
 soundfile>=0.12.1,<1
-kokoro==0.9.4
-chatterbox-tts>=0.1.7
+f5-tts>=1.1.22

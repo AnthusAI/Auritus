@@ -14,16 +14,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sox \
     libsox-dev \
     libsox-fmt-all \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# 1. Main virtualenv for Kokoro, Chatterbox, F5-TTS, Higgs (Torch 2.6.0, Transformers 5.x)
+# 1. Main virtualenv for Kokoro, Chatterbox, Higgs (Torch 2.6.0, Transformers 5.2.0)
 COPY requirements.txt /app/requirements.txt
 RUN python3 -m venv /opt/venv-main && \
     /opt/venv-main/bin/pip install --no-cache-dir -r /app/requirements.txt
 
-# 2. Dedicated virtualenv for Qwen (strictly requires transformers 4.57.x and torch 2.5.1)
+# 2. Dedicated virtualenv for F5-TTS
+COPY requirements-f5.txt /app/requirements-f5.txt
+RUN python3 -m venv /opt/venv-f5 && \
+    /opt/venv-f5/bin/pip install --no-cache-dir -r /app/requirements-f5.txt
+
+# 3. Dedicated virtualenv for Qwen (strictly requires transformers 4.57.x and torch 2.5.1)
 COPY requirements-qwen.txt /app/requirements-qwen.txt
 RUN python3 -m venv /opt/venv-qwen && \
     /opt/venv-qwen/bin/pip install --no-cache-dir -r /app/requirements-qwen.txt
