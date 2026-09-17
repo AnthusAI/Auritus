@@ -1,0 +1,20 @@
+{
+  "id": "auritus-f232282e-389f-4cc0-ac4a-e61a51636ea7",
+  "title": "Experiment with g5g.xlarge (ARM/Graviton GPU) instead of g4dn.xlarge for AWS Batch",
+  "description": "User request (2026-09-17): experiment with switching the AWS Batch GPU\ncompute environment from g4dn.xlarge (NVIDIA T4, x86_64) to g5g.xlarge\n(NVIDIA T4G, ARM/Graviton2) since g5g is cheaper per hour.\n\nNot started -- session ran out of time before scoping this. Real\nconsiderations to work through before touching cdk/stacks/backend.py's\ncompute_env (instance_types=[\"g4dn.xlarge\"] at ~line 702):\n\n- g5g is ARM (Graviton), not x86_64 -- the worker image\n  (worker-image/Dockerfile, FROM python:3.11-slim) and every pip package\n  it installs (torch, torchaudio, transformers, kokoro, qwen-tts,\n  chatterbox-tts, fish-speech, f5-tts) need ARM64-compatible wheels.\n  Some of these (especially smaller/newer TTS packages) may not publish\n  ARM wheels at all, forcing a slow/fragile source build or making the\n  switch infeasible for some backends.\n  - PyTorch itself does publish official ARM64+CUDA wheels for Graviton,\n    so the base case is plausible, but every backend needs to be\n    verified individually.\n- Would need either a separate ARM-built Docker image (multi-arch build,\n  e.g. `docker buildx build --platform linux/arm64`) or a from-scratch\n  ARM base image, published to the same ECR repo with an arch-specific\n  tag.\n- The DEFAULT_GPU_HOURLY_RATE_USD = 0.526 rate card constant\n  (cdk/stacks/backend.py ~line 98, sourced from real g4dn.xlarge pricing)\n  would need a g5g.xlarge-specific rate, and the cost-rollup schema\n  currently has no per-instance-type dimension at all (same limitation\n  Phase C flagged for per-backend cost breakdown) -- may need to become\n  configurable per compute environment rather than a single global\n  constant, if both instance types run side by side during evaluation.\n- Recommend: stand up a SECOND compute environment + job queue (not a\n  replacement) so g4dn.xlarge keeps serving real traffic while g5g.xlarge\n  is evaluated in parallel with a manually-routed test job, rather than\n  cutting over blind.\n\nThis should get its own proper scoping pass (Explore + Plan) before any\ncode changes -- flagging as a task, not starting implementation now.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-c56c4a76-cf1f-434d-bb32-3b202ccc6302",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-17T16:11:53.884300Z",
+  "updated_at": "2026-09-17T16:11:53.884332Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
