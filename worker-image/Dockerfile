@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# 1. Main virtualenv for Kokoro, Chatterbox, Higgs (Torch 2.6.0, Transformers 5.2.0)
+# 1. Main virtualenv for Kokoro & Chatterbox (Torch 2.6.0, Transformers 5.2.0)
 COPY requirements.txt /app/requirements.txt
 RUN python3 -m venv /opt/venv-main && \
     /opt/venv-main/bin/pip install --no-cache-dir -r /app/requirements.txt
@@ -33,6 +33,11 @@ RUN python3 -m venv /opt/venv-f5 && \
 COPY requirements-qwen.txt /app/requirements-qwen.txt
 RUN python3 -m venv /opt/venv-qwen && \
     /opt/venv-qwen/bin/pip install --no-cache-dir -r /app/requirements-qwen.txt
+
+# 4. Dedicated virtualenv for Higgs (requires transformers>=5.5.0 for native higgs_audio_v2_tokenizer)
+COPY requirements-higgs.txt /app/requirements-higgs.txt
+RUN python3 -m venv /opt/venv-higgs && \
+    /opt/venv-higgs/bin/pip install --no-cache-dir -r /app/requirements-higgs.txt
 
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
