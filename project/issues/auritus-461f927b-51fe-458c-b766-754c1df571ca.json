@@ -3,16 +3,24 @@
   "title": "Support Fish Speech on CUDA in worker image and verify on AWS Batch",
   "description": "Implement Fish Speech Linux/CUDA synthesis in worker-image using fish-speech with PyTorch/CUDA, pre-bake requirements into Dockerfile, deploy worker image, and verify audio generation on AWS Batch GPU queue.",
   "type": "task",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-19ba7b16-6f43-4136-ad99-3b8e4b434c6c",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "11e75d4a-8a80-4593-92a9-c60461d46dab",
+      "author": "home",
+      "text": "Resolved CUDA OOM and DAC vocoder dtype mismatch; reference audio encoded and text tokenized. Diagnosed upstream generate_long constraint (max_length - 2048 prompt limit), increased max_length to 8192, and triggered workflow build 35286091666.",
+      "created_at": "2026-09-17T23:16:50.437150Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-17T19:01:44.838999Z",
-  "updated_at": "2026-09-17T19:01:44.839026Z",
+  "updated_at": "2026-09-17T23:16:50.437166Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
