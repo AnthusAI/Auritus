@@ -1,0 +1,20 @@
+{
+  "id": "auritus-461f927b-51fe-458c-b766-754c1df571ca",
+  "title": "Support Fish Speech on CUDA in worker image and verify on AWS Batch",
+  "description": "Implement Fish Speech Linux/CUDA synthesis in worker-image using fish-speech with PyTorch/CUDA, pre-bake requirements into Dockerfile, deploy worker image, and verify audio generation on AWS Batch GPU queue.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-19ba7b16-6f43-4136-ad99-3b8e4b434c6c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-17T19:01:44.838999Z",
+  "updated_at": "2026-09-17T19:01:44.839026Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
