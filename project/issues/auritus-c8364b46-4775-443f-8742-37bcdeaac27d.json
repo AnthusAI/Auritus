@@ -1,0 +1,20 @@
+{
+  "id": "auritus-c8364b46-4775-443f-8742-37bcdeaac27d",
+  "title": "Link commencement speech excerpt to official Stanford source",
+  "description": "Add a link in the example page attribution pointing to the official Stanford News transcript of Steve Jobs's 2005 Commencement Address.",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-17T14:46:04.805548Z",
+  "updated_at": "2026-09-17T14:46:06.627714Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
