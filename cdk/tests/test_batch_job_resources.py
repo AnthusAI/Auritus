@@ -26,7 +26,7 @@ def test_batch_gpu_job_fits_g4dn_xlarge() -> None:
                 "ResourceRequirements": Match.array_with(
                     [
                         Match.object_like({"Type": "VCPU", "Value": "2"}),
-                        Match.object_like({"Type": "MEMORY", "Value": "8192"}),
+                        Match.object_like({"Type": "MEMORY", "Value": "12288"}),
                         Match.object_like({"Type": "GPU", "Value": "1"}),
                     ]
                 ),

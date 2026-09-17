@@ -166,11 +166,7 @@ class FishBackend(TTSBackend):
                 torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
             )
 
-            from fish_speech.models.text2semantic.inference import (
-                launch_thread_safe_queue,
-            )
-
-            llama_queue = launch_thread_safe_queue(
+            llama_queue = _launch_thread_safe_queue(
                 checkpoint_path=ckpt_dir,
                 device=device,
                 precision=precision,
@@ -341,3 +337,90 @@ def _load_fish_mlx_model(repo_id: str) -> Any:
 
     Model.post_load_hook(model, path)
     return model
+
+
+def _launch_thread_safe_queue(
+    checkpoint_path: str,
+    device: str,
+    precision: Any,
+    compile: bool = False,
+) -> Any:
+    """Launch thread-safe request queue for Fish Speech text-to-semantic inference.
+
+    Initializes DualARTransformer directly on the target device with the specified
+    precision to prevent host memory exhaustion during weight loading.
+    """
+    import queue
+    import threading
+    import torch
+    from fish_speech.models.text2semantic.inference import (
+        DualARTransformer,
+        GenerateRequest,
+        WrappedGenerateResponse,
+        decode_one_token_ar,
+        generate_long,
+        logger,
+    )
+
+    input_queue: queue.Queue = queue.Queue()
+    init_event = threading.Event()
+    worker_error: list[Exception] = []
+
+    def worker() -> None:
+        try:
+            old_default_dtype = torch.get_default_dtype()
+            torch.set_default_dtype(precision)
+            try:
+                if device == "cuda" and torch.cuda.is_available():
+                    torch.cuda.set_device(0)
+                with torch.device(device):
+                    model = DualARTransformer.from_pretrained(
+                        checkpoint_path, load_weights=True
+                    )
+                    model = model.to(device=device, dtype=precision)
+                    decode_one_token = decode_one_token_ar
+                    model.setup_caches(
+                        max_batch_size=1,
+                        max_seq_len=model.config.max_seq_len,
+                        dtype=next(model.parameters()).dtype,
+                    )
+            finally:
+                torch.set_default_dtype(old_default_dtype)
+            init_event.set()
+        except Exception as exc:
+            import traceback
+
+            logger.error(traceback.format_exc())
+            worker_error.append(exc)
+            init_event.set()
+            return
+
+        while True:
+            item: GenerateRequest | None = input_queue.get()
+            if item is None:
+                break
+
+            kwargs = item.request
+            response_queue = item.response_queue
+
+            try:
+                for chunk in generate_long(
+                    model=model, decode_one_token=decode_one_token, **kwargs
+                ):
+                    response_queue.put(
+                        WrappedGenerateResponse(status="success", response=chunk)
+                    )
+            except Exception as e:
+                import traceback
+
+                logger.error(traceback.format_exc())
+                response_queue.put(WrappedGenerateResponse(status="error", response=e))
+
+    thread = threading.Thread(target=worker, daemon=True)
+    thread.start()
+    init_event.wait()
+
+    if worker_error:
+        raise worker_error[0]
+
+    return input_queue

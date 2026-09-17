@@ -35,9 +35,7 @@ def test_retention_disabled_by_default_sets_zero_env_var() -> None:
         "AWS::Lambda::Function",
         {
             "Handler": "handler.handler",
-            "Environment": {
-                "Variables": Match.object_like({"RETENTION_DAYS": "0"})
-            },
+            "Environment": {"Variables": Match.object_like({"RETENTION_DAYS": "0"})},
         },
     )
 
@@ -71,9 +69,7 @@ def test_retention_enabled_sets_matching_lifecycle_and_env_var() -> None:
         "AWS::Lambda::Function",
         {
             "Handler": "handler.handler",
-            "Environment": {
-                "Variables": Match.object_like({"RETENTION_DAYS": "90"})
-            },
+            "Environment": {"Variables": Match.object_like({"RETENTION_DAYS": "90"})},
         },
     )
 

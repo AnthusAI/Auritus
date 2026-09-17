@@ -767,7 +767,7 @@ class BackendStack(Stack):
                     ),
                     batch.CfnJobDefinition.ResourceRequirementProperty(
                         type="MEMORY",
-                        value="8192",
+                        value="12288",
                     ),
                     batch.CfnJobDefinition.ResourceRequirementProperty(
                         type="GPU",
