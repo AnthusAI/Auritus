@@ -243,8 +243,12 @@ test("basic example plays Kokoro speech scoped to article", async ({
   const body = jobRequest.postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("kokoro");
   expect(body.voice_id).toBe("af_heart");
-  expect(body.text).toContain("Four score and seven years ago");
-  expect(body.text).toContain("Now we are engaged in a great civil war");
+  expect(body.text).toContain(
+    "getting fired from Apple was the best thing that could have ever happened to me",
+  );
+  expect(body.text).toContain(
+    "the only way to do great work is to love what you do",
+  );
   expect(body.text).not.toContain("This page speaks that excerpt");
 
   const config = page.locator("[data-auritus-site-key]").first();
@@ -374,7 +378,7 @@ test("Play after the clip ends starts Kokoro speech from the beginning", async (
   );
 });
 
-test("themed example posts the same Gettysburg excerpt with Kokoro", async ({
+test("themed example posts the same commencement excerpt with Kokoro", async ({
   page,
 }) => {
   test.setTimeout(180_000);
@@ -382,14 +386,18 @@ test("themed example posts the same Gettysburg excerpt with Kokoro", async ({
   await page.goto("/examples/themed");
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("kokoro");
-  expect(body.text).toContain("Four score and seven years ago");
-  expect(body.text).toContain("Now we are engaged in a great civil war");
+  expect(body.text).toContain(
+    "getting fired from Apple was the best thing that could have ever happened to me",
+  );
+  expect(body.text).toContain(
+    "the only way to do great work is to love what you do",
+  );
   expect(body.text).not.toContain("This page speaks that excerpt");
   await waitForPlayableClip(page);
   expect(await clipDurationSeconds(page)).toBeGreaterThanOrEqual(8);
 });
 
-test("Qwen example posts the same Gettysburg excerpt with Qwen", async ({
+test("Qwen example posts the same commencement excerpt with Qwen", async ({
   page,
 }) => {
   test.setTimeout(180_000);
@@ -398,15 +406,19 @@ test("Qwen example posts the same Gettysburg excerpt with Qwen", async ({
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("qwen");
   expect(body.voice_id).toBe("Ryan");
-  expect(body.text).toContain("Four score and seven years ago");
-  expect(body.text).toContain("Now we are engaged in a great civil war");
+  expect(body.text).toContain(
+    "getting fired from Apple was the best thing that could have ever happened to me",
+  );
+  expect(body.text).toContain(
+    "the only way to do great work is to love what you do",
+  );
   expect(body.text).not.toContain("When on board H.M.S.");
   expect(body.text).not.toContain("This page speaks that excerpt");
   await waitForPlayableClip(page);
   expect(await clipDurationSeconds(page)).toBeGreaterThanOrEqual(20);
 });
 
-test("F5 example posts the same Gettysburg excerpt with F5", async ({
+test("F5 example posts the same commencement excerpt with F5", async ({
   page,
 }) => {
   test.setTimeout(180_000);
@@ -415,12 +427,16 @@ test("F5 example posts the same Gettysburg excerpt with F5", async ({
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("f5");
   expect(body.voice_id).toBe("default");
-  expect(body.text).toContain("Four score and seven years ago");
-  expect(body.text).toContain("Now we are engaged in a great civil war");
+  expect(body.text).toContain(
+    "getting fired from Apple was the best thing that could have ever happened to me",
+  );
+  expect(body.text).toContain(
+    "the only way to do great work is to love what you do",
+  );
   expect(body.text).not.toContain("This page speaks that excerpt");
 });
 
-test("Chatterbox example posts the same Gettysburg excerpt with Chatterbox", async ({
+test("Chatterbox example posts the same commencement excerpt with Chatterbox", async ({
   page,
 }) => {
   test.setTimeout(180_000);
@@ -429,12 +445,16 @@ test("Chatterbox example posts the same Gettysburg excerpt with Chatterbox", asy
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("chatterbox");
   expect(body.voice_id).toBe("narrator");
-  expect(body.text).toContain("Four score and seven years ago");
-  expect(body.text).toContain("Now we are engaged in a great civil war");
+  expect(body.text).toContain(
+    "getting fired from Apple was the best thing that could have ever happened to me",
+  );
+  expect(body.text).toContain(
+    "the only way to do great work is to love what you do",
+  );
   expect(body.text).not.toContain("This page speaks that excerpt");
 });
 
-test("Fish example posts the same Gettysburg excerpt with Fish", async ({
+test("Fish example posts the same commencement excerpt with Fish", async ({
   page,
 }) => {
   test.setTimeout(180_000);
@@ -443,8 +463,12 @@ test("Fish example posts the same Gettysburg excerpt with Fish", async ({
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("fish");
   expect(body.voice_id).toBe("narrator");
-  expect(body.text).toContain("Four score and seven years ago");
-  expect(body.text).toContain("Now we are engaged in a great civil war");
+  expect(body.text).toContain(
+    "getting fired from Apple was the best thing that could have ever happened to me",
+  );
+  expect(body.text).toContain(
+    "the only way to do great work is to love what you do",
+  );
   expect(body.text).not.toContain("This page speaks that excerpt");
 });
 
@@ -508,7 +532,9 @@ test("client navigation boots a new job for the destination page", async ({
   const basicPost = waitForJobPost(page);
   await page.getByRole("link", { name: "Basic example" }).click();
   const basicBody = (await basicPost).postDataJSON() as JobPostBody;
-  expect(basicBody.text).toContain("Four score and seven years ago");
+  expect(basicBody.text).toContain(
+    "getting fired from Apple was the best thing that could have ever happened to me",
+  );
   expect(basicBody.text).not.toContain(
     "The only freedom which deserves the name",
   );

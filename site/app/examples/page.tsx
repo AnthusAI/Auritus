@@ -10,7 +10,7 @@ const modelExamples = [
     sampleRate: "24 kHz",
     license: "Apache-2.0",
     summary:
-      "The two-paragraph Gettysburg excerpt, spoken with Kokoro-82M on Apple Silicon (MLX) or PyTorch (~23s).",
+      "The Steve Jobs commencement speech excerpt, spoken with Kokoro-82M on Apple Silicon (MLX) or PyTorch.",
   },
   {
     href: "/examples/qwen",
@@ -21,7 +21,7 @@ const modelExamples = [
     sampleRate: "24 kHz",
     license: "Apache-2.0",
     summary:
-      "The same Gettysburg excerpt, spoken with Qwen3-TTS 0.6B CustomVoice with the Ryan preset (~48s).",
+      "The same commencement speech excerpt, spoken with Qwen3-TTS 0.6B CustomVoice with the Ryan preset.",
   },
   {
     href: "/examples/f5",
@@ -32,7 +32,7 @@ const modelExamples = [
     sampleRate: "24 kHz",
     license: "MIT",
     summary:
-      "The same Gettysburg excerpt, spoken with non-autoregressive F5-TTS via MLX on Apple Silicon.",
+      "The same commencement speech excerpt, spoken with non-autoregressive F5-TTS via MLX on Apple Silicon.",
   },
   {
     href: "/examples/higgs",
@@ -43,7 +43,7 @@ const modelExamples = [
     sampleRate: "24 kHz",
     license: "Research / Non-Commercial",
     summary:
-      "The same Gettysburg excerpt, spoken with Boson AI's expressive 4B Higgs Audio v3 via MLX on Apple Silicon.",
+      "The same commencement speech excerpt, spoken with Boson AI's expressive 4B Higgs Audio v3 via MLX on Apple Silicon.",
   },
   {
     href: "/examples/chatterbox",
@@ -54,7 +54,7 @@ const modelExamples = [
     sampleRate: "24 kHz",
     license: "Apache-2.0",
     summary:
-      "The same Gettysburg excerpt, spoken with Resemble AI's hybrid LLaMA-520M and Matcha-TTS flow matching.",
+      "The same commencement speech excerpt, spoken with Resemble AI's hybrid LLaMA-520M and Matcha-TTS flow matching.",
   },
   {
     href: "/examples/fish",
@@ -65,7 +65,7 @@ const modelExamples = [
     sampleRate: "44.1 kHz",
     license: "CC-BY-NC-SA-4.0",
     summary:
-      "The same Gettysburg excerpt, spoken with Fish Audio's dual-autoregressive model with natural prosody and breathing.",
+      "The same commencement speech excerpt, spoken with Fish Audio's dual-autoregressive model with natural prosody and breathing.",
   },
 ];
 
@@ -75,7 +75,7 @@ const featureExamples = [
     title: "Themed Player",
     badge: "CSS variables",
     summary:
-      "The same Gettysburg excerpt with Kokoro, styled via CSS custom properties (--auritus-*).",
+      "The same commencement speech excerpt with Kokoro, styled via CSS custom properties (--auritus-*).",
   },
   {
     href: "/examples/ignore",
@@ -96,8 +96,8 @@ export default function ExamplesIndexPage() {
       </nav>
       <h1>Examples &amp; Models</h1>
       <p>
-        Kokoro, Qwen, F5, Higgs, and Chatterbox are the supported speech backends.
-        Each model narrates the identical two-paragraph Gettysburg excerpt so you
+        Kokoro, Qwen, F5, Higgs, Chatterbox, and Fish Speech are the supported speech backends.
+        Each model narrates the identical excerpt from Steve Jobs&#39;s Stanford Commencement Address so you
         can directly compare audio timbre, pacing, pronunciation, and latency.
       </p>
 
