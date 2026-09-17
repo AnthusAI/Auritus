@@ -92,17 +92,25 @@ class F5Backend(TTSBackend):
         return _to_wav(audio_np, sample_rate=24000)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via PyTorch f5-tts (fallback for non-Apple).
+        """Generate via PyTorch f5-tts (fallback for non-Apple, e.g. AWS Batch).
+
+        F5TTS's own device default was previously trusted implicitly;
+        explicitly resolves and passes cuda/cpu here (mirroring higgs.py,
+        chatterbox.py, qwen.py) so a g4dn.xlarge Batch run is verified, not
+        assumed, to actually use the GPU it's billed for.
 
         :param text: TTS input text.
         :param meta: Job metadata.
         :returns: WAV audio bytes.
         """
         import numpy as np
+        import torch
         from f5_tts.api import F5TTS
 
         if F5Backend._model is None:
-            F5Backend._model = F5TTS()
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            print(f"[f5] resolved device={device}", flush=True)
+            F5Backend._model = F5TTS(device=device)
         voice = resolve_f5_voice(meta)
         _ = voice
         wav, sr, _ = F5Backend._model.infer(text=text)

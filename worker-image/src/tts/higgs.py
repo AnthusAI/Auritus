@@ -150,8 +150,14 @@ class HiggsBackend(TTSBackend):
             if not all_samples:
                 raise ValueError("Higgs Audio v3 generated no audio segments")
             return _to_wav(all_samples, sample_rate=sample_rate)
-        except Exception:
-            # Fallback for environments without GPU / downloaded weights in tests
+        except ImportError:
+            # Only a missing optional dependency (e.g. local dev/test
+            # without the runtime-installed package) is a legitimate reason
+            # to stub. This previously caught bare Exception, which meant a
+            # real generation failure (CUDA OOM, a model bug, a download
+            # failure) silently produced a normal-looking 'done' job with a
+            # fake 440Hz tone -- confirmed happening in production. Let real
+            # errors propagate so the job is correctly marked failed.
             sample_rate = 24000
             duration_ms = max(500, min(len(text) * 60, 5000))
             frames = int(sample_rate * (duration_ms / 1000.0))

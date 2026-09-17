@@ -68,7 +68,16 @@ class FishBackend(TTSBackend):
         return machine.startswith(("arm", "aarch"))
 
     def generate(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate speech audio using Fish Speech."""
+        """Generate speech audio using Fish Speech.
+
+        Only ImportError (an optional heavy dependency genuinely not
+        installed, e.g. local dev/test) falls back to the stub tone. A real
+        generation failure (CUDA OOM, a model bug, a download failure) must
+        raise so the job is correctly marked failed instead of silently
+        reporting success with fake audio -- this previously caught bare
+        Exception here, the same anti-pattern confirmed happening in
+        production for higgs.py and fixed there too.
+        """
         if not text.strip():
             raise ValueError("Cannot generate audio for empty text")
         if FishBackend._is_mlx is None:
@@ -77,12 +86,12 @@ class FishBackend(TTSBackend):
         if FishBackend._is_mlx:
             try:
                 return self._generate_mlx(text, meta)
-            except Exception:
+            except ImportError:
                 return self._generate_fallback(text, meta)
 
         try:
             return self._generate_torch(text, meta)
-        except Exception:
+        except ImportError:
             return self._generate_fallback(text, meta)
 
     def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:

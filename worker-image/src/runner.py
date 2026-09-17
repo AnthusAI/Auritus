@@ -38,6 +38,18 @@ RUNTIME_PACKAGES = {
     "fish": ("fish_speech", ["fish-speech", "torch", "soundfile"]),
     "coqui": ("TTS", ["TTS", "torch", "soundfile"]),
     "bark": ("transformers", ["transformers", "torch", "soundfile"]),
+    # Previously missing entirely: chatterbox.py's _generate_torch imported
+    # `chatterbox.tts` with no install path at all, so it always hit
+    # ImportError on Batch and silently produced a fake 440Hz stub tone
+    # instead of real audio -- confirmed in production (auritus-<pending>).
+    "chatterbox": (
+        "chatterbox",
+        ["chatterbox-tts", "torch", "torchaudio", "soundfile"],
+    ),
+    # Also previously missing: f5.py's _generate_torch has no fallback at
+    # all, so a missing install failed the job loudly (better than a fake
+    # tone, but still non-functional).
+    "f5": ("f5_tts", ["f5-tts", "torch", "torchaudio", "soundfile"]),
 }
 
 

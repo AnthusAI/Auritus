@@ -127,16 +127,24 @@ class KokoroBackend(TTSBackend):
         return _to_wav(audio_np, sample_rate=sample_rate)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via PyTorch kokoro (fallback for non-Apple).
+        """Generate via PyTorch kokoro (fallback for non-Apple, e.g. AWS Batch).
 
         Same two-layer split as the MLX path (see _generate_mlx): blocks on
         AURITUS_BREAK_MARKER for real pauses, segments from KPipeline's own
         generator within each block for Kokoro's internal length limit.
+
+        KPipeline's own device default was previously trusted implicitly;
+        explicitly resolves and passes cuda/cpu here (mirroring higgs.py,
+        chatterbox.py, qwen.py) so a g4dn.xlarge Batch run is verified, not
+        assumed, to actually use the GPU it's billed for.
         """
+        import torch
         from kokoro import KPipeline
 
         if KokoroBackend._model is None:
-            KokoroBackend._model = KPipeline(lang_code="a")
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            print(f"[kokoro] resolved device={device}", flush=True)
+            KokoroBackend._model = KPipeline(lang_code="a", device=device)
         voice = resolve_kokoro_voice(meta)
         sample_rate = 24000
         silence = [0.0] * int(sample_rate * BREAK_SILENCE_SECONDS)
