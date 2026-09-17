@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { fetchJobs, fetchCosts, JobSummary, CostSummary } from '../lib/api';
+import { fetchOverview, fetchJobs, fetchCosts, JobSummary, CostSummary } from '../lib/api';
 import { DonutChart } from '../components/DonutChart';
 
 type RangePreset = 'today' | '7d' | '30d' | 'custom';
@@ -41,6 +41,7 @@ function getRangeForPreset(
 export default function DashboardOverviewPage() {
   const [costs, setCosts] = useState<CostSummary>({ daily: [], total: { gpu_cost_usd: 0, platform_cost_usd: 0, avoided_cost_usd: 0, batch_job_count: 0, local_job_count: 0, billed_seconds: 0, local_duration_seconds: 0 } });
   const [recentJobs, setRecentJobs] = useState<JobSummary[]>([]);
+  const [avgDurationSeconds, setAvgDurationSeconds] = useState(0);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [loadingRange, setLoadingRange] = useState(true);
   const [jobsError, setJobsError] = useState<string | null>(null);
@@ -52,13 +53,17 @@ export default function DashboardOverviewPage() {
 
   const range = getRangeForPreset(preset, customStart, customEnd);
 
-  // Recent Jobs table -- unscoped, mount-only.
+  // Recent Jobs table + avg generation latency -- both unscoped, mount-only.
+  // /admin/overview has no date concept (a capped scan(Limit=100), the same
+  // defect class as auritus-294fa6), so avg_duration_seconds is a live
+  // snapshot, not scoped to the date-range picker below.
   useEffect(() => {
     async function loadJobs() {
       setLoadingJobs(true);
       setJobsError(null);
       try {
-        const jobsData = await fetchJobs();
+        const [overviewData, jobsData] = await Promise.all([fetchOverview(), fetchJobs()]);
+        if (overviewData) setAvgDurationSeconds(overviewData.avg_duration_seconds);
         if (jobsData?.jobs) setRecentJobs(jobsData.jobs.slice(0, 8));
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Failed to load dashboard data';
@@ -109,13 +114,6 @@ export default function DashboardOverviewPage() {
 
   return (
     <div className="console-container">
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>System Observability & Monitoring</h1>
-        <p style={{ color: 'var(--ink-muted)' }}>
-          Real-time metrics for just-in-time TTS generation, worker race performance, and cloud fallback health.
-        </p>
-      </div>
-
       {error && (
         <div className="card" style={{ marginBottom: '1.5rem', background: '#fff1f0', borderColor: '#ffa39e', color: '#cf1322' }}>
           <strong>Error loading dashboard:</strong> {error}
@@ -123,19 +121,7 @@ export default function DashboardOverviewPage() {
       )}
 
       {/* Cost-rollup-derived aggregates for the selected date range */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          marginBottom: '0.75rem',
-        }}
-      >
-        <p style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', margin: 0 }}>
-          Completed jobs, worker split, and costs across sites for the chosen period.
-        </p>
+      <div style={{ marginBottom: '1.25rem' }}>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           {(['today', '7d', '30d', 'custom'] as RangePreset[]).map((p) => (
             <button
@@ -144,8 +130,9 @@ export default function DashboardOverviewPage() {
               onClick={() => setPreset(p)}
               style={{
                 fontSize: '0.8rem',
-                background: preset === p ? 'var(--accent)' : undefined,
-                color: preset === p ? '#fff' : undefined,
+                background: preset === p ? 'var(--accent-soft)' : undefined,
+                color: preset === p ? 'var(--accent)' : undefined,
+                borderColor: preset === p ? 'var(--accent)' : undefined,
               }}
             >
               {p === 'today' ? 'Today' : p === '7d' ? '7 days' : p === '30d' ? '30 days' : 'Custom'}
@@ -184,6 +171,9 @@ export default function DashboardOverviewPage() {
           </div>
           <div style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', marginTop: '0.25rem' }}>
             Local + cloud, selected range
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', marginTop: '0.25rem' }}>
+            Avg latency (live): <strong>{avgDurationSeconds}s</strong>
           </div>
         </div>
 

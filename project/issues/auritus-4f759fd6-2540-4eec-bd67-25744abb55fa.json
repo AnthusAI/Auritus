@@ -3,18 +3,29 @@
   "title": "Playwright costs.spec.ts tests fail in dev env (pre-existing, not a regression)",
   "description": "While adding Playwright coverage for the Overview page's new date-range\npicker (2026-09-17), found that most of console/tests/costs.spec.ts's\nexisting Costs Page tests fail in this local dev environment: \"Total GPU\nCost\" and similar mocked-data assertions time out, with the page rendering\nNext.js's client-side not-found boundary despite a direct manual browser\nvisit to the same route on the same dev server (same session, same mocks\nconceptually) rendering correctly.\n\nConfirmed via git stash that this reproduces identically against the\nUNMODIFIED costs.spec.ts and page files on develop -- it is not a\nregression from any change in this session. Root cause not identified;\nsuspected an interaction between Playwright's page.route() mocking and\nNext.js 14.2.35's dev-mode RSC/client-router internals (possibly the bare\n`**/sites` glob pattern intercepting an internal Next.js navigation-prefetch\nrequest that happens to also end in \"/sites\", corrupting client-router\nstate), but this wasn't confirmed -- ran out of time to dig further this\nsession.\n\nNew coverage added this session (console/tests/overview-range.spec.ts,\n5 tests covering the date-range picker, donut chart, and section labeling)\npasses cleanly, so this isn't blocking all Playwright coverage -- only the\npre-existing costs.spec.ts \"Costs Page\" describe block's tests are affected\nin this environment. Needs investigation: try an older Playwright version,\ntry disabling Next dev-mode RSC prefetch, or restructure the site-filter\nmock pattern to be more specific than a bare `**/sites` suffix match.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-43428879-7a14-4f95-b87c-657c647b9ee4",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "e9067e0d-339f-45f5-bd0b-bf23ca3968b0",
+      "author": "home",
+      "text": "Resolved: this was environmental flakiness from repeatedly restarting/rebuilding the dev server during a debugging session, not a real Playwright/Next.js incompatibility. A single clean 'rm -rf .next && npm run dev' followed by one test run passes all 11 tests (6 in costs.spec.ts + 5 in overview-range.spec.ts) reliably. Closing.",
+      "created_at": "2026-09-17T15:31:15.544159Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-17T15:15:20.015213Z",
-  "updated_at": "2026-09-17T15:15:20.015252Z",
-  "closed_at": null,
+  "updated_at": "2026-09-17T15:31:15.611817Z",
+  "closed_at": "2026-09-17T15:31:15.611793Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
 }

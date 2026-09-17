@@ -33,14 +33,14 @@ export default function Header() {
 
   return (
     <header style={{ borderBottom: '1px solid var(--line)', background: 'var(--card)' }}>
-      <div className="console-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBlock: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+      <div className="console-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', paddingBlock: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', rowGap: '0.5rem' }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontFamily: 'Georgia, serif', fontSize: '1.4rem', fontWeight: 700 }}>
               Auritus <span style={{ color: 'var(--accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Console</span>
             </span>
           </Link>
-          <nav style={{ display: 'flex', gap: '1rem' }}>
+          <nav style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             {navItems.map((item) => {
               const active = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href));
               return (
