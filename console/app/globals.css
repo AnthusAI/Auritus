@@ -177,3 +177,52 @@ h1, h2, h3, h4 {
 .mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
+
+.header-desktop-nav,
+.header-desktop-account {
+  display: flex;
+}
+
+.header-mobile-toggle {
+  display: none;
+}
+
+.header-mobile-panel {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .header-desktop-nav,
+  .header-desktop-account {
+    display: none;
+  }
+
+  .header-mobile-toggle {
+    display: inline-flex;
+  }
+
+  .header-mobile-panel.open {
+    display: flex;
+  }
+}
+
+/* Generic table-vs-card responsive switch: a wide data table on desktop,
+   a stacked card list on narrow viewports so nothing is hidden or
+   clipped -- only reflowed. */
+.table-view {
+  display: block;
+}
+
+.card-list-view {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .table-view {
+    display: none;
+  }
+
+  .card-list-view {
+    display: flex;
+  }
+}

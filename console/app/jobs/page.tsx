@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { fetchJobs, JobSummary } from '../../lib/api';
+import { fetchJobs, fetchJobDetail, JobSummary } from '../../lib/api';
 
 export default function JobExplorerPage() {
   const [jobs, setJobs] = useState<JobSummary[]>([]);
@@ -15,6 +15,41 @@ export default function JobExplorerPage() {
   const [nextToken, setNextToken] = useState<string | null>(null);
   const [cursorHistory, setCursorHistory] = useState<(string | undefined)[]>([]);
   const [pageIndex, setPageIndex] = useState<number>(1);
+  const [expandedHashes, setExpandedHashes] = useState<Set<string>>(new Set());
+  const [fullTextByHash, setFullTextByHash] = useState<Record<string, string>>({});
+  const [loadingFullText, setLoadingFullText] = useState<Set<string>>(new Set());
+
+  // The jobs-list endpoint sends a short text preview, not the full
+  // content -- "Show more" lazily fetches the full job detail (which does
+  // carry the untruncated text) on first expand, then caches it.
+  async function toggleExpanded(hash: string) {
+    if (expandedHashes.has(hash)) {
+      setExpandedHashes((prev) => {
+        const next = new Set(prev);
+        next.delete(hash);
+        return next;
+      });
+      return;
+    }
+
+    setExpandedHashes((prev) => new Set(prev).add(hash));
+
+    if (!(hash in fullTextByHash)) {
+      setLoadingFullText((prev) => new Set(prev).add(hash));
+      try {
+        const detail = await fetchJobDetail(hash);
+        setFullTextByHash((prev) => ({ ...prev, [hash]: detail.text || '' }));
+      } catch {
+        // Leave the cache empty; the card falls back to the preview text.
+      } finally {
+        setLoadingFullText((prev) => {
+          const next = new Set(prev);
+          next.delete(hash);
+          return next;
+        });
+      }
+    }
+  }
 
   useEffect(() => {
     async function loadJobs() {
@@ -135,8 +170,9 @@ export default function JobExplorerPage() {
         </div>
       </div>
 
-      {/* Jobs Data Table */}
+      {/* Jobs Data Table (desktop) / Card List (narrow viewports) */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="table-view" style={{ overflowX: 'auto' }}>
         <table className="data-table">
           <thead>
             <tr>
@@ -203,6 +239,84 @@ export default function JobExplorerPage() {
             )}
           </tbody>
         </table>
+        </div>
+
+        {/* Card list view for narrow viewports -- shows every field, with
+            long text truncated and expandable rather than hidden. */}
+        <div className="card-list-view" style={{ flexDirection: 'column' }}>
+          {error ? (
+            <div style={{ textAlign: 'center', padding: '2.5rem', color: '#cf1322' }}>
+              Error loading jobs: {error}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--ink-muted)' }}>
+              {loading ? 'Loading jobs...' : 'No matching jobs found.'}
+            </div>
+          ) : (
+            filtered.map((job) => {
+              const isExpanded = expandedHashes.has(job.content_hash);
+              const isLoadingFullText = loadingFullText.has(job.content_hash);
+              const previewText = job.text || '—';
+              const displayText = isExpanded ? fullTextByHash[job.content_hash] ?? previewText : previewText;
+              const hasText = Boolean(job.text);
+              return (
+                <div
+                  key={job.content_hash}
+                  style={{ padding: '1rem', borderBottom: '1px solid rgba(33, 24, 15, 0.08)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className="mono" style={{ fontSize: '0.85rem' }}>
+                      {job.content_hash.slice(0, 16)}...
+                    </span>
+                    <Link href={`/jobs/detail?hash=${job.content_hash}`} className="button" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}>
+                      Inspect
+                    </Link>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                    <span className={`badge badge-${job.status}`}>{job.status}</span>
+                    {job.worker_type ? (
+                      <span className={`badge badge-worker-${job.worker_type}`}>
+                        {job.worker_type === 'batch' ? 'AWS Batch' : 'Local'}
+                      </span>
+                    ) : job.status !== 'done' ? (
+                      <span style={{ color: 'var(--ink-muted)', fontSize: '0.8rem', alignSelf: 'center' }}>Unclaimed</span>
+                    ) : null}
+                  </div>
+
+                  <div style={{ fontSize: '0.85rem', color: 'var(--ink-muted)' }}>
+                    <span style={{ textTransform: 'capitalize' }}>
+                      {job.tts_backend || 'kokoro'} {job.voice_id ? `(${job.voice_id})` : ''}
+                    </span>
+                    {' · '}
+                    <span className="mono">{job.duration_seconds ? `${job.duration_seconds}s` : '—'}</span>
+                  </div>
+
+                  <div style={{ fontSize: '0.85rem' }}>
+                    {isExpanded && isLoadingFullText && !(job.content_hash in fullTextByHash) ? 'Loading full text…' : displayText}
+                    {hasText && (
+                      <button
+                        onClick={() => toggleExpanded(job.content_hash)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          marginLeft: '0.4rem',
+                          color: 'var(--accent)',
+                          fontWeight: 600,
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {isExpanded ? 'Show less' : 'Show full text'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
 
         {/* Pagination Controls Footer */}
         <div style={{ padding: '0.85rem 1.25rem', borderTop: '1px solid var(--line)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#faf8f5', flexWrap: 'wrap', gap: '0.75rem' }}>
