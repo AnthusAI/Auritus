@@ -383,7 +383,7 @@ test.describe('Dashboard Cost Tiles', () => {
     await page.waitForLoadState('networkidle');
 
     // Check for cost tiles on dashboard
-    await expect(page.locator('text=Batch GPU Cost')).toBeVisible();
+    await expect(page.locator('text=Cloud GPU Cost')).toBeVisible();
     await expect(page.locator('text=$15.7890')).toBeVisible();
 
     await expect(page.locator('text=Saved via Local Workers')).toBeVisible();
@@ -392,5 +392,10 @@ test.describe('Dashboard Cost Tiles', () => {
     // Verify the tiles link to /costs
     const costTiles = page.locator('a[href="/costs"]');
     expect(await costTiles.count()).toBeGreaterThan(0);
+
+    // Batch GPU Queue tile was renamed and relabeled to Cloud Fallback,
+    // moved into the "right now" live-snapshot section.
+    await expect(page.locator('text=AWS Batch Queue')).not.toBeVisible();
+    await expect(page.locator('text=Cloud Fallback')).toBeVisible();
   });
 });
