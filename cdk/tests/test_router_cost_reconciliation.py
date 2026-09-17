@@ -250,3 +250,69 @@ def test_admin_costs_site_scoped_query_has_no_reconciliation_key_populated(
 
     assert body["reconciliation"] == []
     assert len(body["daily"]) == 1
+
+
+def test_admin_costs_backfills_missing_fields_on_sparse_rollup_rows(
+    cost_router_resources: Any,
+) -> None:
+    """A rollup row is written incrementally per field (_record_rollup_contribution
+    only ADDs the fields the completing job's path touches), so a local-only
+    day has no gpu_cost_usd/batch_job_count/billed_seconds key at all, and a
+    Batch-only day has no local_job_count/local_duration_seconds key. Every
+    consumer (CLI, console) expects a complete row -- the console's daily
+    table crashed rendering `day.local_duration_seconds.toFixed(...)` against
+    a real Batch-only production row missing that key entirely. Every field
+    in _COST_TOTAL_FIELDS must be present (defaulted to 0) on every row.
+    """
+    rollups = cost_router_resources["cost_rollups"]
+    # Batch-only day: no local_job_count / local_duration_seconds key at all.
+    rollups.put_item(
+        Item={
+            "site_id": "site-batch-only",
+            "date": "2026-09-17",
+            "gpu_cost_usd": Decimal("0.01"),
+            "platform_cost_usd": Decimal("0.0005"),
+            "batch_job_count": Decimal("1"),
+            "billed_seconds": Decimal("42"),
+            "avoided_cost_usd": Decimal("0"),
+        }
+    )
+    # Local-only day: no gpu_cost_usd / batch_job_count / billed_seconds key.
+    rollups.put_item(
+        Item={
+            "site_id": "site-local-only",
+            "date": "2026-09-17",
+            "platform_cost_usd": Decimal("0.0005"),
+            "local_job_count": Decimal("1"),
+            "local_duration_seconds": Decimal("13"),
+            "avoided_cost_usd": Decimal("0.0019"),
+        }
+    )
+
+    handler = cost_router_resources["handler"]
+    event = cost_router_resources["event"](
+        "GET",
+        "/admin/costs",
+        headers=_operator_headers(),
+        query_string_parameters={"from": "2026-09-17", "to": "2026-09-17"},
+    )
+    response = handler.handler(event, None)
+    body = cost_router_resources["response_body"](response)
+
+    assert response["statusCode"] == 200
+    daily_by_site = {row["site_id"]: row for row in body["daily"]}
+
+    batch_only = daily_by_site["site-batch-only"]
+    assert batch_only["local_job_count"] == 0
+    assert batch_only["local_duration_seconds"] == 0
+
+    local_only = daily_by_site["site-local-only"]
+    assert local_only["gpu_cost_usd"] == 0
+    assert local_only["batch_job_count"] == 0
+    assert local_only["billed_seconds"] == 0
+
+    # Every row must carry every field in _COST_TOTAL_FIELDS, not just the
+    # ones its own write path happened to ADD.
+    for row in body["daily"]:
+        for field in handler._COST_TOTAL_FIELDS:
+            assert field in row

@@ -1342,6 +1342,18 @@ def _get_admin_costs(
                 else:
                     daily.append(row)
 
+    # Rollup rows are written incrementally by field (_record_rollup_contribution
+    # ADDs only the fields the completing job's path touches), so a
+    # local-only day's row has no gpu_cost_usd/batch_job_count/billed_seconds
+    # key at all, and a Batch-only day's row has no local_job_count/
+    # local_duration_seconds key -- DynamoDB items are sparse, not
+    # zero-filled. Every consumer (CLI, console) expects a complete row, so
+    # backfill missing fields to 0 here rather than pushing that defaulting
+    # duty onto every caller.
+    for row in daily:
+        for field in _COST_TOTAL_FIELDS:
+            row.setdefault(field, Decimal(0))
+
     total: dict[str, Any] = {field: Decimal(0) for field in _COST_TOTAL_FIELDS}
     for row in daily:
         for field in _COST_TOTAL_FIELDS:
