@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import io
 import math
+import os
 import struct
 import wave
 from typing import Any
@@ -22,7 +23,7 @@ __all__ = [
 ]
 
 FISH_DEFAULT_VOICE = "narrator"
-FISH_TORCH_MODEL = "fishaudio/fish-speech-1.5"
+FISH_TORCH_MODEL = "fishaudio/s2-pro"
 FISH_MLX_MODEL = "mlx-community/fishaudio-s2-pro-8bit-mlx"
 
 # How long a real silence gap is between AURITUS_BREAK_MARKER-delimited
@@ -138,19 +139,123 @@ class FishBackend(TTSBackend):
         return _to_wav(audio_np, sample_rate=sample_rate)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via PyTorch on CUDA."""
+        """Generate via PyTorch on CUDA using fishaudio/s2-pro."""
+        import numpy as np
         import torch
+
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"[fish] resolved device={device}", flush=True)
 
         if not torch.cuda.is_available():
             return self._generate_fallback(text, meta)
 
-        from fish_speech.api import TTS as FishTTS
+        from pathlib import Path
+        import fish_speech
+        from huggingface_hub import snapshot_download
+
+        project_root = Path(fish_speech.__path__[0]) / ".project-root"
+        if not project_root.exists():
+            try:
+                project_root.touch()
+            except Exception:
+                pass
 
         if FishBackend._model is None:
-            FishBackend._model = FishTTS()
-        audio = FishBackend._model.generate(text)
-        samples = audio.tolist() if hasattr(audio, "tolist") else list(audio)
-        return _to_wav(samples, sample_rate=44100)
+            ckpt_dir = snapshot_download(FISH_TORCH_MODEL)
+            precision = (
+                torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+            )
+
+            from fish_speech.models.text2semantic.inference import (
+                launch_thread_safe_queue,
+            )
+
+            llama_queue = launch_thread_safe_queue(
+                checkpoint_path=ckpt_dir,
+                device=device,
+                precision=precision,
+                compile=False,
+            )
+
+            import hydra
+            from hydra import compose, initialize_config_dir
+            from hydra.utils import instantiate
+
+            config_dir = str(Path(fish_speech.__path__[0]) / "configs")
+            hydra.core.global_hydra.GlobalHydra.instance().clear()
+            with initialize_config_dir(version_base="1.3", config_dir=config_dir):
+                cfg = compose(config_name="modded_dac_vq")
+            decoder_model = instantiate(cfg)
+            codec_path = Path(ckpt_dir) / "codec.pth"
+            state_dict = torch.load(
+                codec_path, map_location=device, mmap=True, weights_only=True
+            )
+            if "state_dict" in state_dict:
+                state_dict = state_dict["state_dict"]
+            if any("generator" in k for k in state_dict):
+                state_dict = {
+                    k.replace("generator.", ""): v
+                    for k, v in state_dict.items()
+                    if "generator." in k
+                }
+            decoder_model.load_state_dict(state_dict, strict=False, assign=True)
+            decoder_model.eval()
+            decoder_model.to(device=device, dtype=precision)
+
+            from fish_speech.inference_engine import TTSInferenceEngine
+
+            FishBackend._model = TTSInferenceEngine(
+                llama_queue=llama_queue,
+                decoder_model=decoder_model,
+                precision=precision,
+                compile=False,
+            )
+
+        from fish_speech.inference_engine import ServeTTSRequest
+        from fish_speech.utils.schema import ServeReferenceAudio
+
+        ref_file = meta.get("ref_file")
+        ref_text = meta.get("ref_text")
+        references = []
+        if not ref_file:
+            local_ref = os.path.join(os.path.dirname(__file__), "basic_ref_en.wav")
+            if os.path.exists(local_ref):
+                ref_file = local_ref
+                if not ref_text:
+                    ref_text = "Some call me nature, others call me mother nature."
+        if ref_file and os.path.exists(ref_file):
+            with open(ref_file, "rb") as f:
+                audio_bytes = f.read()
+            references = [ServeReferenceAudio(audio=audio_bytes, text=ref_text or "")]
+
+        blocks = split_on_breaks(text)
+        all_chunks: list[np.ndarray] = []
+        sample_rate = 44100
+        silence = np.zeros(int(sample_rate * BREAK_SILENCE_SECONDS), dtype=np.float32)
+
+        for i, block in enumerate(blocks):
+            if i > 0:
+                all_chunks.append(silence)
+            req = ServeTTSRequest(
+                text=block,
+                references=references,
+                streaming=False,
+                max_new_tokens=1024,
+            )
+            block_audio = None
+            for res in FishBackend._model.inference(req):
+                if res.code == "final":
+                    sr, block_audio = res.audio
+                    sample_rate = sr
+                elif res.code == "error":
+                    raise res.error
+            if block_audio is not None and len(block_audio) > 0:
+                all_chunks.append(block_audio)
+
+        if not all_chunks:
+            raise ValueError("Fish Speech generated no audio segments")
+        audio_np = np.concatenate(all_chunks) if len(all_chunks) > 1 else all_chunks[0]
+        return _to_wav(audio_np, sample_rate=sample_rate)
 
     def _generate_fallback(self, text: str, meta: dict[str, Any]) -> bytes:
         """Synthetic fallback audio for unit testing or environments without GPU weights."""

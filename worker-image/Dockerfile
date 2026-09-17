@@ -15,6 +15,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsox-dev \
     libsox-fmt-all \
     git \
+    gcc \
+    python3-dev \
+    portaudio19-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -38,6 +41,13 @@ RUN python3 -m venv /opt/venv-qwen && \
 COPY requirements-higgs.txt /app/requirements-higgs.txt
 RUN python3 -m venv /opt/venv-higgs && \
     /opt/venv-higgs/bin/pip install --no-cache-dir -r /app/requirements-higgs.txt
+
+# 5. Dedicated virtualenv for Fish Speech (PyTorch/CUDA)
+COPY requirements-fish.txt /app/requirements-fish.txt
+RUN python3 -m venv /opt/venv-fish && \
+    /opt/venv-fish/bin/pip install --no-cache-dir -r /app/requirements-fish.txt && \
+    /opt/venv-fish/bin/pip install --no-cache-dir --no-deps git+https://github.com/fishaudio/fish-speech.git && \
+    touch /opt/venv-fish/lib/python3.11/site-packages/fish_speech/.project-root
 
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
