@@ -8,7 +8,7 @@ export default function F5ExamplePage() {
     <main className="page">
       <ModelCompareNav currentBackend="f5" />
       <AuritusPlayerHost
-        name="Stanford Commencement Address"
+        name="Don't Settle"
         byline="Steve Jobs, 2005 — F5-TTS"
       />
       <article className="example-article">
@@ -17,7 +17,7 @@ export default function F5ExamplePage() {
       <AuritusEmbed
         siteKey="demo-site-key"
         apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
-        name="Stanford Commencement Address"
+        name="Don't Settle"
         byline="Steve Jobs, 2005 — F5-TTS"
         ttsBackend="f5"
         voiceId="default"

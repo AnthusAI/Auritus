@@ -9,6 +9,7 @@ Feature: Example pages demonstrate distinct speech
     When the generator extracts TTS text from that root
     Then the TTS text includes "getting fired from Apple was the best thing that could have ever happened to me"
     And the TTS text includes "the only way to do great work is to love what you do"
+    And the TTS text does not include "Don't Settle"
     And the TTS text does not include "This page speaks that excerpt"
     And the example embed requests tts_backend "kokoro"
 
@@ -17,6 +18,8 @@ Feature: Example pages demonstrate distinct speech
     When the generator extracts TTS text from that root
     Then the TTS text includes "getting fired from Apple was the best thing that could have ever happened to me"
     And the TTS text includes "the only way to do great work is to love what you do"
+    And the TTS text does not include "Don't Settle"
+    And the TTS text does not include "This page speaks that excerpt"
     And the example embed requests tts_backend "kokoro"
 
   Scenario: Qwen example speaks the same commencement excerpt
@@ -24,6 +27,7 @@ Feature: Example pages demonstrate distinct speech
     When the generator extracts TTS text from that root
     Then the TTS text includes "getting fired from Apple was the best thing that could have ever happened to me"
     And the TTS text includes "the only way to do great work is to love what you do"
+    And the TTS text does not include "Don't Settle"
     And the TTS text does not include "When on board H.M.S."
     And the example embed requests tts_backend "qwen"
 
@@ -32,6 +36,7 @@ Feature: Example pages demonstrate distinct speech
     When the generator extracts TTS text from that root
     Then the TTS text includes "getting fired from Apple was the best thing that could have ever happened to me"
     And the TTS text includes "the only way to do great work is to love what you do"
+    And the TTS text does not include "Don't Settle"
     And the TTS text does not include "This page speaks that excerpt"
     And the example embed requests tts_backend "f5"
 
@@ -40,6 +45,7 @@ Feature: Example pages demonstrate distinct speech
     When the generator extracts TTS text from that root
     Then the TTS text includes "getting fired from Apple was the best thing that could have ever happened to me"
     And the TTS text includes "the only way to do great work is to love what you do"
+    And the TTS text does not include "Don't Settle"
     And the TTS text does not include "This page speaks that excerpt"
     And the example embed requests tts_backend "chatterbox"
 
@@ -48,6 +54,7 @@ Feature: Example pages demonstrate distinct speech
     When the generator extracts TTS text from that root
     Then the TTS text includes "getting fired from Apple was the best thing that could have ever happened to me"
     And the TTS text includes "the only way to do great work is to love what you do"
+    And the TTS text does not include "Don't Settle"
     And the TTS text does not include "This page speaks that excerpt"
     And the example embed requests tts_backend "fish"
 

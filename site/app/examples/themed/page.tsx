@@ -23,7 +23,7 @@ export default function ThemedExamplePage() {
         <Link href="/examples/qwen">Qwen</Link>
       </nav>
       <AuritusPlayerHost
-        name="Stanford Commencement Address"
+        name="Don't Settle"
         byline="Steve Jobs, 2005 — themed Kokoro"
       />
       <article className="example-article">
@@ -32,7 +32,7 @@ export default function ThemedExamplePage() {
       <AuritusEmbed
         siteKey="demo-site-key"
         apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
-        name="Stanford Commencement Address"
+        name="Don't Settle"
         byline="Steve Jobs, 2005 — themed Kokoro"
         ttsBackend="kokoro"
         voiceId="af_heart"

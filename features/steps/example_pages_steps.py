@@ -6,7 +6,7 @@ from behave import given, then
 
 JOBS_COMMENCEMENT_ARTICLE = """
 <article class="example-article">
-  <h1>Stanford Commencement Address</h1>
+  <h1 data-auritus-ignore>Don't Settle</h1>
   <p>I was lucky — I found what I loved to do early in life. Woz and I started Apple in my parents' garage when I was 20. We worked hard, and in 10 years Apple had grown from just the two of us into a $2 billion company with over 4,000 employees. We had just released our finest creation — the Macintosh — a year earlier, and then I got fired. How can you get fired from a company you started?</p>
   <p>I didn't see it then, but it turned out that getting fired from Apple was the best thing that could have ever happened to me. The heaviness of being successful was replaced by the lightness of being a beginner again, less sure about everything. It freed me to enter one of the most creative periods of my life.</p>
   <blockquote class="pull-quote" data-auritus-ignore>
@@ -116,14 +116,14 @@ def step_basic_layout(context) -> None:
 <main class="page">
   <div class="auritus-player-host">
     <div class="auritus-player-placeholder">
-      <p class="auritus-placeholder-name">Stanford Commencement Address</p>
+      <p class="auritus-placeholder-name">Don't Settle</p>
       <p class="auritus-placeholder-byline">Steve Jobs, 2005 — Kokoro</p>
       <div class="auritus-placeholder-controls">
         <button type="button" aria-label="Play">Play</button>
       </div>
     </div>
   </div>
-  <article class="example-article"><h1>Stanford Commencement Address</h1></article>
+  <article class="example-article"><h1 data-auritus-ignore>Don't Settle</h1></article>
 </main>
 """
 

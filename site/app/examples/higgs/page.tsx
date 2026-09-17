@@ -8,7 +8,7 @@ export default function HiggsExamplePage() {
     <main className="page">
       <ModelCompareNav currentBackend="higgs" />
       <AuritusPlayerHost
-        name="Stanford Commencement Address"
+        name="Don't Settle"
         byline="Steve Jobs, 2005 — Higgs-v3"
       />
       <article className="example-article">
@@ -17,7 +17,7 @@ export default function HiggsExamplePage() {
       <AuritusEmbed
         siteKey="demo-site-key"
         apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
-        name="Stanford Commencement Address"
+        name="Don't Settle"
         byline="Steve Jobs, 2005 — Higgs-v3"
         ttsBackend="higgs"
         voiceId="default"

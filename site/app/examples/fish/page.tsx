@@ -8,7 +8,7 @@ export default function FishExamplePage() {
     <main className="page">
       <ModelCompareNav currentBackend="fish" />
       <AuritusPlayerHost
-        name="Stanford Commencement Address"
+        name="Don't Settle"
         byline="Steve Jobs, 2005 — Fish Speech"
       />
       <article className="example-article">
@@ -17,7 +17,7 @@ export default function FishExamplePage() {
       <AuritusEmbed
         siteKey="demo-site-key"
         apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
-        name="Stanford Commencement Address"
+        name="Don't Settle"
         byline="Steve Jobs, 2005 — Fish Speech"
         ttsBackend="fish"
         voiceId="narrator"

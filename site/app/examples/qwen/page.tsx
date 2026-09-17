@@ -8,7 +8,7 @@ export default function QwenExamplePage() {
     <main className="page">
       <ModelCompareNav currentBackend="qwen" />
       <AuritusPlayerHost
-        name="Stanford Commencement Address"
+        name="Don't Settle"
         byline="Steve Jobs, 2005 — Qwen"
       />
       <article className="example-article">
@@ -17,7 +17,7 @@ export default function QwenExamplePage() {
       <AuritusEmbed
         siteKey="demo-site-key"
         apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
-        name="Stanford Commencement Address"
+        name="Don't Settle"
         byline="Steve Jobs, 2005 — Qwen"
         ttsBackend="qwen"
         voiceId="Ryan"

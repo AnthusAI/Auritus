@@ -249,6 +249,7 @@ test("basic example plays Kokoro speech scoped to article", async ({
   expect(body.text).toContain(
     "the only way to do great work is to love what you do",
   );
+  expect(body.text).not.toContain("Don't Settle");
   expect(body.text).not.toContain("This page speaks that excerpt");
 
   const config = page.locator("[data-auritus-site-key]").first();
@@ -392,6 +393,7 @@ test("themed example posts the same commencement excerpt with Kokoro", async ({
   expect(body.text).toContain(
     "the only way to do great work is to love what you do",
   );
+  expect(body.text).not.toContain("Don't Settle");
   expect(body.text).not.toContain("This page speaks that excerpt");
   await waitForPlayableClip(page);
   expect(await clipDurationSeconds(page)).toBeGreaterThanOrEqual(8);
@@ -412,6 +414,7 @@ test("Qwen example posts the same commencement excerpt with Qwen", async ({
   expect(body.text).toContain(
     "the only way to do great work is to love what you do",
   );
+  expect(body.text).not.toContain("Don't Settle");
   expect(body.text).not.toContain("When on board H.M.S.");
   expect(body.text).not.toContain("This page speaks that excerpt");
   await waitForPlayableClip(page);
@@ -433,6 +436,7 @@ test("F5 example posts the same commencement excerpt with F5", async ({
   expect(body.text).toContain(
     "the only way to do great work is to love what you do",
   );
+  expect(body.text).not.toContain("Don't Settle");
   expect(body.text).not.toContain("This page speaks that excerpt");
 });
 
@@ -451,6 +455,7 @@ test("Chatterbox example posts the same commencement excerpt with Chatterbox", a
   expect(body.text).toContain(
     "the only way to do great work is to love what you do",
   );
+  expect(body.text).not.toContain("Don't Settle");
   expect(body.text).not.toContain("This page speaks that excerpt");
 });
 
@@ -469,6 +474,7 @@ test("Fish example posts the same commencement excerpt with Fish", async ({
   expect(body.text).toContain(
     "the only way to do great work is to love what you do",
   );
+  expect(body.text).not.toContain("Don't Settle");
   expect(body.text).not.toContain("This page speaks that excerpt");
 });
 

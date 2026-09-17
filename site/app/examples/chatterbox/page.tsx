@@ -8,7 +8,7 @@ export default function ChatterboxExamplePage() {
     <main className="page">
       <ModelCompareNav currentBackend="chatterbox" />
       <AuritusPlayerHost
-        name="Stanford Commencement Address"
+        name="Don't Settle"
         byline="Steve Jobs, 2005 — Chatterbox"
       />
       <article className="example-article">
@@ -17,7 +17,7 @@ export default function ChatterboxExamplePage() {
       <AuritusEmbed
         siteKey="demo-site-key"
         apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
-        name="Stanford Commencement Address"
+        name="Don't Settle"
         byline="Steve Jobs, 2005 — Chatterbox"
         ttsBackend="chatterbox"
         voiceId="narrator"

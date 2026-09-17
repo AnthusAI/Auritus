@@ -11,7 +11,7 @@ export function JobsCommencementExcerpt({
 }: JobsCommencementExcerptProps) {
   return (
     <>
-      <h1>Stanford Commencement Address</h1>
+      <h1 data-auritus-ignore>Don&#39;t Settle</h1>
       <p>
         I was lucky &mdash; I found what I loved to do early in life. Woz and I
         started Apple in my parents&#39; garage when I was 20. We worked hard,
