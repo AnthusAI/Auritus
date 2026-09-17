@@ -97,8 +97,16 @@ export default function ExamplesIndexPage() {
       <h1>Examples &amp; Models</h1>
       <p>
         Kokoro, Qwen, F5, Higgs, Chatterbox, and Fish Speech are the supported speech backends.
-        Each model narrates the identical excerpt from Steve Jobs&#39;s Stanford Commencement Address so you
-        can directly compare audio timbre, pacing, pronunciation, and latency.
+        Each model narrates the identical excerpt from Steve Jobs&#39;s{" "}
+        <a
+          href="https://news.stanford.edu/2005/06/14/jobs-061505/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: "var(--accent)", textDecoration: "underline" }}
+        >
+          Stanford Commencement Address
+        </a>{" "}
+        so you can directly compare audio timbre, pacing, pronunciation, and latency.
       </p>
 
       <section style={{ marginTop: "2.5rem" }}>

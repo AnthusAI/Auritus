@@ -68,3 +68,10 @@ Feature: Example pages demonstrate distinct speech
     Given the basic example page layout
     Then the player host is above the example article
     And the player host shows a Play control before the embed boots
+
+  Scenario: Example page links to the official Stanford commencement transcript
+    Given the basic example page article
+    When the generator extracts TTS text from that root
+    Then the article links to "https://news.stanford.edu/2005/06/14/jobs-061505/"
+    And the TTS text does not include "Stanford"
+    And the TTS text does not include "https://news.stanford.edu"

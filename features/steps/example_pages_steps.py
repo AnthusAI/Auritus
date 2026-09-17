@@ -7,13 +7,14 @@ from behave import given, then
 JOBS_COMMENCEMENT_ARTICLE = """
 <article class="example-article">
   <h1 data-auritus-ignore>Don't Settle</h1>
+  <p class="example-byline" data-auritus-ignore>From Steve Jobs's <a href="https://news.stanford.edu/2005/06/14/jobs-061505/">2005 Stanford Commencement Address</a></p>
   <p>I was lucky — I found what I loved to do early in life. Woz and I started Apple in my parents' garage when I was 20. We worked hard, and in 10 years Apple had grown from just the two of us into a $2 billion company with over 4,000 employees. We had just released our finest creation — the Macintosh — a year earlier, and then I got fired. How can you get fired from a company you started?</p>
   <p>I didn't see it then, but it turned out that getting fired from Apple was the best thing that could have ever happened to me. The heaviness of being successful was replaced by the lightness of being a beginner again, less sure about everything. It freed me to enter one of the most creative periods of my life.</p>
   <blockquote class="pull-quote" data-auritus-ignore>
     <p>“The only way to do great work is to love what you do. If you haven't found it yet, keep looking. Don't settle.”</p>
   </blockquote>
   <p>Sometimes life hits you in the head with a brick. Don't lose faith. I'm convinced that the only thing that kept me going was that I loved what I did. You've got to find what you love. Your work is going to fill a large part of your life, and the only way to be truly satisfied is to do what you believe is great work. And the only way to do great work is to love what you do. If you haven't found it yet, keep looking. Don't settle.</p>
-  <p data-auritus-ignore>This page speaks that excerpt with a TTS backend.</p>
+  <p data-auritus-ignore>This page speaks that excerpt with a TTS backend. Steve Jobs delivered this address at Stanford University in 2005 (full transcript on <a href="https://news.stanford.edu/2005/06/14/jobs-061505/">Stanford News</a>).</p>
 </article>
 """
 
@@ -162,3 +163,8 @@ def step_player_placeholder(context) -> None:
 @then('the example embed requests tts_backend "{backend}"')
 def step_example_backend(context, backend: str) -> None:
     assert context.example_tts_backend == backend
+
+
+@then('the article links to "{url}"')
+def step_article_links(context, url: str) -> None:
+    assert f'href="{url}"' in context.root_html

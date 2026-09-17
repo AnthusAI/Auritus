@@ -231,6 +231,8 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
 .doc-index span { color: var(--ink-muted); max-width: 36rem; }
 .snippet { background: var(--paper-deep); border-radius: 8px; font-size: 0.85rem; overflow-x: auto; padding: 1rem; }
 .example-article { background: var(--card); border-radius: 10px; padding: 1.5rem; }
+.example-article a { color: var(--accent); text-decoration: underline; }
+.example-byline { color: var(--ink-muted); font-size: 0.95rem; margin: -0.25rem 0 1.25rem; }
 .auritus-player-host { margin: 0 0 1.25rem; min-height: 5.5rem; }
 .pull-quote {
   background: var(--paper-deep);

@@ -12,6 +12,16 @@ export function JobsCommencementExcerpt({
   return (
     <>
       <h1 data-auritus-ignore>Don&#39;t Settle</h1>
+      <p className="example-byline" data-auritus-ignore>
+        From Steve Jobs&#39;s{" "}
+        <a
+          href="https://news.stanford.edu/2005/06/14/jobs-061505/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          2005 Stanford Commencement Address
+        </a>
+      </p>
       <p>
         I was lucky &mdash; I found what I loved to do early in life. Woz and I
         started Apple in my parents&#39; garage when I was 20. We worked hard,
@@ -44,7 +54,15 @@ export function JobsCommencementExcerpt({
       </p>
       <p data-auritus-ignore>
         This page speaks that excerpt with {backendLabel}. Steve Jobs delivered
-        this address at Stanford University in 2005.
+        this address at Stanford University in 2005 (full transcript on{" "}
+        <a
+          href="https://news.stanford.edu/2005/06/14/jobs-061505/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Stanford News
+        </a>
+        ).
       </p>
     </>
   );
