@@ -58,7 +58,7 @@ export default function WorkersPage() {
         <div className="card">
           <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>AWS Batch GPU Queue</h3>
           <p style={{ color: 'var(--ink-muted)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
-            The cloud fallback queue executes Kokoro and Qwen on EC2 G4dn.xlarge GPU instances via Step Functions when local workers are unavailable.
+            The cloud fallback queue executes any configured TTS backend on EC2 G4dn.xlarge GPU instances via Step Functions when local workers are unavailable.
           </p>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'var(--panel)', borderRadius: '6px', marginBottom: '1.5rem' }}>
