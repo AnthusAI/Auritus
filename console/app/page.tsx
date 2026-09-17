@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { fetchOverview, fetchJobs, fetchCosts, OverviewMetrics, JobSummary, CostSummary } from '../lib/api';
+import { fetchJobs, fetchCosts, JobSummary, CostSummary } from '../lib/api';
 import { DonutChart } from '../components/DonutChart';
 
 type RangePreset = 'today' | '7d' | '30d' | 'custom';
@@ -39,18 +39,11 @@ function getRangeForPreset(
 }
 
 export default function DashboardOverviewPage() {
-  const [metrics, setMetrics] = useState<OverviewMetrics>({
-    counts: { pending: 0, claimed: 0, done: 0, failed: 0 },
-    worker_breakdown: { local: 0, batch: 0 },
-    avg_duration_seconds: 0,
-    batch_queue_state: 'UNKNOWN',
-    total_sampled_jobs: 0,
-  });
   const [costs, setCosts] = useState<CostSummary>({ daily: [], total: { gpu_cost_usd: 0, platform_cost_usd: 0, avoided_cost_usd: 0, batch_job_count: 0, local_job_count: 0, billed_seconds: 0, local_duration_seconds: 0 } });
   const [recentJobs, setRecentJobs] = useState<JobSummary[]>([]);
-  const [loadingSnapshot, setLoadingSnapshot] = useState(true);
+  const [loadingJobs, setLoadingJobs] = useState(true);
   const [loadingRange, setLoadingRange] = useState(true);
-  const [snapshotError, setSnapshotError] = useState<string | null>(null);
+  const [jobsError, setJobsError] = useState<string | null>(null);
   const [rangeError, setRangeError] = useState<string | null>(null);
 
   const [preset, setPreset] = useState<RangePreset>('today');
@@ -59,26 +52,22 @@ export default function DashboardOverviewPage() {
 
   const range = getRangeForPreset(preset, customStart, customEnd);
 
-  // "Right now" live snapshot -- unscoped, mount-only. GET /admin/overview
-  // has no date concept (it computes off a capped scan(Limit=100), the same
-  // defect class as auritus-294fa6), so it is deliberately never re-fetched
-  // on range change.
+  // Recent Jobs table -- unscoped, mount-only.
   useEffect(() => {
-    async function loadSnapshot() {
-      setLoadingSnapshot(true);
-      setSnapshotError(null);
+    async function loadJobs() {
+      setLoadingJobs(true);
+      setJobsError(null);
       try {
-        const [overviewData, jobsData] = await Promise.all([fetchOverview(), fetchJobs()]);
-        if (overviewData) setMetrics(overviewData);
+        const jobsData = await fetchJobs();
         if (jobsData?.jobs) setRecentJobs(jobsData.jobs.slice(0, 8));
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Failed to load dashboard data';
-        setSnapshotError(message);
+        setJobsError(message);
       } finally {
-        setLoadingSnapshot(false);
+        setLoadingJobs(false);
       }
     }
-    loadSnapshot();
+    loadJobs();
   }, []);
 
   // Range-scoped aggregates -- refetches whenever the selected date range
@@ -102,8 +91,8 @@ export default function DashboardOverviewPage() {
     loadRange();
   }, [range?.from, range?.to]);
 
-  const error = snapshotError || rangeError;
-  const loading = loadingSnapshot || loadingRange;
+  const error = jobsError || rangeError;
+  const loading = loadingJobs || loadingRange;
 
   // Completed Jobs and the Local/Cloud split are deliberately derived from
   // the cost rollup (costs.total), not metrics.counts.done /
@@ -133,61 +122,7 @@ export default function DashboardOverviewPage() {
         </div>
       )}
 
-      {/* Right now: live snapshot, not scoped to the selected date range */}
-      <div style={{ marginBottom: '0.75rem' }}>
-        <h2 style={{ fontSize: '1rem', marginBottom: '0.1rem' }}>Right now</h2>
-        <p style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', margin: 0 }}>
-          Live snapshot — not scoped to the selected date range below.
-        </p>
-      </div>
-      <div
-        data-testid="section-live-snapshot"
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '2rem' }}
-      >
-        <div className="card">
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
-            Pending
-          </div>
-          <div style={{ fontSize: '1.4rem', fontWeight: 700 }}>{metrics.counts.pending}</div>
-        </div>
-
-        <div className="card">
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
-            Claimed
-          </div>
-          <div style={{ fontSize: '1.4rem', fontWeight: 700 }}>{metrics.counts.claimed}</div>
-        </div>
-
-        <div className="card">
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
-            Failed
-          </div>
-          <div style={{ fontSize: '1.4rem', fontWeight: 700 }}>{metrics.counts.failed}</div>
-        </div>
-
-        <div className="card">
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
-            Avg Generation Latency
-          </div>
-          <div style={{ fontSize: '1.4rem', fontWeight: 700 }}>{metrics.avg_duration_seconds}s</div>
-        </div>
-
-        <div className="card">
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
-            Cloud Fallback
-          </div>
-          <div style={{ marginTop: '0.1rem' }}>
-            <span className={metrics.batch_queue_state === 'ENABLED' ? 'badge badge-done' : 'badge badge-failed'}>
-              {metrics.batch_queue_state}
-            </span>
-          </div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--ink-muted)', marginTop: '0.4rem' }}>
-            G4dn.xlarge GPU compute
-          </div>
-        </div>
-      </div>
-
-      {/* For selected range: cost-rollup-derived aggregates */}
+      {/* Cost-rollup-derived aggregates for the selected date range */}
       <div
         style={{
           display: 'flex',
@@ -198,12 +133,9 @@ export default function DashboardOverviewPage() {
           marginBottom: '0.75rem',
         }}
       >
-        <div>
-          <h2 style={{ fontSize: '1rem', marginBottom: '0.1rem' }}>For selected range</h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', margin: 0 }}>
-            Completed jobs, worker split, and costs across sites for the chosen period.
-          </p>
-        </div>
+        <p style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', margin: 0 }}>
+          Completed jobs, worker split, and costs across sites for the chosen period.
+        </p>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           {(['today', '7d', '30d', 'custom'] as RangePreset[]).map((p) => (
             <button

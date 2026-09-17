@@ -393,9 +393,10 @@ test.describe('Dashboard Cost Tiles', () => {
     const costTiles = page.locator('a[href="/costs"]');
     expect(await costTiles.count()).toBeGreaterThan(0);
 
-    // Batch GPU Queue tile was renamed and relabeled to Cloud Fallback,
-    // moved into the "right now" live-snapshot section.
+    // The "right now" live-snapshot section (including the AWS Batch
+    // Queue / Cloud Fallback tile) was removed entirely -- the range-scoped
+    // tiles below supersede it.
     await expect(page.locator('text=AWS Batch Queue')).not.toBeVisible();
-    await expect(page.locator('text=Cloud Fallback')).toBeVisible();
+    await expect(page.locator('text=Cloud Fallback')).not.toBeVisible();
   });
 });

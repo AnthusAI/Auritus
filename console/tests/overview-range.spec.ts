@@ -134,23 +134,13 @@ test.describe('Overview Date Range', () => {
     await expect(page.getByTestId('donut-cloud-count')).toHaveText('12');
   });
 
-  test('right now and for-selected-range sections are both visible and correctly scoped', async ({ page }) => {
+  test('range-scoped section renders the expected tiles', async ({ page }) => {
     await setupSession(page);
     const requestedUrls: string[] = [];
     await setupRoutes(page, requestedUrls);
 
     await page.goto(BASE_URL);
     await page.waitForLoadState('networkidle');
-
-    await expect(page.locator('text=Right now')).toBeVisible();
-    await expect(page.locator('text=Live snapshot')).toBeVisible();
-    await expect(page.locator('text=For selected range')).toBeVisible();
-
-    const liveSnapshot = page.getByTestId('section-live-snapshot');
-    await expect(liveSnapshot.locator('text=Pending')).toBeVisible();
-    await expect(liveSnapshot.locator('text=Claimed')).toBeVisible();
-    await expect(liveSnapshot.locator('text=Failed')).toBeVisible();
-    await expect(liveSnapshot.locator('text=Cloud Fallback')).toBeVisible();
 
     const rangeScoped = page.getByTestId('section-range-scoped');
     await expect(rangeScoped.locator('text=Completed Jobs')).toBeVisible();
