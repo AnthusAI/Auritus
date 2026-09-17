@@ -198,7 +198,7 @@ class FishBackend(TTSBackend):
                 }
             decoder_model.load_state_dict(state_dict, strict=False, assign=True)
             decoder_model.eval()
-            decoder_model.to(device=device, dtype=precision)
+            decoder_model.to(device=device)
 
             from fish_speech.inference_engine import TTSInferenceEngine
 
