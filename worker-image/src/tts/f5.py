@@ -117,16 +117,30 @@ class F5Backend(TTSBackend):
         ref_file = meta.get("ref_file")
         ref_text = meta.get("ref_text")
         if not ref_file:
-            import f5_tts
-
-            pkg_dir = os.path.dirname(f5_tts.__file__)
-            candidate = os.path.join(
-                pkg_dir, "infer", "examples", "basic", "basic_ref_en.wav"
+            local_candidate = os.path.join(
+                os.path.dirname(__file__), "basic_ref_en.wav"
             )
-            if os.path.exists(candidate):
-                ref_file = candidate
+            if os.path.exists(local_candidate):
+                ref_file = local_candidate
                 if not ref_text:
                     ref_text = "Some call me nature, others call me mother nature."
+            else:
+                try:
+                    from importlib.resources import files
+
+                    candidate = str(
+                        files("f5_tts").joinpath(
+                            "infer/examples/basic/basic_ref_en.wav"
+                        )
+                    )
+                    if os.path.exists(candidate):
+                        ref_file = candidate
+                        if not ref_text:
+                            ref_text = (
+                                "Some call me nature, others call me mother nature."
+                            )
+                except Exception:
+                    pass
         infer_kwargs: dict[str, Any] = {"gen_text": text}
         if ref_file:
             infer_kwargs["ref_file"] = ref_file
