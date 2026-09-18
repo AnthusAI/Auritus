@@ -23,7 +23,7 @@ JOBS_COMMENCEMENT_ARTICLE = """
 def step_home_article(context) -> None:
     context.root_html = """
 <article class="demo-article">
-  <p>Press play. What you hear is this page reading itself.</p>
+  <p data-auritus-ignore>Press play. What you hear is this page reading itself.</p>
   <p>Auritus turns any article into audio on demand, from a single script
   tag — no pre-recording, no studio, no per-article cost.</p>
   <p>You choose the voice model. You decide where the text goes. Your own
