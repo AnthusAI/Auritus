@@ -660,3 +660,22 @@ test("direct navigation to /pricing renders pricing page", async ({
   ).toBeVisible();
 });
 
+test("header cta and hero cta have matching square button profiles", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const navCta = page.locator(".marketing-header .nav-cta");
+  const heroCta = page.locator(".hero-actions .button-primary");
+  await expect(navCta).toBeVisible();
+  await expect(heroCta).toBeVisible();
+
+  const navRadius = await navCta.evaluate((el) => window.getComputedStyle(el).borderRadius);
+  const heroRadius = await heroCta.evaluate((el) => window.getComputedStyle(el).borderRadius);
+  expect(navRadius).toBe(heroRadius);
+  expect(parseFloat(navRadius)).toBeLessThanOrEqual(5);
+
+  const navWeight = await navCta.evaluate((el) => window.getComputedStyle(el).fontWeight);
+  const heroWeight = await heroCta.evaluate((el) => window.getComputedStyle(el).fontWeight);
+  expect(navWeight).toBe(heroWeight);
+});
+
