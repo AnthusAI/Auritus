@@ -24,10 +24,17 @@
       "text": "Diagnosed OOM during DAC vocoder decoding: max_length=8192 allocated 1.3GB of KV caches, exhausting the 16GB T4 GPU right before DAC snake activation. Decreased max_length to 4096 (which still leaves 2048 prompt capacity vs 178 needed) saving 675MB VRAM, enabled PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True, and added explicit CUDA cache flushing. Dispatched worker image build 35340491402.",
       "created_at": "2026-09-18T11:41:03.231922Z",
       "comment_type": "default"
+    },
+    {
+      "id": "ed8af8b2-0c5b-4822-bcec-5fb224305906",
+      "author": "home",
+      "text": "Offloaded Fish Speech DAC vocoder to CPU to eliminate CUDA VRAM contention with 3.6B LLaMA model on 16GB GPU. Added recursive tensor device transfer in _safe_encode and worker request loop so prompt embeddings flow seamlessly from CPU encoder to CUDA LLaMA. Dispatched build 35350265313.",
+      "created_at": "2026-09-18T13:27:06.465185Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-17T19:01:44.838999Z",
-  "updated_at": "2026-09-18T11:41:03.231980Z",
+  "updated_at": "2026-09-18T13:27:06.465220Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
