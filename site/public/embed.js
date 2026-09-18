@@ -22,16 +22,19 @@ var Auritus = (() => {
   var src_exports = {};
   __export(src_exports, {
     AURITUS_BREAK_MARKER: () => AURITUS_BREAK_MARKER,
+    AURITUS_VOICE_RESET_MARKER: () => AURITUS_VOICE_RESET_MARKER,
     AuritusApiClient: () => AuritusApiClient,
     boot: () => boot,
     computeContentHash: () => computeContentHash,
     default: () => src_default,
     disposePlayers: () => disposePlayers,
+    formatVoiceMarker: () => formatVoiceMarker,
     generateTtsText: () => generateTtsText,
     mountPlayer: () => mountPlayer,
     normalizeText: () => normalizeText,
     readEmbedConfig: () => readEmbedConfig,
     readEmbedMetadata: () => readEmbedMetadata,
+    resolveDefaultVoice: () => resolveDefaultVoice,
     rewindIfEnded: () => rewindIfEnded
   });
 
@@ -85,6 +88,10 @@ var Auritus = (() => {
 
   // src/generator/hash.ts
   var AURITUS_BREAK_MARKER = "[[auritus:break]]";
+  var AURITUS_VOICE_RESET_MARKER = "[[auritus:voice:reset]]";
+  function formatVoiceMarker(voiceId) {
+    return `[[auritus:voice:${voiceId.trim()}]]`;
+  }
   function normalizeText(text) {
     return text.normalize("NFC").replace(/\s+/g, " ").trim();
   }
@@ -161,9 +168,17 @@ var Auritus = (() => {
       if (elementMatchesIgnore(el, ignoreSelectors)) {
         return;
       }
+      const voiceAttr = el.getAttribute("data-auritus-voice");
+      const hasVoice = voiceAttr !== null && voiceAttr.trim().length > 0;
+      if (hasVoice) {
+        parts.push(formatVoiceMarker(voiceAttr));
+      }
       const pronounce = el.getAttribute("data-auritus-pronounce");
       if (pronounce !== null) {
         parts.push(pronounce);
+        if (hasVoice) {
+          parts.push(AURITUS_VOICE_RESET_MARKER);
+        }
         return;
       }
       if (el.hasAttribute("data-auritus-break")) {
@@ -171,6 +186,9 @@ var Auritus = (() => {
       }
       for (const child of el.childNodes) {
         walkNode(child, ignoreSelectors, parts);
+      }
+      if (hasVoice) {
+        parts.push(AURITUS_VOICE_RESET_MARKER);
       }
       if (AUTO_BREAK_TAGS.has(tag) && parts[parts.length - 1] !== AURITUS_BREAK_MARKER) {
         parts.push(AURITUS_BREAK_MARKER);
@@ -464,6 +482,20 @@ var Auritus = (() => {
   }
 
   // src/index.ts
+  function resolveDefaultVoice(ttsBackend) {
+    const backend = (ttsBackend || "kokoro").trim().toLowerCase();
+    switch (backend) {
+      case "kokoro":
+        return "af_heart";
+      case "qwen":
+        return "Ryan";
+      case "fish":
+      case "chatterbox":
+        return "narrator";
+      default:
+        return "default";
+    }
+  }
   function apiBaseFromElement(element) {
     const explicit = element.getAttribute("data-auritus-api")?.trim();
     if (explicit) {
@@ -492,11 +524,14 @@ var Auritus = (() => {
     if (!siteKey) {
       throw new Error("Auritus embed: data-auritus-site-key is required");
     }
+    const ttsBackend = element.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro";
+    const explicitVoice = element.getAttribute("data-auritus-voice")?.trim();
+    const voiceId = explicitVoice || resolveDefaultVoice(ttsBackend);
     return {
       siteKey,
       apiBaseUrl: apiBaseFromElement(element),
-      voiceId: element.getAttribute("data-auritus-voice")?.trim() || "af_heart",
-      ttsBackend: element.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro",
+      voiceId,
+      ttsBackend,
       root: element.getAttribute("data-auritus-root")?.trim() || void 0,
       ignoreSelectors: parseListAttribute(
         element.getAttribute("data-auritus-ignore-selectors")

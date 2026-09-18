@@ -679,3 +679,72 @@ test("header cta and hero cta have matching square button profiles", async ({
   expect(navWeight).toBe(heroWeight);
 });
 
+test("Kokoro example page supports interactive voice selection", async ({
+  page,
+}) => {
+  await page.goto("/examples/basic");
+
+  const voiceShell = page.locator(".voice-selector-shell");
+  await expect(voiceShell).toBeVisible();
+
+  const pills = voiceShell.locator(".voice-pill");
+  await expect(pills).toHaveCount(4);
+
+  const activePill = voiceShell.locator(".voice-pill.active");
+  await expect(activePill).toContainText("Heart");
+  await expect(activePill).toContainText("af_heart");
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "af_heart",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "Kokoro (Heart)",
+  );
+
+  const bellaPill = voiceShell.locator(".voice-pill", { hasText: "Bella" });
+  await bellaPill.click();
+
+  await expect(voiceShell.locator(".voice-pill.active")).toContainText("Bella");
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "af_bella",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "Kokoro (Bella)",
+  );
+});
+
+test("Qwen example page supports interactive voice selection", async ({
+  page,
+}) => {
+  await page.goto("/examples/qwen");
+
+  const voiceShell = page.locator(".voice-selector-shell");
+  await expect(voiceShell).toBeVisible();
+
+  const pills = voiceShell.locator(".voice-pill");
+  await expect(pills).toHaveCount(4);
+
+  const activePill = voiceShell.locator(".voice-pill.active");
+  await expect(activePill).toContainText("Ryan");
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "Ryan",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "Qwen (Ryan)",
+  );
+
+  const vivianPill = voiceShell.locator(".voice-pill", { hasText: "Vivian" });
+  await vivianPill.click();
+
+  await expect(voiceShell.locator(".voice-pill.active")).toContainText("Vivian");
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "Vivian",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "Qwen (Vivian)",
+  );
+});
+

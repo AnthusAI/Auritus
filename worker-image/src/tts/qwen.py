@@ -8,6 +8,7 @@ import wave
 from typing import Any
 
 from tts.base import TTSBackend
+from tts.breaks import parse_voiced_segments
 
 QWEN_DEFAULT_VOICE = "Ryan"
 QWEN_MLX_MODEL = "mlx-community/Qwen3-TTS-12Hz-0.6B-CustomVoice-8bit"
@@ -82,11 +83,22 @@ class QwenBackend(TTSBackend):
                 QWEN_MLX_MODEL,
                 lazy=False,
             )
-        voice = resolve_qwen_voice(meta)
-        gen = QwenBackend._model.generate(text, voice=voice)
-        result = next(iter(gen))
-        audio_np = np.array(result.audio).reshape(-1)
-        return _to_wav(audio_np, sample_rate=24000)
+        default_voice = resolve_qwen_voice(meta)
+        sample_rate = 24000
+        silence = np.zeros(int(sample_rate * 0.4), dtype=np.float32)
+        all_chunks: list[np.ndarray] = []
+        for i, (block_text, block_voice) in enumerate(
+            parse_voiced_segments(text, default_voice)
+        ):
+            if i > 0:
+                all_chunks.append(silence)
+            gen = QwenBackend._model.generate(block_text, voice=block_voice)
+            for result in gen:
+                all_chunks.append(np.array(result.audio).reshape(-1))
+        if not all_chunks:
+            raise ValueError("Qwen generated no audio segments")
+        audio_np = np.concatenate(all_chunks) if len(all_chunks) > 1 else all_chunks[0]
+        return _to_wav(audio_np, sample_rate=sample_rate)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
         """Generate via PyTorch qwen_tts (fallback for non-Apple)."""
@@ -106,14 +118,26 @@ class QwenBackend(TTSBackend):
                 QWEN_TORCH_MODEL,
                 **load_kwargs,
             )
-        voice = resolve_qwen_voice(meta)
-        wavs, sample_rate = QwenBackend._model.generate_custom_voice(
-            text=text,
-            speaker=voice,
-            language="English",
-        )
-        audio_np = np.array(wavs[0]).reshape(-1)
-        return _to_wav(audio_np, sample_rate=int(sample_rate))
+        default_voice = resolve_qwen_voice(meta)
+        all_samples: list[float] = []
+        sample_rate = 24000
+        silence = [0.0] * int(sample_rate * 0.4)
+        for i, (block_text, block_voice) in enumerate(
+            parse_voiced_segments(text, default_voice)
+        ):
+            if i > 0:
+                all_samples.extend(silence)
+            wavs, sr = QwenBackend._model.generate_custom_voice(
+                text=block_text,
+                speaker=block_voice,
+                language="English",
+            )
+            sample_rate = int(sr)
+            audio_np = np.array(wavs[0]).reshape(-1)
+            all_samples.extend(audio_np.tolist())
+        if not all_samples:
+            raise ValueError("Qwen generated no audio segments")
+        return _to_wav(all_samples, sample_rate=sample_rate)
 
 
 def _to_wav(samples: list, sample_rate: int = 24000) -> bytes:

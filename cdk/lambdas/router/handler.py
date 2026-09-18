@@ -187,12 +187,20 @@ def _normalize_text(text: str) -> str:
 
 
 def _resolve_voice_id(raw: str | None, tts_backend: str) -> str:
-    backend = tts_backend or "kokoro"
+    backend = (tts_backend or "kokoro").strip().lower()
     if backend == "kokoro":
         if not raw or raw == "default":
             return KOKORO_DEFAULT_VOICE_ID
         return raw
-    if raw is None:
+    if backend == "qwen":
+        if not raw or raw in ("default", "Chelsie"):
+            return "Ryan"
+        return raw
+    if backend in ("fish", "chatterbox"):
+        if not raw or raw == "default":
+            return "narrator"
+        return raw
+    if not raw:
         return "default"
     return raw
 

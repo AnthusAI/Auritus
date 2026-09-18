@@ -16,6 +16,7 @@ class _TextExtractor(HTMLParser):
         super().__init__()
         self.parts: list[str] = []
         self._suppress_stack: list[bool] = []
+        self._voice_stack: list[str | None] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         parent_suppressed = bool(self._suppress_stack and self._suppress_stack[-1])
@@ -23,9 +24,23 @@ class _TextExtractor(HTMLParser):
         suppressed = parent_suppressed or tag.lower() in SKIP_TAGS or ignored
         self._suppress_stack.append(suppressed)
 
+        voice = None
+        if not suppressed:
+            for key, val in attrs:
+                if key == "data-auritus-voice" and val:
+                    voice = val.strip()
+                    break
+            if voice:
+                self.parts.append(f"[[auritus:voice:{voice}]]")
+        self._voice_stack.append(voice)
+
     def handle_endtag(self, tag: str) -> None:
         if self._suppress_stack:
             self._suppress_stack.pop()
+        if self._voice_stack:
+            voice = self._voice_stack.pop()
+            if voice:
+                self.parts.append("[[auritus:voice:reset]]")
 
     def handle_data(self, data: str) -> None:
         if self._suppress_stack and self._suppress_stack[-1]:
