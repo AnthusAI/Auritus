@@ -235,6 +235,8 @@ class FishBackend(TTSBackend):
         for i, block in enumerate(blocks):
             if i > 0:
                 all_chunks.append(silence)
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
             req = ServeTTSRequest(
                 text=block,
                 references=references,
@@ -250,6 +252,8 @@ class FishBackend(TTSBackend):
                     raise res.error
             if block_audio is not None and len(block_audio) > 0:
                 all_chunks.append(block_audio)
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
         if not all_chunks:
             raise ValueError("Fish Speech generated no audio segments")
@@ -372,13 +376,15 @@ def _launch_thread_safe_queue(
 
     def worker() -> None:
         try:
+            os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
             old_default_dtype = torch.get_default_dtype()
             torch.set_default_dtype(precision)
             try:
                 if device == "cuda" and torch.cuda.is_available():
                     torch.cuda.set_device(0)
+                    torch.cuda.empty_cache()
                 with torch.device(device):
-                    max_length = 8192
+                    max_length = 4096
                     model = DualARTransformer.from_pretrained(
                         checkpoint_path, load_weights=True, max_length=max_length
                     )

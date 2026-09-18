@@ -37,8 +37,9 @@ def test_login_with_password_caches_tokens() -> None:
     }
     mock_config = {"cognito_client_id": "client-id", "region": "us-east-1"}
 
-    with patch("auritus.auth.boto3.client", return_value=mock_client), patch(
-        "auritus.auth.load_config", return_value=mock_config
+    with (
+        patch("auritus.auth.boto3.client", return_value=mock_client),
+        patch("auritus.auth.load_config", return_value=mock_config),
     ):
         tokens = login_with_password("operator@example.com", "placeholder-password")
 
@@ -107,8 +108,9 @@ def test_get_access_token_refreshes_when_expired() -> None:
         "cognito_domain": "auritus-test",
         "region": "us-east-1",
     }
-    with patch("auritus.auth.httpx.post", side_effect=fake_post), patch(
-        "auritus.auth.load_config", return_value=mock_config
+    with (
+        patch("auritus.auth.httpx.post", side_effect=fake_post),
+        patch("auritus.auth.load_config", return_value=mock_config),
     ):
         token = get_access_token()
 
