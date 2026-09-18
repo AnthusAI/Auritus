@@ -1,0 +1,20 @@
+{
+  "id": "auritus-4664a6a3-fc82-453d-8852-dd73a35862ec",
+  "title": "Support voice selection in embed tag, fine-grained markup, and example pages",
+  "description": "## Behavior\nSee features/voice_selection.feature.\nThe embed tag supports data-auritus-voice, content supports data-auritus-voice for fine-grained per-block speaker selection, and the example pages offer interactive voice selectors with working rendered audio.\n\n## Implementation Brief\n1. features/voice_selection.feature + features/steps/voice_selection_steps.py\n2. embed/src/index.ts + embed/src/generator/\n3. cli/src/auritus/tts/breaks.py + worker-image/src/tts/breaks.py + kokoro/qwen backends\n4. cdk/lambdas/router/handler.py\n5. site/components/VoiceSelector.tsx + site/app/examples/*/page.tsx",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55192324-4ae6-4df6-89f6-8dfbe93956d7",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-18T16:00:45.397568Z",
+  "updated_at": "2026-09-18T16:00:50.323205Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
