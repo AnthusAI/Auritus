@@ -139,3 +139,28 @@ def step_footer_link_pricing(context) -> None:
     assert (
         ">Pricing</Link>" in footer_content
     ), 'Footer does not have "Pricing" link text'
+
+
+@when('I inspect the pricing cards under "You choose how much we help"')
+def step_inspect_pricing_cards(context) -> None:
+    """Verify that pricing cards are structured with top and bottom sections."""
+    assert (
+        "pricing-card" in context.component_source
+    ), "pricing-card class not found in DelegatedResponsibility component"
+    assert (
+        "pricing-card-bottom" in context.component_source
+    ), "pricing-card-bottom class not found in DelegatedResponsibility component"
+
+
+@then(
+    "the dividing hrules separating top and bottom align consistently at the same vertical offset across all cards"
+)
+def step_assert_hrules_aligned(context) -> None:
+    """Assert that pricing cards use CSS subgrid for consistent row track alignment."""
+    css_source = (SITE_DIR / "app" / "globals.css").read_text(encoding="utf-8")
+    assert (
+        "subgrid" in css_source
+    ), "CSS does not use subgrid to align card tracks across cards"
+    assert (
+        "pricing-card-top" in context.component_source
+    ), "pricing-card-top container not found in DelegatedResponsibility"

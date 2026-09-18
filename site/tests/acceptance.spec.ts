@@ -671,6 +671,27 @@ test("direct navigation to /pricing renders pricing page", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("pricing cards have dividing hrules aligned at identical vertical offset across all four cards", async ({
+  page,
+}) => {
+  await page.goto("/#pricing");
+  const cardOffsets = await page
+    .locator(".pricing-card")
+    .evaluateAll((cards) => {
+      return cards.map((card) => {
+        const cardRect = card.getBoundingClientRect();
+        const bottom = card.querySelector(".pricing-card-bottom");
+        const bottomRect = bottom ? bottom.getBoundingClientRect() : null;
+        return bottomRect ? bottomRect.top - cardRect.top : 0;
+      });
+    });
+  expect(cardOffsets.length).toBe(4);
+  const firstOffset = cardOffsets[0];
+  for (const offset of cardOffsets) {
+    expect(Math.abs(offset - firstOffset)).toBeLessThanOrEqual(1);
+  }
+});
+
 test("header cta and hero cta have matching square button profiles", async ({
   page,
 }) => {
