@@ -97,7 +97,22 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .marketing-footer a { text-decoration: none; }
 .marketing-header nav a:not(.nav-cta) { color: var(--ink-muted); font-weight: 600; }
 .marketing-header nav a:not(.nav-cta):hover { color: var(--ink); }
-.nav-cta { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 999px; color: var(--ink); font-weight: 700; padding: 0.55rem 0.95rem; }
+.nav-cta {
+  align-items: center;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 0.25rem;
+  color: var(--ink);
+  display: inline-flex;
+  font-weight: 800;
+  justify-content: center;
+  padding: 0.55rem 0.95rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.nav-cta:hover {
+  background: var(--signal-soft);
+  border-color: var(--signal);
+}
 
 .marketing-hero {
   display: grid;
@@ -117,7 +132,17 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .home-spoken { color: var(--ink); font-size: 1.02rem; margin: 0.85rem 0 0; max-width: 34rem; }
 .home-spoken p { margin: 0; }
 .hero-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 2rem; }
-.button { align-items: center; border: 1px solid transparent; border-radius: 0.4rem; display: inline-flex; font-weight: 800; justify-content: center; padding: 0.78rem 1.15rem; text-decoration: none; }
+.button {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  display: inline-flex;
+  font-weight: 800;
+  justify-content: center;
+  padding: 0.78rem 1.15rem;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
 .button-primary { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
 .button-primary:hover { background: var(--signal-soft); border-color: var(--signal); }
 .button-outline { border-color: var(--accent); color: var(--ink); }
@@ -376,7 +401,7 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
     --card: #2d231b;
   }
 
-  .marketing-header nav > a:not(.nav-cta),
+  .marketing-header nav a:not(.nav-cta),
   .hero-intro,
   .hero-proof dd,
   .section-heading > p:last-child,

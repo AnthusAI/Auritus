@@ -15,3 +15,8 @@ Feature: The home page demonstrates narration on itself
     Given the home page demo layout
     Then the player host is above the demo article
     And the player host shows a Play control before the embed boots
+
+  Scenario: Primary calls to action have consistent square button profiles
+    Given the marketing site styles
+    Then the header call to action and hero call to action share a square border radius
+
