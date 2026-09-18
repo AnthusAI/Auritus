@@ -18,15 +18,20 @@ import re
 AURITUS_BREAK_MARKER = "[[auritus:break]]"
 AURITUS_VOICE_RESET_MARKER = "[[auritus:voice:reset]]"
 _VOICE_TOKEN_REGEX = re.compile(r"(\[\[auritus:voice:[^\]]+\]\]|\[\[auritus:break\]\])")
+_VOICE_MARKER_STRIP_REGEX = re.compile(r"\[\[auritus:voice:[^\]]+\]\]")
 
 
 def split_on_breaks(text: str) -> list[str]:
     """Split TTS input into segments on the block-boundary pause marker.
 
+    Strips any embedded voice markers so backends that do not support
+    multi-speaker synthesis do not synthesize the marker strings phonetically.
+
     :param text: Full TTS input, possibly containing AURITUS_BREAK_MARKER.
     :returns: Non-empty, trimmed segments in original order.
     """
-    segments = [s.strip() for s in text.split(AURITUS_BREAK_MARKER)]
+    cleaned = _VOICE_MARKER_STRIP_REGEX.sub("", text)
+    segments = [s.strip() for s in cleaned.split(AURITUS_BREAK_MARKER)]
     return [s for s in segments if s]
 
 
@@ -53,7 +58,7 @@ def parse_voiced_segments(text: str, default_voice: str) -> list[tuple[str, str]
             continue
         if token_strip.startswith("[[auritus:voice:") and token_strip.endswith("]]"):
             voice_id = token_strip[len("[[auritus:voice:") : -2].strip()
-            if voice_id == "reset":
+            if not voice_id or voice_id == "reset":
                 current_voice = default_voice
             else:
                 current_voice = voice_id

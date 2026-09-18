@@ -1,5 +1,8 @@
 "use client";
 
+/**
+ * Metadata describing an available preset voice option for a TTS model.
+ */
 export interface VoiceOption {
   id: string;
   name: string;

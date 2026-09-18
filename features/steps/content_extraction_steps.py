@@ -27,7 +27,7 @@ class _TextExtractor(HTMLParser):
         voice = None
         if not suppressed:
             for key, val in attrs:
-                if key in ("data-auritus-voice", "data-auritus-voice-id") and val:
+                if key == "data-auritus-voice" and val:
                     voice = val.strip()
                     break
             if voice:

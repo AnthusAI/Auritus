@@ -168,7 +168,7 @@ var Auritus = (() => {
       if (elementMatchesIgnore(el, ignoreSelectors)) {
         return;
       }
-      const voiceAttr = el.getAttribute("data-auritus-voice") || el.getAttribute("data-auritus-voice-id");
+      const voiceAttr = el.getAttribute("data-auritus-voice");
       const hasVoice = voiceAttr !== null && voiceAttr.trim().length > 0;
       if (hasVoice) {
         parts.push(formatVoiceMarker(voiceAttr));
@@ -525,7 +525,7 @@ var Auritus = (() => {
       throw new Error("Auritus embed: data-auritus-site-key is required");
     }
     const ttsBackend = element.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro";
-    const explicitVoice = element.getAttribute("data-auritus-voice")?.trim() || element.getAttribute("data-auritus-voice-id")?.trim();
+    const explicitVoice = element.getAttribute("data-auritus-voice")?.trim();
     const voiceId = explicitVoice || resolveDefaultVoice(ttsBackend);
     return {
       siteKey,

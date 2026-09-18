@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import importlib
 import os
+import sys
 from html.parser import HTMLParser
 
 from behave import given, then, when
@@ -14,12 +16,18 @@ from auritus.tts.breaks import (
 )
 from common_steps import _hash
 
-# Set required environment variables before importing router handler
-os.environ.setdefault("JOBS_TABLE", "test-jobs")
-os.environ.setdefault("SITES_TABLE", "test-sites")
-os.environ.setdefault("AUDIO_BUCKET", "test-bucket")
 
-from cdk.lambdas.router.handler import _resolve_voice_id
+def _resolve_voice_id(voice_id: str | None, backend: str) -> str:
+    os.environ.setdefault("JOBS_TABLE", "test-jobs")
+    os.environ.setdefault("SITES_TABLE", "test-sites")
+    os.environ.setdefault("AUDIO_BUCKET", "test-bucket")
+    handler_path = os.path.join(
+        os.path.dirname(__file__), "..", "..", "cdk", "lambdas", "router"
+    )
+    if handler_path not in sys.path:
+        sys.path.insert(0, handler_path)
+    handler = importlib.import_module("handler")
+    return handler._resolve_voice_id(voice_id, backend)
 
 
 class _VoicedDOMExtractor(HTMLParser):
@@ -33,7 +41,7 @@ class _VoicedDOMExtractor(HTMLParser):
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         voice = None
         for key, value in attrs:
-            if key in ("data-auritus-voice", "data-auritus-voice-id") and value:
+            if key == "data-auritus-voice" and value:
                 voice = value.strip()
                 break
         self._voice_stack.append(voice)

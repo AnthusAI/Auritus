@@ -19,6 +19,9 @@ export {
 } from "./generator/index.js";
 export { mountPlayer, rewindIfEnded } from "./player/index.js";
 
+/**
+ * Configuration options parsed from an Auritus embed script or container tag.
+ */
 export interface EmbedScriptConfig {
   siteKey: string;
   apiBaseUrl: string;
@@ -86,9 +89,7 @@ export function readEmbedConfig(element: HTMLElement): EmbedScriptConfig {
   }
   const ttsBackend =
     element.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro";
-  const explicitVoice =
-    element.getAttribute("data-auritus-voice")?.trim() ||
-    element.getAttribute("data-auritus-voice-id")?.trim();
+  const explicitVoice = element.getAttribute("data-auritus-voice")?.trim();
   const voiceId = explicitVoice || resolveDefaultVoice(ttsBackend);
 
   return {
@@ -104,6 +105,9 @@ export function readEmbedConfig(element: HTMLElement): EmbedScriptConfig {
   };
 }
 
+/**
+ * Options for programmatically booting the Auritus embed script.
+ */
 export interface BootOptions {
   script?: HTMLScriptElement;
   element?: HTMLElement;

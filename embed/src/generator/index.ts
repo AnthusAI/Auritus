@@ -97,9 +97,7 @@ function walkNode(
       return;
     }
 
-    const voiceAttr =
-      el.getAttribute("data-auritus-voice") ||
-      el.getAttribute("data-auritus-voice-id");
+    const voiceAttr = el.getAttribute("data-auritus-voice");
     const hasVoice = voiceAttr !== null && voiceAttr.trim().length > 0;
     if (hasVoice) {
       parts.push(formatVoiceMarker(voiceAttr));

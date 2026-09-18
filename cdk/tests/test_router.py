@@ -46,10 +46,10 @@ def test_create_job_legacy_default_voice_maps_to_af_heart(
     assert item["voice_id"] == "af_heart"
 
 
-def test_create_job_qwen_default_voice_stays_default(
+def test_create_job_qwen_default_voice_resolves_to_ryan(
     router_resources: dict[str, object],
 ) -> None:
-    """Do not map Qwen default voice_id to Kokoro af_heart."""
+    """Map Qwen default voice_id to Ryan."""
     event = router_resources["event"](
         "POST",
         "/jobs",
@@ -61,14 +61,14 @@ def test_create_job_qwen_default_voice_stays_default(
     item = router_resources["jobs"].get_item(
         Key={"content_hash": body["content_hash"]}
     )["Item"]
-    assert item["voice_id"] == "default"
+    assert item["voice_id"] == "Ryan"
     assert item["tts_backend"] == "qwen"
 
 
-def test_create_job_qwen_omitted_voice_stays_default(
+def test_create_job_qwen_omitted_voice_resolves_to_ryan(
     router_resources: dict[str, object],
 ) -> None:
-    """Omitted voice_id on Qwen jobs remains default, not af_heart."""
+    """Omitted voice_id on Qwen jobs resolves to Ryan, not af_heart."""
     event = router_resources["event"](
         "POST",
         "/jobs",
@@ -80,7 +80,7 @@ def test_create_job_qwen_omitted_voice_stays_default(
     item = router_resources["jobs"].get_item(
         Key={"content_hash": body["content_hash"]}
     )["Item"]
-    assert item["voice_id"] == "default"
+    assert item["voice_id"] == "Ryan"
     assert item["tts_backend"] == "qwen"
 
 

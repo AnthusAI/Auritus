@@ -123,12 +123,10 @@ def test_unknown_backend_raises() -> None:
 def test_parse_voiced_segments() -> None:
     from auritus.tts.breaks import parse_voiced_segments
 
-    # Plain text
     assert parse_voiced_segments("Hello world", "default") == [
         ("Hello world", "default")
     ]
 
-    # Breaks and voices
     text = (
         "Opening narrator. [[auritus:break]] "
         "[[auritus:voice:am_adam]] Lincoln speaking. [[auritus:voice:reset]] "
