@@ -199,7 +199,25 @@ class FishBackend(TTSBackend):
                 }
             decoder_model.load_state_dict(state_dict, strict=False, assign=True)
             decoder_model.eval()
-            decoder_model.to(device=device)
+            decoder_model.to(device="cpu")
+            decoder_model.device = torch.device("cpu")
+
+            orig_from_indices = decoder_model.from_indices
+
+            def _safe_from_indices(indices, *args, **kwargs):
+                dev = next(decoder_model.parameters()).device
+                return orig_from_indices(indices.to(dev), *args, **kwargs).cpu()
+
+            decoder_model.from_indices = _safe_from_indices
+
+            orig_encode = getattr(decoder_model, "encode", None)
+            if orig_encode is not None:
+
+                def _safe_encode(audio, lengths, *args, **kwargs):
+                    dev = next(decoder_model.parameters()).device
+                    return orig_encode(audio.to(dev), lengths.to(dev), *args, **kwargs)
+
+                decoder_model.encode = _safe_encode
 
             from fish_speech.inference_engine import TTSInferenceEngine
 
