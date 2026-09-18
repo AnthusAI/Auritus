@@ -177,9 +177,26 @@ def test_mark_done_requires_auth(router_resources: dict[str, object]) -> None:
 def test_daily_quota_exceeded(router_resources: dict[str, object]) -> None:
     """Reject a new job after the configured daily quota is reached."""
     router_resources["handler"].DAILY_SITE_QUOTA = 1
+    router_resources["sites"].update_item(
+        Key={"site_id": "site-1"},
+        UpdateExpression="REMOVE daily_quota",
+    )
     _create_job(router_resources)
     response = _create_job(router_resources, text="A different job")
     assert response["statusCode"] == 403
+
+
+def test_daily_quota_site_specific(router_resources: dict[str, object]) -> None:
+    """Allow a new job when site-specific daily_quota is higher than global default."""
+    router_resources["handler"].DAILY_SITE_QUOTA = 1
+    router_resources["sites"].update_item(
+        Key={"site_id": "site-1"},
+        UpdateExpression="SET daily_quota = :q",
+        ExpressionAttributeValues={":q": 5},
+    )
+    _create_job(router_resources)
+    response = _create_job(router_resources, text="A different job")
+    assert response["statusCode"] == 201
 
 
 def _operator_headers() -> dict[str, str]:

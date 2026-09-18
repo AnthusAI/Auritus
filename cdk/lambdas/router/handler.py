@@ -256,7 +256,8 @@ def _check_daily_quota(site: dict[str, Any]) -> None:
     used = int(site.get("daily_usage") or 0)
     if site.get("usage_day") != day:
         used = 0
-    if used >= DAILY_SITE_QUOTA:
+    quota = int(site.get("daily_quota") or DAILY_SITE_QUOTA)
+    if used >= quota:
         raise PermissionError("daily_quota_exceeded")
 
 
