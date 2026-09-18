@@ -14,6 +14,8 @@ export {
   normalizeText,
   readEmbedMetadata,
   AURITUS_BREAK_MARKER,
+  AURITUS_VOICE_RESET_MARKER,
+  formatVoiceMarker,
 } from "./generator/index.js";
 export { mountPlayer, rewindIfEnded } from "./player/index.js";
 
@@ -25,6 +27,24 @@ export interface EmbedScriptConfig {
   root?: string;
   ignoreSelectors: string[];
   playerHost?: string;
+}
+
+/**
+ * Resolve the default voice ID for a given TTS backend.
+ */
+export function resolveDefaultVoice(ttsBackend: string): string {
+  const backend = (ttsBackend || "kokoro").trim().toLowerCase();
+  switch (backend) {
+    case "kokoro":
+      return "af_heart";
+    case "qwen":
+      return "Ryan";
+    case "fish":
+    case "chatterbox":
+      return "narrator";
+    default:
+      return "default";
+  }
 }
 
 function apiBaseFromElement(element: HTMLElement): string {
@@ -64,12 +84,18 @@ export function readEmbedConfig(element: HTMLElement): EmbedScriptConfig {
   if (!siteKey) {
     throw new Error("Auritus embed: data-auritus-site-key is required");
   }
+  const ttsBackend =
+    element.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro";
+  const explicitVoice =
+    element.getAttribute("data-auritus-voice")?.trim() ||
+    element.getAttribute("data-auritus-voice-id")?.trim();
+  const voiceId = explicitVoice || resolveDefaultVoice(ttsBackend);
+
   return {
     siteKey,
     apiBaseUrl: apiBaseFromElement(element),
-    voiceId: element.getAttribute("data-auritus-voice")?.trim() || "af_heart",
-    ttsBackend:
-      element.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro",
+    voiceId,
+    ttsBackend,
     root: element.getAttribute("data-auritus-root")?.trim() || undefined,
     ignoreSelectors: parseListAttribute(
       element.getAttribute("data-auritus-ignore-selectors"),

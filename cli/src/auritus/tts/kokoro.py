@@ -8,13 +8,18 @@ import wave
 from typing import Any
 
 from auritus.tts.base import TTSBackend
-from auritus.tts.breaks import AURITUS_BREAK_MARKER, split_on_breaks
+from auritus.tts.breaks import (
+    AURITUS_BREAK_MARKER,
+    parse_voiced_segments,
+    split_on_breaks,
+)
 
 __all__ = [
     "AURITUS_BREAK_MARKER",
-    "split_on_breaks",
     "KokoroBackend",
+    "parse_voiced_segments",
     "resolve_kokoro_voice",
+    "split_on_breaks",
 ]
 
 KOKORO_DEFAULT_VOICE = "af_heart"
@@ -110,11 +115,11 @@ class KokoroBackend(TTSBackend):
                 "mlx-community/Kokoro-82M-bf16",
                 lazy=False,
             )
-        voice = resolve_kokoro_voice(meta)
+        default_voice = resolve_kokoro_voice(meta)
         sample_rate = 24000
         block_audios: list[np.ndarray] = []
-        for block_text in split_on_breaks(text):
-            gen = KokoroBackend._model.generate(block_text, voice=voice)
+        for block_text, block_voice in parse_voiced_segments(text, default_voice):
+            gen = KokoroBackend._model.generate(block_text, voice=block_voice)
             segments = [np.array(result.audio) for result in gen]
             if not segments:
                 continue
@@ -137,12 +142,12 @@ class KokoroBackend(TTSBackend):
 
         if KokoroBackend._model is None:
             KokoroBackend._model = KPipeline(lang_code="a")
-        voice = resolve_kokoro_voice(meta)
+        default_voice = resolve_kokoro_voice(meta)
         sample_rate = 24000
         silence = [0.0] * int(sample_rate * BREAK_SILENCE_SECONDS)
         audio_list: list[float] = []
-        for block_text in split_on_breaks(text):
-            results = list(KokoroBackend._model(block_text, voice=voice))
+        for block_text, block_voice in parse_voiced_segments(text, default_voice):
+            results = list(KokoroBackend._model(block_text, voice=block_voice))
             if not results:
                 continue
             if audio_list:
