@@ -422,6 +422,44 @@ def _launch_thread_safe_queue(
                         max_seq_len=max_length,
                         dtype=next(model.parameters()).dtype,
                     )
+                    orig_forward_generate = model.forward_generate
+
+                    def _safe_forward_generate(
+                        inp: torch.Tensor,
+                        input_pos: Any = None,
+                        audio_masks: Any = None,
+                        audio_parts: Any = None,
+                        *args: Any,
+                        **kwargs: Any,
+                    ) -> Any:
+                        dev = next(model.parameters()).device
+                        if isinstance(inp, torch.Tensor) and inp.device != dev:
+                            inp = inp.to(dev)
+                        if (
+                            isinstance(input_pos, torch.Tensor)
+                            and input_pos.device != dev
+                        ):
+                            input_pos = input_pos.to(dev)
+                        if (
+                            isinstance(audio_masks, torch.Tensor)
+                            and audio_masks.device != dev
+                        ):
+                            audio_masks = audio_masks.to(dev)
+                        if (
+                            isinstance(audio_parts, torch.Tensor)
+                            and audio_parts.device != dev
+                        ):
+                            audio_parts = audio_parts.to(dev)
+                        return orig_forward_generate(
+                            inp,
+                            input_pos,
+                            *args,
+                            audio_masks=audio_masks,
+                            audio_parts=audio_parts,
+                            **kwargs,
+                        )
+
+                    model.forward_generate = _safe_forward_generate
             finally:
                 torch.set_default_dtype(old_default_dtype)
             init_event.set()
@@ -439,6 +477,7 @@ def _launch_thread_safe_queue(
                 break
 
             kwargs = dict(item.request)
+            kwargs["device"] = device
             for k, v in kwargs.items():
                 if isinstance(v, torch.Tensor):
                     kwargs[k] = v.to(device)
