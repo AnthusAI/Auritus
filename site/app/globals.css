@@ -70,7 +70,7 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .wordmark { font-family: var(--font-display), serif; font-size: 3.4rem; font-weight: 700; letter-spacing: -0.06em; line-height: 0.9; text-decoration: none; }
 .wordmark span { color: var(--accent); }
 .brand-tagline { color: var(--alert); font-size: 1.9rem; font-weight: 850; letter-spacing: 0.14em; line-height: 1; text-transform: uppercase; }
-.brand-announcer { height: auto; margin-block: -0.3rem -3.3rem; width: 12.8rem; }
+.brand-announcer { height: auto; margin-block: -0.3rem 0; width: 12.8rem; }
 
 .marketing-header nav {
   align-items: flex-end;
@@ -118,9 +118,9 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
   display: grid;
   grid-template-columns: minmax(0, 0.94fr) minmax(420px, 1.06fr);
   gap: clamp(2rem, 6vw, 6rem);
-  align-items: center;
-  min-height: calc(100vh - 78px);
-  padding-block: 4rem 5rem;
+  align-items: start;
+  min-height: auto;
+  padding-block: 1.5rem 4rem;
   overflow: clip;
 }
 
@@ -339,7 +339,7 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
    820-950px band, where the lockup and nav are already tight, is unaffected. */
 @media (min-width: 1180px) {
   .brand-lockup { gap: 1.8rem; }
-  .brand-announcer { margin-block: -0.45rem -4.95rem; width: 19.2rem; }
+  .brand-announcer { margin-block: -0.45rem 0; width: 19.2rem; }
   .wordmark { font-size: 5.1rem; }
   .brand-tagline { font-size: 2.85rem; }
   .brand-lockup-copy { transform: translateY(-3.3rem) rotate(-7deg); }
@@ -350,7 +350,7 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
    container is still narrowing and 1.5x is already close to the nav. */
 @media (min-width: 1240px) {
   .brand-lockup { gap: 2rem; }
-  .brand-announcer { margin-block: -0.5rem -5.55rem; width: 21.5rem; }
+  .brand-announcer { margin-block: -0.5rem 0; width: 21.5rem; }
   .wordmark { font-size: 5.7rem; }
   .brand-tagline { font-size: 3.2rem; }
   .brand-lockup-copy { transform: translateY(-3.7rem) rotate(-7deg); }
@@ -366,13 +366,13 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
   .marketing-header nav { gap: 0.65rem; }
   .marketing-header .nav-links { gap: 0.8rem; }
   .marketing-hero, .architecture-panel, .docs-prose-grid { grid-template-columns: 1fr; }
-  .marketing-hero { min-height: auto; padding-top: 3rem; }
+  .marketing-hero { min-height: auto; padding-top: 1.5rem; }
   .hero-copy h1 { max-width: 12ch; }
   /* The desktop lockup's -2.2rem lift is sized for a 205px announcer. Left in
      place here it pushed the wordmark above the top of the viewport, so the
      whole lockup is re-proportioned rather than just scaled down. */
   .brand-lockup { gap: 0.9rem; }
-  .brand-announcer { margin-block: 0 -1.1rem; width: 8rem; }
+  .brand-announcer { margin-block: 0; width: 8rem; }
   .wordmark { font-size: 2.4rem; }
   .brand-tagline { font-size: 1.35rem; }
   .brand-lockup-copy { transform: translateY(-0.7rem) rotate(-7deg); }
