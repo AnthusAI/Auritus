@@ -679,6 +679,25 @@ test("header cta and hero cta have matching square button profiles", async ({
   expect(navWeight).toBe(heroWeight);
 });
 
+test("hero section sits close to header without excessive vertical whitespace", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const announcer = page.locator(".brand-announcer");
+  const kicker = page.locator(".hero-copy .kicker");
+  await expect(announcer).toBeVisible();
+  await expect(kicker).toBeVisible();
+
+  const announcerBox = await announcer.boundingBox();
+  const kickerBox = await kicker.boundingBox();
+  expect(announcerBox).not.toBeNull();
+  expect(kickerBox).not.toBeNull();
+
+  const gap = kickerBox!.y - (announcerBox!.y + announcerBox!.height);
+  expect(gap).toBeGreaterThanOrEqual(15);
+  expect(gap).toBeLessThanOrEqual(60);
+});
+
 test("Kokoro example page supports interactive voice selection", async ({
   page,
 }) => {

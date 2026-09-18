@@ -20,3 +20,9 @@ Feature: The home page demonstrates narration on itself
     Given the marketing site styles
     Then the header call to action and hero call to action share a square border radius
 
+  Scenario: The hero section sits close to the header without excessive vertical whitespace
+    Given the marketing site styles
+    Then the marketing hero does not enforce full viewport centering
+    And the marketing hero vertical padding is compact
+
+
