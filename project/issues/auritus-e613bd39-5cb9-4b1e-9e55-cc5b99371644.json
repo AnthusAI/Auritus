@@ -1,0 +1,20 @@
+{
+  "id": "auritus-e613bd39-5cb9-4b1e-9e55-cc5b99371644",
+  "title": "Add vertical space above What Just Happened section",
+  "description": "Add top padding to .flow-section so it has comfortable vertical breathing room below the hero section.",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-18T20:20:58.443136Z",
+  "updated_at": "2026-09-18T20:20:58.443166Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
