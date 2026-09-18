@@ -3,17 +3,25 @@
   "title": "Wire serious voice reference audio into Chatterbox, Fish, and F5 examples",
   "description": "",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-4a283524-27e9-4b48-b989-7acc06488132",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "3ef8a7e5-ea8c-4c89-bb7e-6323c8bb7cf7",
+      "author": "home",
+      "text": "Completed via PR #54. Wired reference audio discovery (voices/serious.wav, voices/serious.mp3, voices/serious.txt) into Chatterbox, F5-TTS, and Fish-Speech backends (CLI and worker-image). Pre-rendered audio uploaded to S3 (efd6d054, 263b234f, 37a5f620) and jobs marked done in DynamoDB. Updated site example pages and E2E acceptance tests, all passing.",
+      "created_at": "2026-09-18T22:01:05.925131Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-18T21:21:02.562126Z",
-  "updated_at": "2026-09-18T21:21:04.049241Z",
-  "closed_at": null,
+  "updated_at": "2026-09-18T22:01:06.016358Z",
+  "closed_at": "2026-09-18T22:01:06.016343Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
