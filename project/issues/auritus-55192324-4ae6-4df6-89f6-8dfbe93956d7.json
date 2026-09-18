@@ -1,0 +1,20 @@
+{
+  "id": "auritus-55192324-4ae6-4df6-89f6-8dfbe93956d7",
+  "title": "Voice selection",
+  "description": "Support selection of a specific voice from an optional parameter in the Auritus embed tag, fine-grained markup in content (e.g. per-element voice tags in articles), and interactive voice selectors for all supporting models on the production example pages with rendered audio.",
+  "type": "epic",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-18T15:59:44.087707Z",
+  "updated_at": "2026-09-18T15:59:47.846830Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
