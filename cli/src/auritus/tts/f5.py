@@ -79,7 +79,7 @@ class F5Backend(TTSBackend):
         """
         import os
         import tempfile
-        from f5_tts_mlx.generate import generate as f5_gen
+
         from auritus.tts.voices import (
             resolve_reference_audio,
             resolve_reference_text,
@@ -89,24 +89,40 @@ class F5Backend(TTSBackend):
         ref_audio = resolve_reference_audio(voice)
         ref_text = resolve_reference_text(voice) or ""
 
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-            tmp_path = tmp.name
-
         try:
-            gen_kwargs: dict[str, Any] = {
-                "generation_text": text,
-                "output_path": tmp_path,
-                "steps": 8,
-            }
-            if ref_audio:
-                gen_kwargs["ref_audio_path"] = str(ref_audio)
-                gen_kwargs["ref_audio_text"] = ref_text
-            f5_gen(**gen_kwargs)
-            with open(tmp_path, "rb") as f:
-                return f.read()
-        finally:
-            if os.path.exists(tmp_path):
-                os.unlink(tmp_path)
+            from f5_tts_mlx.generate import generate as f5_gen
+
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+                tmp_path = tmp.name
+
+            try:
+                gen_kwargs: dict[str, Any] = {
+                    "generation_text": text,
+                    "output_path": tmp_path,
+                    "steps": 8,
+                }
+                if ref_audio:
+                    gen_kwargs["ref_audio_path"] = str(ref_audio)
+                    gen_kwargs["ref_audio_text"] = ref_text
+                f5_gen(**gen_kwargs)
+                with open(tmp_path, "rb") as f:
+                    return f.read()
+            finally:
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+        except ImportError:
+            import numpy as np
+            from mlx_audio.tts.utils import load_model
+
+            if F5Backend._model is None:
+                F5Backend._model = load_model(
+                    F5_MLX_MODEL,
+                    lazy=False,
+                )
+            gen = F5Backend._model.generate(text, voice=voice)
+            result = next(iter(gen))
+            audio_np = np.array(result.audio).reshape(-1)
+            return _to_wav(audio_np, sample_rate=24000)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
         """Generate via PyTorch f5-tts (fallback for non-Apple).
@@ -115,14 +131,51 @@ class F5Backend(TTSBackend):
         :param meta: Job metadata.
         :returns: WAV audio bytes.
         """
+        import os
+
         import numpy as np
+        import torch
         from f5_tts.api import F5TTS
 
+        from auritus.tts.voices import (
+            resolve_reference_audio,
+            resolve_reference_text,
+        )
+
         if F5Backend._model is None:
-            F5Backend._model = F5TTS()
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            print(f"[f5] resolved device={device}", flush=True)
+            F5Backend._model = F5TTS(device=device)
+
         voice = resolve_f5_voice(meta)
-        _ = voice
-        wav, sr, _ = F5Backend._model.infer(text=text)
+        ref_file = meta.get("ref_file")
+        ref_text = meta.get("ref_text")
+        if not ref_file:
+            resolved_audio = resolve_reference_audio(voice)
+            if resolved_audio:
+                ref_file = str(resolved_audio)
+                if not ref_text:
+                    ref_text = resolve_reference_text(voice)
+        if not ref_file:
+            try:
+                from importlib.resources import files
+
+                candidate = str(
+                    files("f5_tts").joinpath("infer/examples/basic/basic_ref_en.wav")
+                )
+                if os.path.exists(candidate):
+                    ref_file = candidate
+                    if not ref_text:
+                        ref_text = "Some call me nature, others call me mother nature."
+            except Exception:
+                pass
+
+        infer_kwargs: dict[str, Any] = {"gen_text": text}
+        if ref_file:
+            infer_kwargs["ref_file"] = ref_file
+        if ref_text:
+            infer_kwargs["ref_text"] = ref_text
+        wav, sr, _ = F5Backend._model.infer(**infer_kwargs)
         audio_np = np.array(wav).reshape(-1)
         return _to_wav(audio_np, sample_rate=int(sr) if sr else 24000)
 

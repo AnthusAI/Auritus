@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from auritus.tts import get_backend
 from auritus.tts.chatterbox import resolve_chatterbox_voice
 from auritus.tts.f5 import resolve_f5_voice
@@ -139,7 +141,7 @@ def test_parse_voiced_segments() -> None:
     assert segments[2] == ("Closing narrator.", "af_heart")
 
 
-def test_resolve_reference_audio_and_text() -> None:
+def test_resolve_reference_audio_and_text(tmp_path: Path) -> None:
     from auritus.tts.voices import resolve_reference_audio, resolve_reference_text
 
     assert resolve_reference_audio("") is None
@@ -147,10 +149,15 @@ def test_resolve_reference_audio_and_text() -> None:
     assert resolve_reference_text("") is None
     assert resolve_reference_text("nonexistent_voice_xyz_123") is None
 
-    steve_audio = resolve_reference_audio("steve_jobs")
-    assert steve_audio is not None
-    assert steve_audio.is_file()
+    mock_audio = tmp_path / "mock_voice.wav"
+    mock_audio.touch()
+    mock_text = tmp_path / "mock_voice.txt"
+    mock_text.write_text("sample reference transcript")
 
-    steve_text = resolve_reference_text("steve_jobs")
-    assert steve_text is not None
-    assert "great work" in steve_text
+    resolved_audio = resolve_reference_audio("mock_voice", search_dirs=[tmp_path])
+    assert resolved_audio is not None
+    assert resolved_audio.is_file()
+
+    resolved_text = resolve_reference_text("mock_voice", search_dirs=[tmp_path])
+    assert resolved_text is not None
+    assert "sample reference transcript" in resolved_text
