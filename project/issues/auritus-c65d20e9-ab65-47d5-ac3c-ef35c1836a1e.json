@@ -1,0 +1,20 @@
+{
+  "id": "auritus-c65d20e9-ab65-47d5-ac3c-ef35c1836a1e",
+  "title": "Align pricing card hrules consistently across cards",
+  "description": "Lock the vertical position of the dividing hrules across all four cards in the pricing grid using CSS subgrid so they align identically regardless of dynamic text length.",
+  "type": "chore",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-18T20:33:47.745255Z",
+  "updated_at": "2026-09-18T20:33:50.301665Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
