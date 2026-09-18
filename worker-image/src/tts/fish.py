@@ -200,7 +200,6 @@ class FishBackend(TTSBackend):
             decoder_model.load_state_dict(state_dict, strict=False, assign=True)
             decoder_model.eval()
             decoder_model.to(device="cpu")
-            decoder_model.device = torch.device("cpu")
 
             orig_from_indices = decoder_model.from_indices
 
