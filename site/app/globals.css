@@ -203,7 +203,7 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 
 /* The request-flow diagram, now after the audio demo rather than beside the
    headline. Full width so the rebuilt grid diagram is legible. */
-.flow-section { padding-bottom: 6rem; }
+.flow-section { padding-block: 5rem 6rem; }
 .flow-section img { border-radius: 0.85rem; box-shadow: 0 24px 60px rgba(55, 36, 16, 0.18); display: block; height: auto; margin-top: 2rem; max-width: 100%; width: 100%; }
 
 .architecture-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 1rem; color: var(--ink); display: grid; gap: 2.5rem; grid-template-columns: 1fr; margin-bottom: 6rem; overflow: hidden; padding: clamp(2rem, 5vw, 5rem); }

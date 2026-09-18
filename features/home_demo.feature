@@ -6,9 +6,10 @@ Feature: The home page demonstrates narration on itself
   Scenario: A visitor hears what Auritus does
     Given the home page spoken article
     When the generator extracts TTS text from that root
-    Then the TTS text includes "Press play"
-    And the TTS text includes "What you hear is this page reading itself"
+    Then the TTS text does not include "Press play"
+    And the TTS text does not include "What you hear is this page reading itself"
     And the TTS text does not include "Narrated by Auritus with Kokoro"
+    And the TTS text includes "Auritus turns any article into audio on demand"
     And the example embed requests tts_backend "kokoro"
 
   Scenario: The home demo player sits above the spoken article
@@ -24,5 +25,9 @@ Feature: The home page demonstrates narration on itself
     Given the marketing site styles
     Then the marketing hero does not enforce full viewport centering
     And the marketing hero vertical padding is compact
+
+  Scenario: The What Just Happened flow section has vertical breathing room below the hero section
+    Given the marketing site styles
+    Then the flow section has top padding separating it from the hero section
 
 

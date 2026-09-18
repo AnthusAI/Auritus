@@ -62,3 +62,22 @@ def step_hero_compact_padding(context) -> None:
     padding_val = padding_match.group(1).strip()
     top_padding = padding_val.split()[0]
     assert "4rem" not in top_padding, f"Top padding is still loose: {top_padding}"
+
+
+@then("the flow section has top padding separating it from the hero section")
+def step_flow_section_top_padding(context) -> None:
+    """Assert that .flow-section has top padding for vertical breathing room."""
+    flow_match = re.search(r"\.flow-section\s*\{([^}]+)\}", context.css_source)
+    assert flow_match is not None, "Could not find .flow-section rules"
+    flow_rules = flow_match.group(1)
+    padding_block_match = re.search(r"padding-block:\s*([^;]+);", flow_rules)
+    padding_top_match = re.search(r"padding-top:\s*([^;]+);", flow_rules)
+    assert (
+        padding_block_match is not None or padding_top_match is not None
+    ), "No top padding specified for .flow-section"
+    if padding_block_match:
+        top_val = padding_block_match.group(1).strip().split()[0]
+    else:
+        assert padding_top_match is not None
+        top_val = padding_top_match.group(1).strip()
+    assert top_val not in ("0", "0px", "0rem"), f"Top padding is zero: {top_val}"

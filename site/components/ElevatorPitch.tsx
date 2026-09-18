@@ -9,7 +9,9 @@
 export function ElevatorPitch() {
   return (
     <>
-      <p>Press play. What you hear is this page reading itself.</p>
+      <p data-auritus-ignore>
+        Press play. What you hear is this page reading itself.
+      </p>
       <p>
         Auritus turns any article into audio on demand, from a single script tag
         &mdash; no pre-recording, no studio, no per-article cost.

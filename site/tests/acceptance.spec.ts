@@ -130,9 +130,10 @@ test("landing page posts the Kokoro product pitch", async ({ page }) => {
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("kokoro");
   expect(body.voice_id).toBe("af_heart");
-  expect(body.content_hash).toBe("4703bfda");
-  expect(body.text).toContain("Press play");
-  expect(body.text).toContain("What you hear is this page reading itself");
+  expect(body.content_hash).toBe("4304204c");
+  expect(body.text).not.toContain("Press play");
+  expect(body.text).not.toContain("What you hear is this page reading itself");
+  expect(body.text).toContain("Auritus turns any article into audio on demand");
   expect(body.text).not.toContain("Narrated by Auritus with Kokoro");
   await expect(page.locator(".auritus-root")).toBeVisible({ timeout: 15_000 });
   await waitForPlayableClip(page);
@@ -607,12 +608,16 @@ test("marketing site renders pricing section and delegation ladder", async ({
   await page.goto("/");
 
   // Check header link
-  const headerPricing = page.locator(".marketing-header nav").getByRole("link", { name: "Pricing" });
+  const headerPricing = page
+    .locator(".marketing-header nav")
+    .getByRole("link", { name: "Pricing" });
   await expect(headerPricing).toBeVisible();
   await expect(headerPricing).toHaveAttribute("href", "/#pricing");
 
   // Check footer link
-  const footerPricing = page.locator(".marketing-footer").getByRole("link", { name: "Pricing" });
+  const footerPricing = page
+    .locator(".marketing-footer")
+    .getByRole("link", { name: "Pricing" });
   await expect(footerPricing).toBeVisible();
   await expect(footerPricing).toHaveAttribute("href", "/#pricing");
 
@@ -643,15 +648,21 @@ test("marketing site renders pricing section and delegation ladder", async ({
   await expect(section.getByText("Quoted")).toBeVisible();
 
   // Check straight answers FAQ
-  await expect(section.getByRole("heading", { name: "Straight answers" })).toBeVisible();
-  await expect(section.getByText("What happens if I stop paying?")).toBeVisible();
-  await expect(section.getByText("What does managed actually mean?")).toBeVisible();
-  await expect(section.getByText("Can I start self-setup and move to assisted?")).toBeVisible();
+  await expect(
+    section.getByRole("heading", { name: "Straight answers" }),
+  ).toBeVisible();
+  await expect(
+    section.getByText("What happens if I stop paying?"),
+  ).toBeVisible();
+  await expect(
+    section.getByText("What does managed actually mean?"),
+  ).toBeVisible();
+  await expect(
+    section.getByText("Can I start self-setup and move to assisted?"),
+  ).toBeVisible();
 });
 
-test("direct navigation to /pricing renders pricing page", async ({
-  page,
-}) => {
+test("direct navigation to /pricing renders pricing page", async ({ page }) => {
   await page.goto("/pricing");
   const section = page.locator("#pricing");
   await expect(section).toBeVisible();
@@ -669,13 +680,21 @@ test("header cta and hero cta have matching square button profiles", async ({
   await expect(navCta).toBeVisible();
   await expect(heroCta).toBeVisible();
 
-  const navRadius = await navCta.evaluate((el) => window.getComputedStyle(el).borderRadius);
-  const heroRadius = await heroCta.evaluate((el) => window.getComputedStyle(el).borderRadius);
+  const navRadius = await navCta.evaluate(
+    (el) => window.getComputedStyle(el).borderRadius,
+  );
+  const heroRadius = await heroCta.evaluate(
+    (el) => window.getComputedStyle(el).borderRadius,
+  );
   expect(navRadius).toBe(heroRadius);
   expect(parseFloat(navRadius)).toBeLessThanOrEqual(5);
 
-  const navWeight = await navCta.evaluate((el) => window.getComputedStyle(el).fontWeight);
-  const heroWeight = await heroCta.evaluate((el) => window.getComputedStyle(el).fontWeight);
+  const navWeight = await navCta.evaluate(
+    (el) => window.getComputedStyle(el).fontWeight,
+  );
+  const heroWeight = await heroCta.evaluate(
+    (el) => window.getComputedStyle(el).fontWeight,
+  );
   expect(navWeight).toBe(heroWeight);
 });
 
@@ -757,7 +776,9 @@ test("Qwen example page supports interactive voice selection", async ({
   const vivianPill = voiceShell.locator(".voice-pill", { hasText: "Vivian" });
   await vivianPill.click();
 
-  await expect(voiceShell.locator(".voice-pill.active")).toContainText("Vivian");
+  await expect(voiceShell.locator(".voice-pill.active")).toContainText(
+    "Vivian",
+  );
   await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
     "data-auritus-voice",
     "Vivian",
@@ -766,4 +787,3 @@ test("Qwen example page supports interactive voice selection", async ({
     "Qwen (Vivian)",
   );
 });
-
