@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AuritusEmbed } from "@/components/AuritusEmbed";
 import { AuritusPlayerHost } from "@/components/AuritusPlayerHost";
+import { DelegatedResponsibility } from "@/components/DelegatedResponsibility";
 import { ElevatorPitch } from "@/components/ElevatorPitch";
 
 const choices = [
@@ -51,6 +52,7 @@ export default function HomePage() {
           <Link href="/docs/security">Security</Link>
           <Link href="/docs">Docs</Link>
           <Link href="/examples">Examples</Link>
+          <Link href="/#pricing">Pricing</Link>
           <Link className="nav-cta" href="/docs/usage">
             Add to your site
           </Link>
@@ -226,6 +228,8 @@ export default function HomePage() {
         </Link>
       </section>
 
+      <DelegatedResponsibility />
+
       <section className="security-note" aria-labelledby="security-title">
         <p className="kicker">Security architecture</p>
         <h2 id="security-title">No IAM keys on the worker. None to leak.</h2>
@@ -254,6 +258,7 @@ export default function HomePage() {
         </Link>
         <p>Open-source, just-in-time narration for the web.</p>
         <div>
+          <Link href="/#pricing">Pricing</Link>
           <Link href="/docs">Documentation</Link>
           <Link href="/examples">Examples</Link>
           <a href="https://github.com/AnthusAI/Auritus">GitHub</a>

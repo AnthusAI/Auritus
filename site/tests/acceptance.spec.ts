@@ -601,3 +601,62 @@ test("ModelCompareNav dropdown is present for responsive viewports", async ({
   await expect(dropdown).toHaveValue("/examples/chatterbox");
 });
 
+test("marketing site renders pricing section and delegation ladder", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  // Check header link
+  const headerPricing = page.locator(".marketing-header nav").getByRole("link", { name: "Pricing" });
+  await expect(headerPricing).toBeVisible();
+  await expect(headerPricing).toHaveAttribute("href", "/#pricing");
+
+  // Check footer link
+  const footerPricing = page.locator(".marketing-footer").getByRole("link", { name: "Pricing" });
+  await expect(footerPricing).toBeVisible();
+  await expect(footerPricing).toHaveAttribute("href", "/#pricing");
+
+  // Check pricing section
+  const section = page.locator("#pricing");
+  await expect(section).toBeVisible();
+  await expect(section.getByText("Delegated responsibility")).toBeVisible();
+  await expect(
+    section.getByRole("heading", { name: "You choose how much we help" }),
+  ).toBeVisible();
+
+  // Check the four rungs
+  await expect(section.getByRole("heading", { name: "Fork it" })).toBeVisible();
+  await expect(section.getByText("No cost")).toBeVisible();
+
+  await expect(
+    section.getByRole("heading", { name: "Self-setup, managed" }),
+  ).toBeVisible();
+
+  await expect(
+    section.getByRole("heading", { name: "Assisted setup, managed" }),
+  ).toBeVisible();
+  await expect(section.getByText("$100 once")).toBeVisible();
+
+  await expect(
+    section.getByRole("heading", { name: "Professional services" }),
+  ).toBeVisible();
+  await expect(section.getByText("Quoted")).toBeVisible();
+
+  // Check straight answers FAQ
+  await expect(section.getByRole("heading", { name: "Straight answers" })).toBeVisible();
+  await expect(section.getByText("What happens if I stop paying?")).toBeVisible();
+  await expect(section.getByText("What does managed actually mean?")).toBeVisible();
+  await expect(section.getByText("Can I start self-setup and move to assisted?")).toBeVisible();
+});
+
+test("direct navigation to /pricing renders pricing page", async ({
+  page,
+}) => {
+  await page.goto("/pricing");
+  const section = page.locator("#pricing");
+  await expect(section).toBeVisible();
+  await expect(
+    section.getByRole("heading", { name: "You choose how much we help" }),
+  ).toBeVisible();
+});
+
