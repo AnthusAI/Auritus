@@ -3,17 +3,25 @@
   "title": "Push marketing header nav and CTA rightward",
   "description": "Align marketing header navigation links and CTA rightward away from brand logo.",
   "type": "chore",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "c8c4c703-850a-4054-915f-f65589470d33",
+      "author": "home",
+      "text": "Header nav links and CTA button aligned rightward into flex-end container layout, eliminating crowding next to brand lockup across viewports. Verified with Playwright.",
+      "created_at": "2026-09-18T16:36:48.539995Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-18T16:20:25.277304Z",
-  "updated_at": "2026-09-18T16:20:29.261200Z",
-  "closed_at": null,
+  "updated_at": "2026-09-18T16:36:48.622830Z",
+  "closed_at": "2026-09-18T16:36:48.622813Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
