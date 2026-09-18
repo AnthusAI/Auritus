@@ -59,6 +59,7 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
   align-items: center;
   display: flex;
   justify-content: space-between;
+  gap: 2rem;
   padding: 1.25rem 0;
 }
 
@@ -71,13 +72,31 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .brand-tagline { color: var(--alert); font-size: 1.9rem; font-weight: 850; letter-spacing: 0.14em; line-height: 1; text-transform: uppercase; }
 .brand-announcer { height: auto; margin-block: -0.3rem -3.3rem; width: 12.8rem; }
 
-.marketing-header nav,
+.marketing-header nav {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-left: auto;
+  text-align: right;
+}
+
+.marketing-header .nav-links {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  justify-content: flex-end;
+}
+
 .docs-nav > div,
 .marketing-footer > div { align-items: center; display: flex; flex-wrap: wrap; gap: 1.1rem; }
 .marketing-header nav a,
 .docs-nav a,
 .marketing-footer a { text-decoration: none; }
-.marketing-header nav > a:not(.nav-cta) { color: var(--ink-muted); font-weight: 600; }
+.marketing-header nav a:not(.nav-cta) { color: var(--ink-muted); font-weight: 600; }
+.marketing-header nav a:not(.nav-cta):hover { color: var(--ink); }
 .nav-cta { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 999px; color: var(--ink); font-weight: 700; padding: 0.55rem 0.95rem; }
 
 .marketing-hero {
@@ -313,12 +332,14 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
 }
 
 @media (max-width: 950px) {
-  .marketing-header { align-items: flex-start; flex-direction: column; gap: 1rem; }
+  .marketing-header { align-items: flex-start; flex-direction: column; gap: 1.25rem; }
+  .marketing-header nav { align-self: flex-end; margin-left: auto; }
 }
 
 @media (max-width: 800px) {
   .marketing-header, .docs-nav { align-items: flex-start; flex-direction: column; gap: 1rem; }
-  .marketing-header nav { gap: 0.8rem; }
+  .marketing-header nav { gap: 0.65rem; }
+  .marketing-header .nav-links { gap: 0.8rem; }
   .marketing-hero, .architecture-panel, .docs-prose-grid { grid-template-columns: 1fr; }
   .marketing-hero { min-height: auto; padding-top: 3rem; }
   .hero-copy h1 { max-width: 12ch; }
@@ -373,6 +394,11 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
   .identity-grid article { background: var(--card); }
   .example-article { background: var(--card); }
   .snippet { background: var(--panel); }
+}
+
+@media (max-width: 560px) {
+  .marketing-header nav { align-self: flex-start; align-items: flex-start; margin-left: 0; margin-top: 1.5rem; text-align: left; }
+  .marketing-header .nav-links { justify-content: flex-start; }
 }
 
 @media (max-width: 520px) {
