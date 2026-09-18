@@ -9,18 +9,18 @@ export default function FishExamplePage() {
       <ModelCompareNav currentBackend="fish" />
       <AuritusPlayerHost
         name="Don't Settle"
-        byline="Steve Jobs, 2005 — Fish Speech"
+        byline="Steve Jobs, 2005 — Fish Speech (Serious)"
       />
       <article className="example-article">
-        <JobsCommencementExcerpt backendLabel="Fish Speech (Fish Audio)" />
+        <JobsCommencementExcerpt backendLabel="Fish Speech — Serious voice (Fish Audio)" />
       </article>
       <AuritusEmbed
         siteKey="demo-site-key"
         apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
         name="Don't Settle"
-        byline="Steve Jobs, 2005 — Fish Speech"
+        byline="Steve Jobs, 2005 — Fish Speech (Serious)"
         ttsBackend="fish"
-        voiceId="narrator"
+        voiceId="serious"
         root=".example-article"
         playerHost=".auritus-player-host"
       />
