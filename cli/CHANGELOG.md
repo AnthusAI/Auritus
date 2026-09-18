@@ -2,6 +2,129 @@
 
 <!-- version list -->
 
+## v0.22.0 (2026-09-18)
+
+### Bug Fixes
+
+- **embed**: Address review feedback on voice selection
+  ([#47](https://github.com/AnthusAI/Auritus/pull/47),
+  [`8d6cd98`](https://github.com/AnthusAI/Auritus/commit/8d6cd98f7f7fb83b6c1bd4ecd62ee40af1e95257))
+
+- **router**: Respect site-level daily_quota attribute in quota check
+  ([`88054f4`](https://github.com/AnthusAI/Auritus/commit/88054f4100a287a6eb36112481a028c400ee7851))
+
+- **worker**: Constrain fish speech max_length to 2048 and load codec on CPU
+  ([`c33d8ed`](https://github.com/AnthusAI/Auritus/commit/c33d8ed23d1dc38e479843906b915142bf544bbd))
+
+- **worker**: Ensure fish speech inputs and device match llama model device on cuda
+  ([`170dbf9`](https://github.com/AnthusAI/Auritus/commit/170dbf98d2275e193be50c44060ec00c3893229b))
+
+- **worker**: Ensure tensors transfer cleanly between CPU DAC and GPU LLaMA
+  ([`0d3c24a`](https://github.com/AnthusAI/Auritus/commit/0d3c24a6d7204b4a6e9b09c13c57dc9d788ac8c6))
+
+- **worker**: Increase fish speech max_length to 8192
+  ([`20df406`](https://github.com/AnthusAI/Auritus/commit/20df40625bce900325963c9b9443ac89c790a013))
+
+- **worker**: Keep fish speech DAC vocoder in float32 for audio encoding
+  ([`d7094a1`](https://github.com/AnthusAI/Auritus/commit/d7094a13dc350d2602fbab8e01556303c0c8c026))
+
+- **worker**: Offload fish speech DAC vocoder to CPU to eliminate GPU VRAM contention
+  ([`08f4737`](https://github.com/AnthusAI/Auritus/commit/08f473741c5a7855971b7bda9c8d47e01e385770))
+
+- **worker**: Optimize fish speech memory allocation and increase batch job memory to 12GB
+  ([`bb49f46`](https://github.com/AnthusAI/Auritus/commit/bb49f46c60f7a7ee63c89fbf3f39a95c9fdd35f2))
+
+- **worker**: Optimize fish speech memory with max_length=4096 and cache flushing
+  ([`2efa2d4`](https://github.com/AnthusAI/Auritus/commit/2efa2d4d65a3cf6ab57cdf3734d4144b00d47f77))
+
+- **worker**: Remove invalid assignment to DAC.device read-only property
+  ([`95aa052`](https://github.com/AnthusAI/Auritus/commit/95aa0520b705c444bc3d4f0a8f8269f76b66fdc1))
+
+- **worker-image**: Bundle basic_ref_en.wav and resolve ref_file safely for F5
+  ([`2683c9e`](https://github.com/AnthusAI/Auritus/commit/2683c9e93028aca9f9d8ff9d0dff442ab758f646))
+
+- **worker-image**: Isolate F5-TTS into dedicated venv to resolve Gradio conflict
+  ([`a90f6e2`](https://github.com/AnthusAI/Auritus/commit/a90f6e29a7aa08091e562b62efa85af89a50b1a5))
+
+- **worker-image**: Isolate Higgs into dedicated virtualenv with transformers>=5.5.0 for native
+  audio tokenizer
+  ([`de30261`](https://github.com/AnthusAI/Auritus/commit/de302612346bf7fe26e556243ebd54bef7684ea0))
+
+- **worker-image**: Pre-bake TTS backends into isolated venvs and fix backend APIs
+  ([`a23148b`](https://github.com/AnthusAI/Auritus/commit/a23148b7ce7cb975e87613ba4a3ec8c93bf737d4))
+
+### Chores
+
+- Comment on auritus-461f92 with cpu vocoder and tensor bridge fix
+  ([`8b1a0a5`](https://github.com/AnthusAI/Auritus/commit/8b1a0a519eb0f7eabf12688b15a398c987b1c565))
+
+- Comment on auritus-461f92 with fish speech vram fix
+  ([`df06ac3`](https://github.com/AnthusAI/Auritus/commit/df06ac3fc59e73cf86a936addc0ac33cb1bb3c3d))
+
+- Update kanbus status and comment for auritus-461f92
+  ([`bf37377`](https://github.com/AnthusAI/Auritus/commit/bf37377287b36664137b4d82719d031add42936b))
+
+- **board**: Close pitch ignore and flow spacing chores
+  ([`a92a798`](https://github.com/AnthusAI/Auritus/commit/a92a7988c9357c813a2a7143d22353cb7be10158))
+
+- **board**: Mark home demo pitch and flow spacing tasks in progress
+  ([`aeaa647`](https://github.com/AnthusAI/Auritus/commit/aeaa647a89db28ad06fd7d89a266d7f04a856d34))
+
+- **diagrams**: Update rendered D2 diagrams to match sources
+  ([`1e3772f`](https://github.com/AnthusAI/Auritus/commit/1e3772fc864ed25360fd4067e07ff0f415ef7c21))
+
+- **kanbus**: Close auritus-461f92 after verifying fish speech on aws batch
+  ([`e89b4d0`](https://github.com/AnthusAI/Auritus/commit/e89b4d0c55104ab4a93187e93f8948a87216b7cd))
+
+- **kanbus**: Commit board state (close auritus-370d16)
+  ([`f45ccaa`](https://github.com/AnthusAI/Auritus/commit/f45ccaaed87c9af5964068f0b4502d4518eb8a60))
+
+- **kanbus**: Commit board state (close auritus-a99ed6, track auritus-370d16)
+  ([`fc578dd`](https://github.com/AnthusAI/Auritus/commit/fc578ddc9050a6e28a98f3fda4f1b8d020d1b338))
+
+- **kanbus**: Commit board state (issue)
+  ([`580560c`](https://github.com/AnthusAI/Auritus/commit/580560ce7d2e65134a39c900a7dfbbb7fcc4503c))
+
+- **kanbus**: Commit board state (issues)
+  ([`b89e965`](https://github.com/AnthusAI/Auritus/commit/b89e9658722c905c213d037a251e875c88161c52))
+
+- **kanbus**: Commit board state (issues)
+  ([`2be28e4`](https://github.com/AnthusAI/Auritus/commit/2be28e4a2327b97eb359c241c2cbaf3ce42f0931))
+
+- **project**: Track fish speech cuda support task auritus-461f92
+  ([`d992e0a`](https://github.com/AnthusAI/Auritus/commit/d992e0a0200ca42c93e016793a864d343ec74e41))
+
+### Code Style
+
+- **site**: Align header nav and cta rightward away from brand lockup
+  ([`c5b09ee`](https://github.com/AnthusAI/Auritus/commit/c5b09ee69b024d9abd9b1d63550628004232ac72))
+
+- **site**: Reduce vertical whitespace between header and hero section
+  ([`2ba25b3`](https://github.com/AnthusAI/Auritus/commit/2ba25b39907118f3720f476f55e75d6b67121c65))
+
+- **site**: Unify cta buttons with square border radius profile
+  ([`61c187e`](https://github.com/AnthusAI/Auritus/commit/61c187ea2b548d52151a625497822fa00ba0935f))
+
+### Features
+
+- **cdk**: Add 100GB gp3 EBS root volume launch template to Batch GPU compute environment
+  ([`5731e24`](https://github.com/AnthusAI/Auritus/commit/5731e24121c936e165306ccac890bcec102fc3fe))
+
+- **embed**: Support voice selection and fine-grained voice markup
+  ([#47](https://github.com/AnthusAI/Auritus/pull/47),
+  [`8d6cd98`](https://github.com/AnthusAI/Auritus/commit/8d6cd98f7f7fb83b6c1bd4ecd62ee40af1e95257))
+
+- **site**: Add delegated responsibility pricing section and page
+  ([`14ee91d`](https://github.com/AnthusAI/Auritus/commit/14ee91db10aa5d094b48a73719e7129aab69b7c4))
+
+- **site**: Ignore press play instruction from spoken pitch and add flow section spacing
+  ([#51](https://github.com/AnthusAI/Auritus/pull/51),
+  [`e3947e4`](https://github.com/AnthusAI/Auritus/commit/e3947e4582145d8804555ffad8ec18b94d1da0ae))
+
+- **worker**: Add native CUDA support for Fish Speech
+  ([`47f5023`](https://github.com/AnthusAI/Auritus/commit/47f502363edc1a3b1b74c15565c22961cb1ae3ec))
+
+
 ## v0.21.0 (2026-09-17)
 
 
