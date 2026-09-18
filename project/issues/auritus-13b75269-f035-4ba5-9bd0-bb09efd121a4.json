@@ -1,0 +1,20 @@
+{
+  "id": "auritus-13b75269-f035-4ba5-9bd0-bb09efd121a4",
+  "title": "Wire serious voice reference audio into Chatterbox, Fish, and F5 examples",
+  "description": "",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-4a283524-27e9-4b48-b989-7acc06488132",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-18T21:21:02.562126Z",
+  "updated_at": "2026-09-18T21:21:04.049241Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
