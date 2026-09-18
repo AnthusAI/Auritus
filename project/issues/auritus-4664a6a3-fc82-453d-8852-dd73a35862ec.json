@@ -3,17 +3,25 @@
   "title": "Support voice selection in embed tag, fine-grained markup, and example pages",
   "description": "## Behavior\nSee features/voice_selection.feature.\nThe embed tag supports data-auritus-voice, content supports data-auritus-voice for fine-grained per-block speaker selection, and the example pages offer interactive voice selectors with working rendered audio.\n\n## Implementation Brief\n1. features/voice_selection.feature + features/steps/voice_selection_steps.py\n2. embed/src/index.ts + embed/src/generator/\n3. cli/src/auritus/tts/breaks.py + worker-image/src/tts/breaks.py + kokoro/qwen backends\n4. cdk/lambdas/router/handler.py\n5. site/components/VoiceSelector.tsx + site/app/examples/*/page.tsx",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55192324-4ae6-4df6-89f6-8dfbe93956d7",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "0b0e1be5-5114-45a1-a806-fd52eed3f316",
+      "author": "home",
+      "text": "Implemented in PR #47 and merged to develop. Embed tag supports data-auritus-voice, DOM extraction parses per-element voice tags into [[auritus:voice:...]] and [[auritus:voice:reset]], Kokoro and Qwen backends parse voiced segments for multi-speaker synthesis, and interactive VoiceSelector components are live on /examples/basic (Kokoro: af_heart, af_bella, am_adam, bf_emma) and /examples/qwen (Qwen: Ryan, Vivian, Aiden, Sohee) with pre-rendered S3 audio and DynamoDB records confirmed done.",
+      "created_at": "2026-09-18T16:55:13.982619Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-18T16:00:45.397568Z",
-  "updated_at": "2026-09-18T16:00:50.323205Z",
-  "closed_at": null,
+  "updated_at": "2026-09-18T16:55:14.046585Z",
+  "closed_at": "2026-09-18T16:55:14.046560Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
