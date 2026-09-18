@@ -1,0 +1,20 @@
+{
+  "id": "auritus-e6a1087f-8e08-4c04-ad82-8dee9f9b8aba",
+  "title": "Make Add to your site and Start with the embed CTAs square",
+  "description": "Unify the call-to-action button styling so both Add to your site and Start with the embed share a consistent, crisply square rounded-rectangle profile rather than a pill.",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-18T16:40:43.829849Z",
+  "updated_at": "2026-09-18T16:40:43.829893Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
