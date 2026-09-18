@@ -49,3 +49,13 @@ project/events/
 project/.overlay/
 project/.cache/
 .claude/
+
+# Voice reference audio and sample files (never commit binary media)
+voices/*
+!voices/README.md
+*.wav
+*.mp3
+*.m4a
+*.ogg
+*.flac
+*.aac
