@@ -28,3 +28,8 @@ Feature: Marketing site pricing and delegation ladder
     Given the aurit.us home page layout
     Then the navigation header includes a link to "Pricing"
     And the footer includes a link to "Pricing"
+
+  Scenario: Pricing cards have consistently aligned dividing hrules across all cards
+    Given the aurit.us home page layout
+    When I inspect the pricing cards under "You choose how much we help"
+    Then the dividing hrules separating top and bottom align consistently at the same vertical offset across all cards

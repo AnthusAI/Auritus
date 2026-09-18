@@ -61,8 +61,10 @@ export function DelegatedResponsibility() {
       <div className="pricing-grid">
         {rungs.map((rung) => (
           <div key={rung.title} className="pricing-card">
-            <h3 className="pricing-card-title">{rung.title}</h3>
-            <p className="pricing-card-body">{rung.body}</p>
+            <div className="pricing-card-top">
+              <h3 className="pricing-card-title">{rung.title}</h3>
+              <p className="pricing-card-body">{rung.body}</p>
+            </div>
             <div className="pricing-card-bottom">
               <span className="pricing-card-price">{rung.price}</span>
               {rung.note ? (
