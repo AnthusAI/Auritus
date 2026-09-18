@@ -1,0 +1,20 @@
+{
+  "id": "auritus-0ab47311-ecb3-4b77-97ce-034ad13fcd49",
+  "title": "Exclude Press Play instruction from spoken home demo pitch",
+  "description": "Mark the initial Press play paragraph in ElevatorPitch with data-auritus-ignore so it is displayed visually but excluded from TTS narration.",
+  "type": "chore",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-18T20:20:58.380210Z",
+  "updated_at": "2026-09-18T20:27:36.101650Z",
+  "closed_at": "2026-09-18T20:27:36.101624Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

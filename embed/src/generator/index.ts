@@ -1,6 +1,17 @@
-import { AURITUS_BREAK_MARKER, normalizeText } from "./hash.js";
+import {
+  AURITUS_BREAK_MARKER,
+  AURITUS_VOICE_RESET_MARKER,
+  formatVoiceMarker,
+  normalizeText,
+} from "./hash.js";
 
-export { AURITUS_BREAK_MARKER, normalizeText, computeContentHash } from "./hash.js";
+export {
+  AURITUS_BREAK_MARKER,
+  AURITUS_VOICE_RESET_MARKER,
+  formatVoiceMarker,
+  normalizeText,
+  computeContentHash,
+} from "./hash.js";
 export { readEmbedMetadata } from "./metadata.js";
 
 const BUILTIN_IGNORE_SELECTOR = "[data-auritus-ignore]";
@@ -66,7 +77,11 @@ function elementMatchesIgnore(el: Element, selectors: string[]): boolean {
   return false;
 }
 
-function walkNode(node: Node, ignoreSelectors: string[], parts: string[]): void {
+function walkNode(
+  node: Node,
+  ignoreSelectors: string[],
+  parts: string[],
+): void {
   if (node.nodeType === Node.ELEMENT_NODE) {
     const el = node as Element;
     const tag = el.tagName.toLowerCase();
@@ -82,9 +97,18 @@ function walkNode(node: Node, ignoreSelectors: string[], parts: string[]): void 
       return;
     }
 
+    const voiceAttr = el.getAttribute("data-auritus-voice");
+    const hasVoice = voiceAttr !== null && voiceAttr.trim().length > 0;
+    if (hasVoice) {
+      parts.push(formatVoiceMarker(voiceAttr));
+    }
+
     const pronounce = el.getAttribute("data-auritus-pronounce");
     if (pronounce !== null) {
       parts.push(pronounce);
+      if (hasVoice) {
+        parts.push(AURITUS_VOICE_RESET_MARKER);
+      }
       return;
     }
 
@@ -94,6 +118,10 @@ function walkNode(node: Node, ignoreSelectors: string[], parts: string[]): void 
 
     for (const child of el.childNodes) {
       walkNode(child, ignoreSelectors, parts);
+    }
+
+    if (hasVoice) {
+      parts.push(AURITUS_VOICE_RESET_MARKER);
     }
 
     if (

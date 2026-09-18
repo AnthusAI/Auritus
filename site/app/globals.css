@@ -50,6 +50,7 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .flow-section,
 .architecture-panel,
 .setup-section,
+.pricing-section,
 .security-note,
 .documentation-page { width: min(1180px, calc(100% - 3rem)); margin-inline: auto; }
 
@@ -58,6 +59,7 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
   align-items: center;
   display: flex;
   justify-content: space-between;
+  gap: 2rem;
   padding: 1.25rem 0;
 }
 
@@ -68,24 +70,57 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .wordmark { font-family: var(--font-display), serif; font-size: 3.4rem; font-weight: 700; letter-spacing: -0.06em; line-height: 0.9; text-decoration: none; }
 .wordmark span { color: var(--accent); }
 .brand-tagline { color: var(--alert); font-size: 1.9rem; font-weight: 850; letter-spacing: 0.14em; line-height: 1; text-transform: uppercase; }
-.brand-announcer { height: auto; margin-block: -0.3rem -3.3rem; width: 12.8rem; }
+.brand-announcer { height: auto; margin-block: -0.3rem 0; width: 12.8rem; }
 
-.marketing-header nav,
+.marketing-header nav {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-left: auto;
+  text-align: right;
+}
+
+.marketing-header .nav-links {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  justify-content: flex-end;
+}
+
 .docs-nav > div,
 .marketing-footer > div { align-items: center; display: flex; flex-wrap: wrap; gap: 1.1rem; }
 .marketing-header nav a,
 .docs-nav a,
 .marketing-footer a { text-decoration: none; }
-.marketing-header nav > a:not(.nav-cta) { color: var(--ink-muted); font-weight: 600; }
-.nav-cta { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 999px; color: var(--ink); font-weight: 700; padding: 0.55rem 0.95rem; }
+.marketing-header nav a:not(.nav-cta) { color: var(--ink-muted); font-weight: 600; }
+.marketing-header nav a:not(.nav-cta):hover { color: var(--ink); }
+.nav-cta {
+  align-items: center;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 0.25rem;
+  color: var(--ink);
+  display: inline-flex;
+  font-weight: 800;
+  justify-content: center;
+  padding: 0.55rem 0.95rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.nav-cta:hover {
+  background: var(--signal-soft);
+  border-color: var(--signal);
+}
 
 .marketing-hero {
   display: grid;
   grid-template-columns: minmax(0, 0.94fr) minmax(420px, 1.06fr);
   gap: clamp(2rem, 6vw, 6rem);
-  align-items: center;
-  min-height: calc(100vh - 78px);
-  padding-block: 4rem 5rem;
+  align-items: start;
+  min-height: auto;
+  padding-block: 1.5rem 4rem;
   overflow: clip;
 }
 
@@ -97,7 +132,17 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .home-spoken { color: var(--ink); font-size: 1.02rem; margin: 0.85rem 0 0; max-width: 34rem; }
 .home-spoken p { margin: 0; }
 .hero-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 2rem; }
-.button { align-items: center; border: 1px solid transparent; border-radius: 0.4rem; display: inline-flex; font-weight: 800; justify-content: center; padding: 0.78rem 1.15rem; text-decoration: none; }
+.button {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  display: inline-flex;
+  font-weight: 800;
+  justify-content: center;
+  padding: 0.78rem 1.15rem;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
 .button-primary { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
 .button-primary:hover { background: var(--signal-soft); border-color: var(--signal); }
 .button-outline { border-color: var(--accent); color: var(--ink); }
@@ -158,7 +203,7 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 
 /* The request-flow diagram, now after the audio demo rather than beside the
    headline. Full width so the rebuilt grid diagram is legible. */
-.flow-section { padding-bottom: 6rem; }
+.flow-section { padding-block: 5rem 6rem; }
 .flow-section img { border-radius: 0.85rem; box-shadow: 0 24px 60px rgba(55, 36, 16, 0.18); display: block; height: auto; margin-top: 2rem; max-width: 100%; width: 100%; }
 
 .architecture-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 1rem; color: var(--ink); display: grid; gap: 2.5rem; grid-template-columns: 1fr; margin-bottom: 6rem; overflow: hidden; padding: clamp(2rem, 5vw, 5rem); }
@@ -173,6 +218,38 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .setup-steps li { background: var(--card); border: 1px solid var(--line); border-radius: 0.6rem; padding: 1.25rem; }
 .setup-steps h3 { font-size: 1.55rem; margin: 0.6rem 0; }
 .setup-steps p { color: var(--ink-muted); margin-bottom: 0; }
+
+.pricing-section { padding-bottom: 6rem; }
+.pricing-header { display: grid; gap: 2.5rem; grid-template-columns: 1fr; margin-bottom: 3.5rem; }
+@media (min-width: 900px) {
+  .pricing-header { align-items: end; grid-template-columns: 0.85fr 1.15fr; }
+}
+.pricing-badge { border: 1px solid var(--accent); border-radius: 999px; color: var(--accent); display: inline-block; font-size: 0.76rem; font-weight: 800; letter-spacing: 0.08em; padding: 0.35rem 0.85rem; text-transform: uppercase; }
+.pricing-intro { color: var(--ink-muted); font-size: 1.15rem; line-height: 1.55; margin-top: 1.5rem; max-width: 32rem; }
+.pricing-header h2 { font-size: clamp(2.6rem, 5vw, 4.5rem); line-height: 0.95; margin-bottom: 0; }
+.pricing-grid { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 640px) {
+  .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .pricing-grid { grid-template-columns: repeat(4, 1fr); }
+}
+.pricing-card { background: var(--card); border: 1px solid var(--line); border-radius: 0.85rem; display: flex; flex-direction: column; padding: 1.75rem; }
+.pricing-card-title { font-size: 1.6rem; line-height: 1.1; margin-bottom: 1rem; }
+.pricing-card-body { color: var(--ink-muted); flex: 1; font-size: 1rem; line-height: 1.5; margin-bottom: 2rem; }
+.pricing-card-bottom { border-top: 1px solid var(--line); display: flex; flex-direction: column; margin-top: auto; padding-top: 1rem; }
+.pricing-card-price { font-family: var(--font-display), serif; font-size: 1.65rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; }
+.pricing-card-note { color: var(--ink-muted); font-size: 0.88rem; margin-top: 0.25rem; }
+
+.pricing-faq { border-top: 1px solid var(--line); margin-top: 4.5rem; padding-top: 3.5rem; }
+.pricing-faq-title { font-size: clamp(1.8rem, 3vw, 2.5rem); margin-bottom: 2rem; }
+.pricing-faq-grid { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 768px) {
+  .pricing-faq-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.pricing-faq-card { background: var(--card); border: 1px solid var(--line); border-radius: 0.85rem; padding: 1.5rem; }
+.pricing-faq-question { font-family: var(--font-display), serif; font-size: 1.2rem; line-height: 1.2; margin-bottom: 0.75rem; }
+.pricing-faq-answer { color: var(--ink-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 0; }
 
 .security-note { background: var(--signal-soft); border: 1px solid var(--signal); border-radius: 0.85rem; margin-bottom: 5rem; padding: clamp(2rem, 5vw, 4rem); }
 .security-note h2 { max-width: 24ch; }
@@ -262,7 +339,7 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
    820-950px band, where the lockup and nav are already tight, is unaffected. */
 @media (min-width: 1180px) {
   .brand-lockup { gap: 1.8rem; }
-  .brand-announcer { margin-block: -0.45rem -4.95rem; width: 19.2rem; }
+  .brand-announcer { margin-block: -0.45rem 0; width: 19.2rem; }
   .wordmark { font-size: 5.1rem; }
   .brand-tagline { font-size: 2.85rem; }
   .brand-lockup-copy { transform: translateY(-3.3rem) rotate(-7deg); }
@@ -273,27 +350,29 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
    container is still narrowing and 1.5x is already close to the nav. */
 @media (min-width: 1240px) {
   .brand-lockup { gap: 2rem; }
-  .brand-announcer { margin-block: -0.5rem -5.55rem; width: 21.5rem; }
+  .brand-announcer { margin-block: -0.5rem 0; width: 21.5rem; }
   .wordmark { font-size: 5.7rem; }
   .brand-tagline { font-size: 3.2rem; }
   .brand-lockup-copy { transform: translateY(-3.7rem) rotate(-7deg); }
 }
 
 @media (max-width: 950px) {
-  .marketing-header { align-items: flex-start; flex-direction: column; gap: 1rem; }
+  .marketing-header { align-items: flex-start; flex-direction: column; gap: 1.25rem; }
+  .marketing-header nav { align-self: flex-end; margin-left: auto; }
 }
 
 @media (max-width: 800px) {
   .marketing-header, .docs-nav { align-items: flex-start; flex-direction: column; gap: 1rem; }
-  .marketing-header nav { gap: 0.8rem; }
+  .marketing-header nav { gap: 0.65rem; }
+  .marketing-header .nav-links { gap: 0.8rem; }
   .marketing-hero, .architecture-panel, .docs-prose-grid { grid-template-columns: 1fr; }
-  .marketing-hero { min-height: auto; padding-top: 3rem; }
+  .marketing-hero { min-height: auto; padding-top: 1.5rem; }
   .hero-copy h1 { max-width: 12ch; }
   /* The desktop lockup's -2.2rem lift is sized for a 205px announcer. Left in
      place here it pushed the wordmark above the top of the viewport, so the
      whole lockup is re-proportioned rather than just scaled down. */
   .brand-lockup { gap: 0.9rem; }
-  .brand-announcer { margin-block: 0 -1.1rem; width: 8rem; }
+  .brand-announcer { margin-block: 0; width: 8rem; }
   .wordmark { font-size: 2.4rem; }
   .brand-tagline { font-size: 1.35rem; }
   .brand-lockup-copy { transform: translateY(-0.7rem) rotate(-7deg); }
@@ -322,7 +401,7 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
     --card: #2d231b;
   }
 
-  .marketing-header nav > a:not(.nav-cta),
+  .marketing-header nav a:not(.nav-cta),
   .hero-intro,
   .hero-proof dd,
   .section-heading > p:last-child,
@@ -340,6 +419,11 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
   .identity-grid article { background: var(--card); }
   .example-article { background: var(--card); }
   .snippet { background: var(--panel); }
+}
+
+@media (max-width: 560px) {
+  .marketing-header nav { align-self: flex-start; align-items: flex-start; margin-left: 0; margin-top: 1.5rem; text-align: left; }
+  .marketing-header .nav-links { justify-content: flex-start; }
 }
 
 @media (max-width: 520px) {
@@ -872,4 +956,110 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
   .model-nav-stepper {
     justify-content: space-between;
   }
+}
+
+/* --- Voice Selector Component --- */
+
+.voice-selector-shell {
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem 1rem;
+}
+
+.voice-selector-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.voice-selector-label {
+  color: var(--ink-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+}
+
+.voice-active-details {
+  align-items: center;
+  color: var(--ink);
+  display: inline-flex;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+}
+
+.voice-tag {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.1rem 0.35rem;
+}
+
+.voice-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.voice-pill {
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  gap: 0.45rem;
+  padding: 0.35rem 0.7rem;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.voice-pill:hover {
+  background: var(--panel);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.voice-pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.voice-pill-name {
+  font-weight: 600;
+}
+
+.voice-pill.active .voice-pill-name {
+  font-weight: 700;
+}
+
+.voice-pill-id {
+  font-size: 0.74rem;
+  opacity: 0.75;
+  font-family: monospace;
+}
+
+.voice-pill-badge {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.05rem 0.3rem;
+  text-transform: uppercase;
 }

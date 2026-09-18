@@ -8,13 +8,18 @@ import wave
 from typing import Any
 
 from tts.base import TTSBackend
-from tts.breaks import AURITUS_BREAK_MARKER, split_on_breaks
+from tts.breaks import (
+    AURITUS_BREAK_MARKER,
+    parse_voiced_segments,
+    split_on_breaks,
+)
 
 __all__ = [
     "AURITUS_BREAK_MARKER",
-    "split_on_breaks",
     "KokoroBackend",
+    "parse_voiced_segments",
     "resolve_kokoro_voice",
+    "split_on_breaks",
 ]
 
 KOKORO_DEFAULT_VOICE = "af_heart"
@@ -110,11 +115,11 @@ class KokoroBackend(TTSBackend):
                 "mlx-community/Kokoro-82M-bf16",
                 lazy=False,
             )
-        voice = resolve_kokoro_voice(meta)
+        default_voice = resolve_kokoro_voice(meta)
         sample_rate = 24000
         block_audios: list[np.ndarray] = []
-        for block_text in split_on_breaks(text):
-            gen = KokoroBackend._model.generate(block_text, voice=voice)
+        for block_text, block_voice in parse_voiced_segments(text, default_voice):
+            gen = KokoroBackend._model.generate(block_text, voice=block_voice)
             segments = [np.array(result.audio) for result in gen]
             if not segments:
                 continue
@@ -127,22 +132,30 @@ class KokoroBackend(TTSBackend):
         return _to_wav(audio_np, sample_rate=sample_rate)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via PyTorch kokoro (fallback for non-Apple).
+        """Generate via PyTorch kokoro (fallback for non-Apple, e.g. AWS Batch).
 
         Same two-layer split as the MLX path (see _generate_mlx): blocks on
         AURITUS_BREAK_MARKER for real pauses, segments from KPipeline's own
         generator within each block for Kokoro's internal length limit.
+
+        KPipeline's own device default was previously trusted implicitly;
+        explicitly resolves and passes cuda/cpu here (mirroring higgs.py,
+        chatterbox.py, qwen.py) so a g4dn.xlarge Batch run is verified, not
+        assumed, to actually use the GPU it's billed for.
         """
+        import torch
         from kokoro import KPipeline
 
         if KokoroBackend._model is None:
-            KokoroBackend._model = KPipeline(lang_code="a")
-        voice = resolve_kokoro_voice(meta)
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            print(f"[kokoro] resolved device={device}", flush=True)
+            KokoroBackend._model = KPipeline(lang_code="a", device=device)
+        default_voice = resolve_kokoro_voice(meta)
         sample_rate = 24000
         silence = [0.0] * int(sample_rate * BREAK_SILENCE_SECONDS)
         audio_list: list[float] = []
-        for block_text in split_on_breaks(text):
-            results = list(KokoroBackend._model(block_text, voice=voice))
+        for block_text, block_voice in parse_voiced_segments(text, default_voice):
+            results = list(KokoroBackend._model(block_text, voice=block_voice))
             if not results:
                 continue
             if audio_list:

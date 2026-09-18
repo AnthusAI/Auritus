@@ -1,0 +1,28 @@
+{
+  "id": "auritus-6d3d8bd8-dae5-48fb-8cf8-ec91dc357ada",
+  "title": "Marketing site pricing section and delegation ladder",
+  "description": "Add the Delegated Responsibility pricing section to the marketing site (copied and adapted from chattic.us/#pricing). Add navigation and footer links to /#pricing, and specify behavior in Gherkin.",
+  "type": "story",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "4d8e6a03-033c-4cac-94ce-f3995895f87c",
+      "author": "home",
+      "text": "Landed in PR #46. Delegated responsibility pricing section added to marketing site home page and /pricing page, with outside-in Gherkin specifications passing in behave and Playwright e2e tests.",
+      "created_at": "2026-09-18T16:10:13.745809Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-18T15:55:33.100837Z",
+  "updated_at": "2026-09-18T16:10:13.817937Z",
+  "closed_at": "2026-09-18T16:10:13.817913Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

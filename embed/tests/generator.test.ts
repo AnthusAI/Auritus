@@ -145,4 +145,21 @@ describe("generateTtsText automatic block breaks", () => {
     expect(breakCount).toBe(1);
     expect(text).toContain("Bold word and emphasis stay inline.");
   });
+
+  it("extracts fine-grained data-auritus-voice markers and reset markers", () => {
+    dom = new JSDOM(
+      `<!DOCTYPE html><html><body>
+        <article id="content">
+          <p>Narrator speaking.</p>
+          <blockquote data-auritus-voice="af_bella">Character speaking.</blockquote>
+          <p>Narrator resumes.</p>
+        </article>
+      </body></html>`,
+    );
+    globalThis.document = dom.window.document;
+    const { text } = generateTtsText({ root: "#content" });
+    expect(text).toContain("[[auritus:voice:af_bella]]");
+    expect(text).toContain("[[auritus:voice:reset]]");
+    expect(text).toContain("Character speaking.");
+  });
 });

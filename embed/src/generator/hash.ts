@@ -1,6 +1,14 @@
 /** Pause marker inserted for elements with data-auritus-break. */
 export const AURITUS_BREAK_MARKER = "[[auritus:break]]";
 
+/** Reset marker inserted after elements with data-auritus-voice. */
+export const AURITUS_VOICE_RESET_MARKER = "[[auritus:voice:reset]]";
+
+/** Format an inline voice marker for a given voice ID. */
+export function formatVoiceMarker(voiceId: string): string {
+  return `[[auritus:voice:${voiceId.trim()}]]`;
+}
+
 /**
  * Normalize TTS input for hashing: NFC, trim, collapse internal whitespace.
  */

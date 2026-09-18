@@ -26,7 +26,7 @@ def test_batch_gpu_job_fits_g4dn_xlarge() -> None:
                 "ResourceRequirements": Match.array_with(
                     [
                         Match.object_like({"Type": "VCPU", "Value": "2"}),
-                        Match.object_like({"Type": "MEMORY", "Value": "8192"}),
+                        Match.object_like({"Type": "MEMORY", "Value": "12288"}),
                         Match.object_like({"Type": "GPU", "Value": "1"}),
                     ]
                 ),
@@ -48,8 +48,30 @@ def test_batch_gpu_job_fits_g4dn_xlarge() -> None:
                 {
                     "AllocationStrategy": "BEST_FIT_PROGRESSIVE",
                     "InstanceTypes": ["g4dn.xlarge"],
+                    "LaunchTemplate": Match.object_like(
+                        {
+                            "Version": "$Latest",
+                        }
+                    ),
                 }
             ),
+        },
+    )
+
+    template.has_resource_properties(
+        "AWS::EC2::LaunchTemplate",
+        {
+            "LaunchTemplateData": {
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/xvda",
+                        "Ebs": {
+                            "VolumeSize": 100,
+                            "VolumeType": "gp3",
+                        },
+                    }
+                ]
+            }
         },
     )
 

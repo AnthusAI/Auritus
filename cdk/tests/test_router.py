@@ -46,10 +46,10 @@ def test_create_job_legacy_default_voice_maps_to_af_heart(
     assert item["voice_id"] == "af_heart"
 
 
-def test_create_job_qwen_default_voice_stays_default(
+def test_create_job_qwen_default_voice_resolves_to_ryan(
     router_resources: dict[str, object],
 ) -> None:
-    """Do not map Qwen default voice_id to Kokoro af_heart."""
+    """Map Qwen default voice_id to Ryan."""
     event = router_resources["event"](
         "POST",
         "/jobs",
@@ -61,14 +61,14 @@ def test_create_job_qwen_default_voice_stays_default(
     item = router_resources["jobs"].get_item(
         Key={"content_hash": body["content_hash"]}
     )["Item"]
-    assert item["voice_id"] == "default"
+    assert item["voice_id"] == "Ryan"
     assert item["tts_backend"] == "qwen"
 
 
-def test_create_job_qwen_omitted_voice_stays_default(
+def test_create_job_qwen_omitted_voice_resolves_to_ryan(
     router_resources: dict[str, object],
 ) -> None:
-    """Omitted voice_id on Qwen jobs remains default, not af_heart."""
+    """Omitted voice_id on Qwen jobs resolves to Ryan, not af_heart."""
     event = router_resources["event"](
         "POST",
         "/jobs",
@@ -80,7 +80,7 @@ def test_create_job_qwen_omitted_voice_stays_default(
     item = router_resources["jobs"].get_item(
         Key={"content_hash": body["content_hash"]}
     )["Item"]
-    assert item["voice_id"] == "default"
+    assert item["voice_id"] == "Ryan"
     assert item["tts_backend"] == "qwen"
 
 
@@ -177,9 +177,26 @@ def test_mark_done_requires_auth(router_resources: dict[str, object]) -> None:
 def test_daily_quota_exceeded(router_resources: dict[str, object]) -> None:
     """Reject a new job after the configured daily quota is reached."""
     router_resources["handler"].DAILY_SITE_QUOTA = 1
+    router_resources["sites"].update_item(
+        Key={"site_id": "site-1"},
+        UpdateExpression="REMOVE daily_quota",
+    )
     _create_job(router_resources)
     response = _create_job(router_resources, text="A different job")
     assert response["statusCode"] == 403
+
+
+def test_daily_quota_site_specific(router_resources: dict[str, object]) -> None:
+    """Allow a new job when site-specific daily_quota is higher than global default."""
+    router_resources["handler"].DAILY_SITE_QUOTA = 1
+    router_resources["sites"].update_item(
+        Key={"site_id": "site-1"},
+        UpdateExpression="SET daily_quota = :q",
+        ExpressionAttributeValues={":q": 5},
+    )
+    _create_job(router_resources)
+    response = _create_job(router_resources, text="A different job")
+    assert response["statusCode"] == 201
 
 
 def _operator_headers() -> dict[str, str]:

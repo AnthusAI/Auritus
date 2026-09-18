@@ -130,9 +130,10 @@ test("landing page posts the Kokoro product pitch", async ({ page }) => {
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("kokoro");
   expect(body.voice_id).toBe("af_heart");
-  expect(body.content_hash).toBe("4703bfda");
-  expect(body.text).toContain("Press play");
-  expect(body.text).toContain("What you hear is this page reading itself");
+  expect(body.content_hash).toBe("4304204c");
+  expect(body.text).not.toContain("Press play");
+  expect(body.text).not.toContain("What you hear is this page reading itself");
+  expect(body.text).toContain("Auritus turns any article into audio on demand");
   expect(body.text).not.toContain("Narrated by Auritus with Kokoro");
   await expect(page.locator(".auritus-root")).toBeVisible({ timeout: 15_000 });
   await waitForPlayableClip(page);
@@ -601,3 +602,188 @@ test("ModelCompareNav dropdown is present for responsive viewports", async ({
   await expect(dropdown).toHaveValue("/examples/chatterbox");
 });
 
+test("marketing site renders pricing section and delegation ladder", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  // Check header link
+  const headerPricing = page
+    .locator(".marketing-header nav")
+    .getByRole("link", { name: "Pricing" });
+  await expect(headerPricing).toBeVisible();
+  await expect(headerPricing).toHaveAttribute("href", "/#pricing");
+
+  // Check footer link
+  const footerPricing = page
+    .locator(".marketing-footer")
+    .getByRole("link", { name: "Pricing" });
+  await expect(footerPricing).toBeVisible();
+  await expect(footerPricing).toHaveAttribute("href", "/#pricing");
+
+  // Check pricing section
+  const section = page.locator("#pricing");
+  await expect(section).toBeVisible();
+  await expect(section.getByText("Delegated responsibility")).toBeVisible();
+  await expect(
+    section.getByRole("heading", { name: "You choose how much we help" }),
+  ).toBeVisible();
+
+  // Check the four rungs
+  await expect(section.getByRole("heading", { name: "Fork it" })).toBeVisible();
+  await expect(section.getByText("No cost")).toBeVisible();
+
+  await expect(
+    section.getByRole("heading", { name: "Self-setup, managed" }),
+  ).toBeVisible();
+
+  await expect(
+    section.getByRole("heading", { name: "Assisted setup, managed" }),
+  ).toBeVisible();
+  await expect(section.getByText("$100 once")).toBeVisible();
+
+  await expect(
+    section.getByRole("heading", { name: "Professional services" }),
+  ).toBeVisible();
+  await expect(section.getByText("Quoted")).toBeVisible();
+
+  // Check straight answers FAQ
+  await expect(
+    section.getByRole("heading", { name: "Straight answers" }),
+  ).toBeVisible();
+  await expect(
+    section.getByText("What happens if I stop paying?"),
+  ).toBeVisible();
+  await expect(
+    section.getByText("What does managed actually mean?"),
+  ).toBeVisible();
+  await expect(
+    section.getByText("Can I start self-setup and move to assisted?"),
+  ).toBeVisible();
+});
+
+test("direct navigation to /pricing renders pricing page", async ({ page }) => {
+  await page.goto("/pricing");
+  const section = page.locator("#pricing");
+  await expect(section).toBeVisible();
+  await expect(
+    section.getByRole("heading", { name: "You choose how much we help" }),
+  ).toBeVisible();
+});
+
+test("header cta and hero cta have matching square button profiles", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const navCta = page.locator(".marketing-header .nav-cta");
+  const heroCta = page.locator(".hero-actions .button-primary");
+  await expect(navCta).toBeVisible();
+  await expect(heroCta).toBeVisible();
+
+  const navRadius = await navCta.evaluate(
+    (el) => window.getComputedStyle(el).borderRadius,
+  );
+  const heroRadius = await heroCta.evaluate(
+    (el) => window.getComputedStyle(el).borderRadius,
+  );
+  expect(navRadius).toBe(heroRadius);
+  expect(parseFloat(navRadius)).toBeLessThanOrEqual(5);
+
+  const navWeight = await navCta.evaluate(
+    (el) => window.getComputedStyle(el).fontWeight,
+  );
+  const heroWeight = await heroCta.evaluate(
+    (el) => window.getComputedStyle(el).fontWeight,
+  );
+  expect(navWeight).toBe(heroWeight);
+});
+
+test("hero section sits close to header without excessive vertical whitespace", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const announcer = page.locator(".brand-announcer");
+  const kicker = page.locator(".hero-copy .kicker");
+  await expect(announcer).toBeVisible();
+  await expect(kicker).toBeVisible();
+
+  const announcerBox = await announcer.boundingBox();
+  const kickerBox = await kicker.boundingBox();
+  expect(announcerBox).not.toBeNull();
+  expect(kickerBox).not.toBeNull();
+
+  const gap = kickerBox!.y - (announcerBox!.y + announcerBox!.height);
+  expect(gap).toBeGreaterThanOrEqual(15);
+  expect(gap).toBeLessThanOrEqual(60);
+});
+
+test("Kokoro example page supports interactive voice selection", async ({
+  page,
+}) => {
+  await page.goto("/examples/basic");
+
+  const voiceShell = page.locator(".voice-selector-shell");
+  await expect(voiceShell).toBeVisible();
+
+  const pills = voiceShell.locator(".voice-pill");
+  await expect(pills).toHaveCount(4);
+
+  const activePill = voiceShell.locator(".voice-pill.active");
+  await expect(activePill).toContainText("Heart");
+  await expect(activePill).toContainText("af_heart");
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "af_heart",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "Kokoro (Heart)",
+  );
+
+  const bellaPill = voiceShell.locator(".voice-pill", { hasText: "Bella" });
+  await bellaPill.click();
+
+  await expect(voiceShell.locator(".voice-pill.active")).toContainText("Bella");
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "af_bella",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "Kokoro (Bella)",
+  );
+});
+
+test("Qwen example page supports interactive voice selection", async ({
+  page,
+}) => {
+  await page.goto("/examples/qwen");
+
+  const voiceShell = page.locator(".voice-selector-shell");
+  await expect(voiceShell).toBeVisible();
+
+  const pills = voiceShell.locator(".voice-pill");
+  await expect(pills).toHaveCount(4);
+
+  const activePill = voiceShell.locator(".voice-pill.active");
+  await expect(activePill).toContainText("Ryan");
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "Ryan",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "Qwen (Ryan)",
+  );
+
+  const vivianPill = voiceShell.locator(".voice-pill", { hasText: "Vivian" });
+  await vivianPill.click();
+
+  await expect(voiceShell.locator(".voice-pill.active")).toContainText(
+    "Vivian",
+  );
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "Vivian",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "Qwen (Vivian)",
+  );
+});

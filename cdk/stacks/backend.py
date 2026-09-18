@@ -690,6 +690,20 @@ class BackendStack(Stack):
         batch_sg = ec2.SecurityGroup(self, "BatchSg", vpc=vpc, allow_all_outbound=True)
         instance_profile = self._batch_instance_profile()
 
+        batch_launch_template = ec2.LaunchTemplate(
+            self,
+            "BatchGpuLaunchTemplate",
+            block_devices=[
+                ec2.BlockDevice(
+                    device_name="/dev/xvda",
+                    volume=ec2.BlockDeviceVolume.ebs(
+                        100,
+                        volume_type=ec2.EbsDeviceVolumeType.GP3,
+                    ),
+                )
+            ],
+        )
+
         compute_env = batch.CfnComputeEnvironment(
             self,
             "GpuComputeEnv",
@@ -704,6 +718,10 @@ class BackendStack(Stack):
                 subnets=[subnet.subnet_id for subnet in vpc.private_subnets],
                 security_group_ids=[batch_sg.security_group_id],
                 instance_role=instance_profile.attr_arn,
+                launch_template=batch.CfnComputeEnvironment.LaunchTemplateSpecificationProperty(
+                    launch_template_id=batch_launch_template.launch_template_id,
+                    version="$Latest",
+                ),
             ),
         )
 
@@ -749,7 +767,7 @@ class BackendStack(Stack):
                     ),
                     batch.CfnJobDefinition.ResourceRequirementProperty(
                         type="MEMORY",
-                        value="8192",
+                        value="12288",
                     ),
                     batch.CfnJobDefinition.ResourceRequirementProperty(
                         type="GPU",

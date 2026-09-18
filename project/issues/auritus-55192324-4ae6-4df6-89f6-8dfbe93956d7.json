@@ -1,0 +1,28 @@
+{
+  "id": "auritus-55192324-4ae6-4df6-89f6-8dfbe93956d7",
+  "title": "Voice selection",
+  "description": "Support selection of a specific voice from an optional parameter in the Auritus embed tag, fine-grained markup in content (e.g. per-element voice tags in articles), and interactive voice selectors for all supporting models on the production example pages with rendered audio.",
+  "type": "epic",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "4cbf3876-39ad-422f-bc89-eaf927357456",
+      "author": "home",
+      "text": "Completed: all models with preset voice libraries (Kokoro and Qwen) feature interactive voice selectors with working rendered audio on production example pages. Fine-grained voice markup and embed tag voice parameters are supported and verified with outside-in Gherkin features.",
+      "created_at": "2026-09-18T16:55:16.436804Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-18T15:59:44.087707Z",
+  "updated_at": "2026-09-18T16:55:16.501984Z",
+  "closed_at": "2026-09-18T16:55:16.501962Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

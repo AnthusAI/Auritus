@@ -119,10 +119,31 @@ class HiggsBackend(TTSBackend):
 
             if HiggsBackend._model is None:
                 device = "cuda" if torch.cuda.is_available() else "cpu"
+                print(f"[higgs] resolved device={device}", flush=True)
                 dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
-                HiggsBackend._tokenizer = AutoTokenizer.from_pretrained(
-                    HIGGS_TORCH_MODEL
-                )
+                try:
+                    HiggsBackend._tokenizer = AutoTokenizer.from_pretrained(
+                        HIGGS_TORCH_MODEL,
+                        trust_remote_code=True,
+                    )
+                except AttributeError:
+                    from huggingface_hub import hf_hub_download
+                    import json
+
+                    cfg_path = hf_hub_download(
+                        HIGGS_TORCH_MODEL, "tokenizer_config.json"
+                    )
+                    with open(cfg_path, "r", encoding="utf-8") as f:
+                        cfg = json.load(f)
+                    tokens = cfg.get("extra_special_tokens") or []
+                    token_dict = (
+                        {t: t for t in tokens} if isinstance(tokens, list) else tokens
+                    )
+                    HiggsBackend._tokenizer = AutoTokenizer.from_pretrained(
+                        HIGGS_TORCH_MODEL,
+                        extra_special_tokens=token_dict,
+                        trust_remote_code=True,
+                    )
                 HiggsBackend._model = (
                     AutoModelForCausalLM.from_pretrained(
                         HIGGS_TORCH_MODEL,
@@ -150,8 +171,14 @@ class HiggsBackend(TTSBackend):
             if not all_samples:
                 raise ValueError("Higgs Audio v3 generated no audio segments")
             return _to_wav(all_samples, sample_rate=sample_rate)
-        except Exception:
-            # Fallback for environments without GPU / downloaded weights in tests
+        except ImportError:
+            # Only a missing optional dependency (e.g. local dev/test
+            # without the runtime-installed package) is a legitimate reason
+            # to stub. This previously caught bare Exception, which meant a
+            # real generation failure (CUDA OOM, a model bug, a download
+            # failure) silently produced a normal-looking 'done' job with a
+            # fake 440Hz tone -- confirmed happening in production. Let real
+            # errors propagate so the job is correctly marked failed.
             sample_rate = 24000
             duration_ms = max(500, min(len(text) * 60, 5000))
             frames = int(sample_rate * (duration_ms / 1000.0))

@@ -1,0 +1,49 @@
+{
+  "id": "auritus-461f927b-51fe-458c-b766-754c1df571ca",
+  "title": "Support Fish Speech on CUDA in worker image and verify on AWS Batch",
+  "description": "Implement Fish Speech Linux/CUDA synthesis in worker-image using fish-speech with PyTorch/CUDA, pre-bake requirements into Dockerfile, deploy worker image, and verify audio generation on AWS Batch GPU queue.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-19ba7b16-6f43-4136-ad99-3b8e4b434c6c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "11e75d4a-8a80-4593-92a9-c60461d46dab",
+      "author": "home",
+      "text": "Resolved CUDA OOM and DAC vocoder dtype mismatch; reference audio encoded and text tokenized. Diagnosed upstream generate_long constraint (max_length - 2048 prompt limit), increased max_length to 8192, and triggered workflow build 35286091666.",
+      "created_at": "2026-09-17T23:16:50.437150Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "57ff2aee-a78c-4ad0-93bd-5efa151f176a",
+      "author": "home",
+      "text": "Diagnosed OOM during DAC vocoder decoding: max_length=8192 allocated 1.3GB of KV caches, exhausting the 16GB T4 GPU right before DAC snake activation. Decreased max_length to 4096 (which still leaves 2048 prompt capacity vs 178 needed) saving 675MB VRAM, enabled PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True, and added explicit CUDA cache flushing. Dispatched worker image build 35340491402.",
+      "created_at": "2026-09-18T11:41:03.231922Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "ed8af8b2-0c5b-4822-bcec-5fb224305906",
+      "author": "home",
+      "text": "Offloaded Fish Speech DAC vocoder to CPU to eliminate CUDA VRAM contention with 3.6B LLaMA model on 16GB GPU. Added recursive tensor device transfer in _safe_encode and worker request loop so prompt embeddings flow seamlessly from CPU encoder to CUDA LLaMA. Dispatched build 35350265313.",
+      "created_at": "2026-09-18T13:27:06.465185Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "08323b94-b42a-44ee-aa6e-e0a78d06e074",
+      "author": "home",
+      "text": "Resolved CUDA/CPU device mismatch by overriding kwargs['device']=device in _launch_thread_safe_queue and adding _safe_forward_generate wrapper. Verified on AWS Batch GPU job f3e2d598: synthesized all 3 blocks with 9.84 GB GPU peak memory, decoded audio on CPU, uploaded 7.1 MB WAV audio/b3ece5e9.wav to S3, and marked job status as done. All 9 website examples now return HTTP 200/206 audio.",
+      "created_at": "2026-09-18T14:57:06.057962Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-17T19:01:44.838999Z",
+  "updated_at": "2026-09-18T14:57:10.597283Z",
+  "closed_at": "2026-09-18T14:57:10.597263Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

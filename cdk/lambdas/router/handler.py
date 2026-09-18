@@ -187,12 +187,20 @@ def _normalize_text(text: str) -> str:
 
 
 def _resolve_voice_id(raw: str | None, tts_backend: str) -> str:
-    backend = tts_backend or "kokoro"
+    backend = (tts_backend or "kokoro").strip().lower()
     if backend == "kokoro":
         if not raw or raw == "default":
             return KOKORO_DEFAULT_VOICE_ID
         return raw
-    if raw is None:
+    if backend == "qwen":
+        if not raw or raw in ("default", "Chelsie"):
+            return "Ryan"
+        return raw
+    if backend in ("fish", "chatterbox"):
+        if not raw or raw == "default":
+            return "narrator"
+        return raw
+    if not raw:
         return "default"
     return raw
 
@@ -256,7 +264,8 @@ def _check_daily_quota(site: dict[str, Any]) -> None:
     used = int(site.get("daily_usage") or 0)
     if site.get("usage_day") != day:
         used = 0
-    if used >= DAILY_SITE_QUOTA:
+    quota = int(site.get("daily_quota") or DAILY_SITE_QUOTA)
+    if used >= quota:
         raise PermissionError("daily_quota_exceeded")
 
 
@@ -1341,6 +1350,18 @@ def _get_admin_costs(
                     reconciliation.append(row)
                 else:
                     daily.append(row)
+
+    # Rollup rows are written incrementally by field (_record_rollup_contribution
+    # ADDs only the fields the completing job's path touches), so a
+    # local-only day's row has no gpu_cost_usd/batch_job_count/billed_seconds
+    # key at all, and a Batch-only day's row has no local_job_count/
+    # local_duration_seconds key -- DynamoDB items are sparse, not
+    # zero-filled. Every consumer (CLI, console) expects a complete row, so
+    # backfill missing fields to 0 here rather than pushing that defaulting
+    # duty onto every caller.
+    for row in daily:
+        for field in _COST_TOTAL_FIELDS:
+            row.setdefault(field, Decimal(0))
 
     total: dict[str, Any] = {field: Decimal(0) for field in _COST_TOTAL_FIELDS}
     for row in daily:

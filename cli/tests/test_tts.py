@@ -118,3 +118,22 @@ def test_unknown_backend_raises() -> None:
         assert False, "expected ValueError"
     except ValueError:
         pass
+
+
+def test_parse_voiced_segments() -> None:
+    from auritus.tts.breaks import parse_voiced_segments
+
+    assert parse_voiced_segments("Hello world", "default") == [
+        ("Hello world", "default")
+    ]
+
+    text = (
+        "Opening narrator. [[auritus:break]] "
+        "[[auritus:voice:am_adam]] Lincoln speaking. [[auritus:voice:reset]] "
+        "[[auritus:break]] Closing narrator."
+    )
+    segments = parse_voiced_segments(text, "af_heart")
+    assert len(segments) == 3
+    assert segments[0] == ("Opening narrator.", "af_heart")
+    assert segments[1] == ("Lincoln speaking.", "am_adam")
+    assert segments[2] == ("Closing narrator.", "af_heart")

@@ -383,7 +383,7 @@ test.describe('Dashboard Cost Tiles', () => {
     await page.waitForLoadState('networkidle');
 
     // Check for cost tiles on dashboard
-    await expect(page.locator('text=Batch GPU Cost')).toBeVisible();
+    await expect(page.locator('text=Cloud GPU Cost')).toBeVisible();
     await expect(page.locator('text=$15.7890')).toBeVisible();
 
     await expect(page.locator('text=Saved via Local Workers')).toBeVisible();
@@ -392,5 +392,11 @@ test.describe('Dashboard Cost Tiles', () => {
     // Verify the tiles link to /costs
     const costTiles = page.locator('a[href="/costs"]');
     expect(await costTiles.count()).toBeGreaterThan(0);
+
+    // The "right now" live-snapshot section (including the AWS Batch
+    // Queue / Cloud Fallback tile) was removed entirely -- the range-scoped
+    // tiles below supersede it.
+    await expect(page.locator('text=AWS Batch Queue')).not.toBeVisible();
+    await expect(page.locator('text=Cloud Fallback')).not.toBeVisible();
   });
 });

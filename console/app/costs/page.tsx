@@ -78,7 +78,7 @@ export default function CostsPage() {
                 {formatUSD(costs.total.gpu_cost_usd)}
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', marginTop: '0.25rem' }}>
-                Batch job GPU hours
+                Cloud job GPU hours
               </div>
             </div>
 
@@ -162,7 +162,7 @@ export default function CostsPage() {
                       <th>GPU Cost</th>
                       <th>Platform Cost</th>
                       <th>Avoided Cost</th>
-                      <th>Batch Jobs</th>
+                      <th>Cloud Jobs</th>
                       <th>Local Jobs</th>
                       <th>Billed Seconds</th>
                       <th>Local Seconds</th>

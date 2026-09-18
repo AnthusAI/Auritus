@@ -1,0 +1,28 @@
+{
+  "id": "auritus-e6a1087f-8e08-4c04-ad82-8dee9f9b8aba",
+  "title": "Make Add to your site and Start with the embed CTAs square",
+  "description": "Unify the call-to-action button styling so both Add to your site and Start with the embed share a consistent, crisply square rounded-rectangle profile rather than a pill.",
+  "type": "chore",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "2f9bff58-c137-4c99-9b0f-580075d87862",
+      "author": "home",
+      "text": "Unified .nav-cta ('Add to your site') and .button ('Start with the embed') with consistent square border radius profile (0.25rem / 4px), matching font-weight (800), and identical hover transitions. Verified with Behave and Playwright.",
+      "created_at": "2026-09-18T16:50:18.463037Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-18T16:40:43.829849Z",
+  "updated_at": "2026-09-18T16:50:18.500171Z",
+  "closed_at": "2026-09-18T16:50:18.500146Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

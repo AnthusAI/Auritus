@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import io
 import math
+import os
 import struct
 import wave
 from typing import Any
@@ -16,13 +17,13 @@ from tts.breaks import AURITUS_BREAK_MARKER, split_on_breaks
 
 __all__ = [
     "AURITUS_BREAK_MARKER",
-    "split_on_breaks",
     "FishBackend",
     "resolve_fish_voice",
+    "split_on_breaks",
 ]
 
 FISH_DEFAULT_VOICE = "narrator"
-FISH_TORCH_MODEL = "fishaudio/fish-speech-1.5"
+FISH_TORCH_MODEL = "fishaudio/s2-pro"
 FISH_MLX_MODEL = "mlx-community/fishaudio-s2-pro-8bit-mlx"
 
 # How long a real silence gap is between AURITUS_BREAK_MARKER-delimited
@@ -68,7 +69,16 @@ class FishBackend(TTSBackend):
         return machine.startswith(("arm", "aarch"))
 
     def generate(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate speech audio using Fish Speech."""
+        """Generate speech audio using Fish Speech.
+
+        Only ImportError (an optional heavy dependency genuinely not
+        installed, e.g. local dev/test) falls back to the stub tone. A real
+        generation failure (CUDA OOM, a model bug, a download failure) must
+        raise so the job is correctly marked failed instead of silently
+        reporting success with fake audio -- this previously caught bare
+        Exception here, the same anti-pattern confirmed happening in
+        production for higgs.py and fixed there too.
+        """
         if not text.strip():
             raise ValueError("Cannot generate audio for empty text")
         if FishBackend._is_mlx is None:
@@ -77,12 +87,12 @@ class FishBackend(TTSBackend):
         if FishBackend._is_mlx:
             try:
                 return self._generate_mlx(text, meta)
-            except Exception:
+            except ImportError:
                 return self._generate_fallback(text, meta)
 
         try:
             return self._generate_torch(text, meta)
-        except Exception:
+        except ImportError:
             return self._generate_fallback(text, meta)
 
     def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
@@ -129,19 +139,153 @@ class FishBackend(TTSBackend):
         return _to_wav(audio_np, sample_rate=sample_rate)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via PyTorch on CUDA."""
+        """Generate via PyTorch on CUDA using fishaudio/s2-pro."""
+        import numpy as np
         import torch
+
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"[fish] resolved device={device}", flush=True)
 
         if not torch.cuda.is_available():
             return self._generate_fallback(text, meta)
 
-        from fish_speech.api import TTS as FishTTS
+        from pathlib import Path
+
+        import fish_speech
+        from huggingface_hub import snapshot_download
+
+        project_root = Path(fish_speech.__path__[0]) / ".project-root"
+        if not project_root.exists():
+            try:
+                project_root.touch()
+            except Exception:
+                pass
 
         if FishBackend._model is None:
-            FishBackend._model = FishTTS()
-        audio = FishBackend._model.generate(text)
-        samples = audio.tolist() if hasattr(audio, "tolist") else list(audio)
-        return _to_wav(samples, sample_rate=44100)
+            ckpt_dir = snapshot_download(FISH_TORCH_MODEL)
+            precision = (
+                torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+            )
+
+            llama_queue = _launch_thread_safe_queue(
+                checkpoint_path=ckpt_dir,
+                device=device,
+                precision=precision,
+                compile=False,
+            )
+
+            import hydra
+            from hydra import compose, initialize_config_dir
+            from hydra.utils import instantiate
+
+            config_dir = str(Path(fish_speech.__path__[0]) / "configs")
+            hydra.core.global_hydra.GlobalHydra.instance().clear()
+            with initialize_config_dir(version_base="1.3", config_dir=config_dir):
+                cfg = compose(config_name="modded_dac_vq")
+            decoder_model = instantiate(cfg)
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            codec_path = Path(ckpt_dir) / "codec.pth"
+            state_dict = torch.load(
+                codec_path, map_location="cpu", mmap=True, weights_only=True
+            )
+            if "state_dict" in state_dict:
+                state_dict = state_dict["state_dict"]
+            if any("generator" in k for k in state_dict):
+                state_dict = {
+                    k.replace("generator.", ""): v
+                    for k, v in state_dict.items()
+                    if "generator." in k
+                }
+            decoder_model.load_state_dict(state_dict, strict=False, assign=True)
+            decoder_model.eval()
+            decoder_model.to(device="cpu")
+
+            orig_from_indices = decoder_model.from_indices
+
+            def _safe_from_indices(indices, *args, **kwargs):
+                dev = next(decoder_model.parameters()).device
+                return orig_from_indices(indices.to(dev), *args, **kwargs).cpu()
+
+            decoder_model.from_indices = _safe_from_indices
+
+            orig_encode = getattr(decoder_model, "encode", None)
+            if orig_encode is not None:
+
+                def _to_target(val: Any) -> Any:
+                    if isinstance(val, torch.Tensor):
+                        return val.to(device)
+                    if isinstance(val, (list, tuple)):
+                        return type(val)(_to_target(v) for v in val)
+                    return val
+
+                def _safe_encode(audio, lengths, *args, **kwargs):
+                    dev = next(decoder_model.parameters()).device
+                    encoded = orig_encode(
+                        audio.to(dev), lengths.to(dev), *args, **kwargs
+                    )
+                    return _to_target(encoded)
+
+                decoder_model.encode = _safe_encode
+
+            from fish_speech.inference_engine import TTSInferenceEngine
+
+            FishBackend._model = TTSInferenceEngine(
+                llama_queue=llama_queue,
+                decoder_model=decoder_model,
+                precision=precision,
+                compile=False,
+            )
+
+        from fish_speech.inference_engine import ServeTTSRequest
+        from fish_speech.utils.schema import ServeReferenceAudio
+
+        ref_file = meta.get("ref_file")
+        ref_text = meta.get("ref_text")
+        references = []
+        if not ref_file:
+            local_ref = os.path.join(os.path.dirname(__file__), "basic_ref_en.wav")
+            if os.path.exists(local_ref):
+                ref_file = local_ref
+                if not ref_text:
+                    ref_text = "Some call me nature, others call me mother nature."
+        if ref_file and os.path.exists(ref_file):
+            with open(ref_file, "rb") as f:
+                audio_bytes = f.read()
+            references = [ServeReferenceAudio(audio=audio_bytes, text=ref_text or "")]
+
+        blocks = split_on_breaks(text)
+        all_chunks: list[np.ndarray] = []
+        sample_rate = 44100
+        silence = np.zeros(int(sample_rate * BREAK_SILENCE_SECONDS), dtype=np.float32)
+
+        for i, block in enumerate(blocks):
+            if i > 0:
+                all_chunks.append(silence)
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            req = ServeTTSRequest(
+                text=block,
+                references=references,
+                streaming=False,
+                max_new_tokens=1024,
+            )
+            block_audio = None
+            for res in FishBackend._model.inference(req):
+                if res.code == "final":
+                    sr, block_audio = res.audio
+                    sample_rate = sr
+                elif res.code == "error":
+                    raise res.error
+            if block_audio is not None and len(block_audio) > 0:
+                all_chunks.append(block_audio)
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+        if not all_chunks:
+            raise ValueError("Fish Speech generated no audio segments")
+        audio_np = np.concatenate(all_chunks) if len(all_chunks) > 1 else all_chunks[0]
+        return _to_wav(audio_np, sample_rate=sample_rate)
 
     def _generate_fallback(self, text: str, meta: dict[str, Any]) -> bytes:
         """Synthetic fallback audio for unit testing or environments without GPU weights."""
@@ -227,3 +371,136 @@ def _load_fish_mlx_model(repo_id: str) -> Any:
 
     Model.post_load_hook(model, path)
     return model
+
+
+def _launch_thread_safe_queue(
+    checkpoint_path: str,
+    device: str,
+    precision: Any,
+    compile: bool = False,
+) -> Any:
+    """Launch thread-safe request queue for Fish Speech text-to-semantic inference.
+
+    Initializes DualARTransformer directly on the target device with the specified
+    precision to prevent host memory exhaustion during weight loading.
+    """
+    import queue
+    import threading
+
+    import torch
+    from fish_speech.models.text2semantic.inference import (
+        DualARTransformer,
+        GenerateRequest,
+        WrappedGenerateResponse,
+        decode_one_token_ar,
+        generate_long,
+        logger,
+    )
+
+    input_queue: queue.Queue = queue.Queue()
+    init_event = threading.Event()
+    worker_error: list[Exception] = []
+
+    def worker() -> None:
+        try:
+            os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+            old_default_dtype = torch.get_default_dtype()
+            torch.set_default_dtype(precision)
+            try:
+                if device == "cuda" and torch.cuda.is_available():
+                    torch.cuda.set_device(0)
+                    torch.cuda.empty_cache()
+                with torch.device(device):
+                    max_length = 4096
+                    model = DualARTransformer.from_pretrained(
+                        checkpoint_path, load_weights=True, max_length=max_length
+                    )
+                    model = model.to(device=device, dtype=precision)
+                    decode_one_token = decode_one_token_ar
+                    model.setup_caches(
+                        max_batch_size=1,
+                        max_seq_len=max_length,
+                        dtype=next(model.parameters()).dtype,
+                    )
+                    orig_forward_generate = model.forward_generate
+
+                    def _safe_forward_generate(
+                        inp: torch.Tensor,
+                        input_pos: Any = None,
+                        audio_masks: Any = None,
+                        audio_parts: Any = None,
+                        *args: Any,
+                        **kwargs: Any,
+                    ) -> Any:
+                        dev = next(model.parameters()).device
+                        if isinstance(inp, torch.Tensor) and inp.device != dev:
+                            inp = inp.to(dev)
+                        if (
+                            isinstance(input_pos, torch.Tensor)
+                            and input_pos.device != dev
+                        ):
+                            input_pos = input_pos.to(dev)
+                        if (
+                            isinstance(audio_masks, torch.Tensor)
+                            and audio_masks.device != dev
+                        ):
+                            audio_masks = audio_masks.to(dev)
+                        if (
+                            isinstance(audio_parts, torch.Tensor)
+                            and audio_parts.device != dev
+                        ):
+                            audio_parts = audio_parts.to(dev)
+                        return orig_forward_generate(
+                            inp,
+                            input_pos,
+                            *args,
+                            audio_masks=audio_masks,
+                            audio_parts=audio_parts,
+                            **kwargs,
+                        )
+
+                    model.forward_generate = _safe_forward_generate
+            finally:
+                torch.set_default_dtype(old_default_dtype)
+            init_event.set()
+        except Exception as exc:
+            import traceback
+
+            logger.error(traceback.format_exc())
+            worker_error.append(exc)
+            init_event.set()
+            return
+
+        while True:
+            item: GenerateRequest | None = input_queue.get()
+            if item is None:
+                break
+
+            kwargs = dict(item.request)
+            kwargs["device"] = device
+            for k, v in kwargs.items():
+                if isinstance(v, torch.Tensor):
+                    kwargs[k] = v.to(device)
+            response_queue = item.response_queue
+
+            try:
+                for chunk in generate_long(
+                    model=model, decode_one_token=decode_one_token, **kwargs
+                ):
+                    response_queue.put(
+                        WrappedGenerateResponse(status="success", response=chunk)
+                    )
+            except Exception as e:
+                import traceback
+
+                logger.error(traceback.format_exc())
+                response_queue.put(WrappedGenerateResponse(status="error", response=e))
+
+    thread = threading.Thread(target=worker, daemon=True)
+    thread.start()
+    init_event.wait()
+
+    if worker_error:
+        raise worker_error[0]
+
+    return input_queue

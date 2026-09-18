@@ -367,7 +367,7 @@ auritus deploy --region us-east-1`}</code>
   src="https://aurit.us/embed.js"
   data-auritus-site-key="${siteKey}"
   data-auritus-tts-backend="${activeModel.id}"
-  data-auritus-voice-id="${activeModel.voice}"
+  data-auritus-voice="${activeModel.voice}"
   data-auritus-name="Article title"
   data-auritus-byline="By Author"
 ></script>`}</code>

@@ -1,0 +1,20 @@
+{
+  "id": "auritus-63ef6556-8c92-4047-950c-c2572d7d097d",
+  "title": "Cost reconciliation shows $0 estimated vs nonzero actual on every day -- likely NAT gateway cost not modeled",
+  "description": "Phase A's next-day reconciliation follow-up check (2026-09-17) found every\nreconciled day (2026-09-09 through 2026-09-15) shows estimated_gpu_cost_usd\n= $0.0000 against a nonzero actual_cost_usd from Cost Explorer, 6 of 7 days\nflagged OUT OF TOLERANCE (variance up to $0.86).\n\nThis is very likely not a bug in the reconciliation math itself, but a\nmethodology gap: the per-job rate-card estimate only models GPU compute time\nfor Batch jobs that actually ran, while Cost Explorer's actual spend covers\nthe account's full AWS bill for the billing period -- including the fixed\n~$0.045/hr NAT gateway the backend stack provisions\n(ec2.Vpc(..., nat_gateways=1) in cdk/stacks/backend.py), which bills 24/7\nregardless of job volume. On days with zero or few Batch jobs, actual cost\nis dominated by this fixed infrastructure cost that the estimate never\naccounts for at all, guaranteeing \"out of tolerance\" on quiet days.\n\nNeeds investigation to confirm this is the actual cause (check Cost\nExplorer's cost breakdown by service for one of these days -- if NAT\ngateway/VPC costs dominate, that confirms it), then a decision: either (a)\ndocument this as expected/by-design (reconciliation is meant to catch\n*GPU cost* estimation error, not model the whole AWS bill), or (b) exclude\nfixed infra costs from the Cost Explorer query filter so the comparison is\napples-to-apples, or (c) surface fixed infra cost as its own separate line\nso operators aren't confused by a permanently-out-of-tolerance reconciliation\ntable. Not fixed in this pass -- flagging for scoping.",
+  "type": "bug",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-c56c4a76-cf1f-434d-bb32-3b202ccc6302",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-17T15:00:59.750032Z",
+  "updated_at": "2026-09-17T15:00:59.750065Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

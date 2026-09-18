@@ -1,0 +1,35 @@
+{
+  "id": "auritus-370d1676-bfae-4dfb-ae17-5a7593f0b640",
+  "title": "Configure AWS Batch launch template with 100GB EBS root volume for Higgs 4B model",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-19ba7b16-6f43-4136-ad99-3b8e4b434c6c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "1f45439a-23c6-447f-bb6f-fd408aac1d77",
+      "author": "home",
+      "text": "Higgs Audio v3 (multimodalart/higgs-audio-v3-tts-4b-transformers) requires downloading 9.3GB of safetensors weights at runtime.\nThe default EC2 AMI root EBS volume (30GB) on g4dn.xlarge has only ~1.7GB free after the ECS AL2023 NVIDIA base AMI, drivers, and pre-baked Docker worker image layers.\nTo enable Higgs inference on Batch, configure an EC2 Launch Template with a 100GB gp3 EBS root volume (/dev/xvda) on the GpuComputeEnv compute environment in cdk/stacks/backend.py.",
+      "created_at": "2026-09-17T17:51:37.606744Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "ec56fa48-d73c-471f-a364-32875f5ec41a",
+      "author": "home",
+      "text": "Configured AWS EC2 Launch Template BatchGpuLaunchTemplate with 100GB gp3 EBS root volume (/dev/xvda) in cdk/stacks/backend.py.\nDeployed stack AuritusBackend successfully.\nIsolated Higgs into /opt/venv-higgs with transformers>=5.5.0.\nVerified on AWS Batch GPU (job 44e6f1e2): 9.3GB model weights downloaded with zero disk constraints, synthesized 8.48s of real speech (stdev 2788.2, peak freq 307Hz) on NVIDIA GPU.",
+      "created_at": "2026-09-17T19:00:42.702569Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-17T17:51:30.010709Z",
+  "updated_at": "2026-09-17T19:00:42.765750Z",
+  "closed_at": "2026-09-17T19:00:42.765725Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
