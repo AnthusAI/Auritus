@@ -17,10 +17,17 @@
       "text": "Resolved CUDA OOM and DAC vocoder dtype mismatch; reference audio encoded and text tokenized. Diagnosed upstream generate_long constraint (max_length - 2048 prompt limit), increased max_length to 8192, and triggered workflow build 35286091666.",
       "created_at": "2026-09-17T23:16:50.437150Z",
       "comment_type": "default"
+    },
+    {
+      "id": "57ff2aee-a78c-4ad0-93bd-5efa151f176a",
+      "author": "home",
+      "text": "Diagnosed OOM during DAC vocoder decoding: max_length=8192 allocated 1.3GB of KV caches, exhausting the 16GB T4 GPU right before DAC snake activation. Decreased max_length to 4096 (which still leaves 2048 prompt capacity vs 178 needed) saving 675MB VRAM, enabled PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True, and added explicit CUDA cache flushing. Dispatched worker image build 35340491402.",
+      "created_at": "2026-09-18T11:41:03.231922Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-17T19:01:44.838999Z",
-  "updated_at": "2026-09-17T23:16:50.437166Z",
+  "updated_at": "2026-09-18T11:41:03.231980Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
