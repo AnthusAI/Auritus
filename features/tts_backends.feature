@@ -73,3 +73,18 @@ Feature: Pluggable TTS backends
     When the Fish voice is resolved for synthesis
     Then the Fish voice_id is "narrator"
 
+  Scenario: Chatterbox resolves explicit voice_id
+    Given a Chatterbox job with voice_id "serious"
+    When the Chatterbox voice is resolved for synthesis
+    Then the Chatterbox voice_id is "serious"
+
+  Scenario: Fish resolves explicit voice_id
+    Given a Fish job with voice_id "serious"
+    When the Fish voice is resolved for synthesis
+    Then the Fish voice_id is "serious"
+
+  Scenario: F5 resolves explicit voice_id
+    Given an F5 job with voice_id "serious"
+    When the F5 voice is resolved for synthesis
+    Then the F5 voice_id is "serious"
+

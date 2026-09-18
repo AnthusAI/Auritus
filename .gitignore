@@ -33,6 +33,8 @@ AGENTS.local.md
 .auritus/
 
 # Playwright
+test-results/
+playwright-report/
 site/test-results/
 site/playwright-report/
 console/test-results/

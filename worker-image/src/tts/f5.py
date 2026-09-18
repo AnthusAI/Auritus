@@ -112,10 +112,20 @@ class F5Backend(TTSBackend):
             device = "cuda" if torch.cuda.is_available() else "cpu"
             print(f"[f5] resolved device={device}", flush=True)
             F5Backend._model = F5TTS(device=device)
+        from tts.voices import (
+            resolve_reference_audio,
+            resolve_reference_text,
+        )
+
         voice = resolve_f5_voice(meta)
-        _ = voice
         ref_file = meta.get("ref_file")
         ref_text = meta.get("ref_text")
+        if not ref_file:
+            resolved_audio = resolve_reference_audio(voice)
+            if resolved_audio:
+                ref_file = str(resolved_audio)
+                if not ref_text:
+                    ref_text = resolve_reference_text(voice)
         if not ref_file:
             local_candidate = os.path.join(
                 os.path.dirname(__file__), "basic_ref_en.wav"

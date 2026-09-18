@@ -71,25 +71,42 @@ class F5Backend(TTSBackend):
         return self._generate_torch(text, meta)
 
     def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via mlx-audio (Apple Silicon).
+        """Generate via f5-tts-mlx (Apple Silicon).
 
         :param text: TTS input text.
         :param meta: Job metadata.
         :returns: WAV audio bytes.
         """
-        import numpy as np
-        from mlx_audio.tts.utils import load_model
+        import os
+        import tempfile
+        from f5_tts_mlx.generate import generate as f5_gen
+        from auritus.tts.voices import (
+            resolve_reference_audio,
+            resolve_reference_text,
+        )
 
-        if F5Backend._model is None:
-            F5Backend._model = load_model(
-                F5_MLX_MODEL,
-                lazy=False,
-            )
         voice = resolve_f5_voice(meta)
-        gen = F5Backend._model.generate(text, voice=voice)
-        result = next(iter(gen))
-        audio_np = np.array(result.audio).reshape(-1)
-        return _to_wav(audio_np, sample_rate=24000)
+        ref_audio = resolve_reference_audio(voice)
+        ref_text = resolve_reference_text(voice) or ""
+
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            tmp_path = tmp.name
+
+        try:
+            gen_kwargs: dict[str, Any] = {
+                "generation_text": text,
+                "output_path": tmp_path,
+                "steps": 8,
+            }
+            if ref_audio:
+                gen_kwargs["ref_audio_path"] = str(ref_audio)
+                gen_kwargs["ref_audio_text"] = ref_text
+            f5_gen(**gen_kwargs)
+            with open(tmp_path, "rb") as f:
+                return f.read()
+        finally:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
         """Generate via PyTorch f5-tts (fallback for non-Apple).

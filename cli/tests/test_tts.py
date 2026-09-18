@@ -137,3 +137,20 @@ def test_parse_voiced_segments() -> None:
     assert segments[0] == ("Opening narrator.", "af_heart")
     assert segments[1] == ("Lincoln speaking.", "am_adam")
     assert segments[2] == ("Closing narrator.", "af_heart")
+
+
+def test_resolve_reference_audio_and_text() -> None:
+    from auritus.tts.voices import resolve_reference_audio, resolve_reference_text
+
+    assert resolve_reference_audio("") is None
+    assert resolve_reference_audio("nonexistent_voice_xyz_123") is None
+    assert resolve_reference_text("") is None
+    assert resolve_reference_text("nonexistent_voice_xyz_123") is None
+
+    steve_audio = resolve_reference_audio("steve_jobs")
+    assert steve_audio is not None
+    assert steve_audio.is_file()
+
+    steve_text = resolve_reference_text("steve_jobs")
+    assert steve_text is not None
+    assert "great work" in steve_text
