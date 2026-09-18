@@ -3,17 +3,25 @@
   "title": "Reduce vertical whitespace between header and hero",
   "description": "Adjust brand announcer margin and marketing hero min-height/padding so the hero section with Let every page speak sits closer to the header without large dead space.",
   "type": "chore",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "1bab1f5f-907e-4ebb-b4e5-ecaf46d4a3c7",
+      "author": "home",
+      "text": "Reduced brand-announcer negative margin and set marketing-hero min-height: auto with 1.5rem top padding. Hero sits close to the header without dead whitespace.",
+      "created_at": "2026-09-18T20:18:28.720323Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-18T16:57:52.368646Z",
-  "updated_at": "2026-09-18T16:57:52.368686Z",
-  "closed_at": null,
+  "updated_at": "2026-09-18T20:18:28.782713Z",
+  "closed_at": "2026-09-18T20:18:28.782690Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
