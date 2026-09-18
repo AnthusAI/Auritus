@@ -212,9 +212,19 @@ class FishBackend(TTSBackend):
             orig_encode = getattr(decoder_model, "encode", None)
             if orig_encode is not None:
 
+                def _to_target(val: Any) -> Any:
+                    if isinstance(val, torch.Tensor):
+                        return val.to(device)
+                    if isinstance(val, (list, tuple)):
+                        return type(val)(_to_target(v) for v in val)
+                    return val
+
                 def _safe_encode(audio, lengths, *args, **kwargs):
                     dev = next(decoder_model.parameters()).device
-                    return orig_encode(audio.to(dev), lengths.to(dev), *args, **kwargs)
+                    encoded = orig_encode(
+                        audio.to(dev), lengths.to(dev), *args, **kwargs
+                    )
+                    return _to_target(encoded)
 
                 decoder_model.encode = _safe_encode
 
@@ -428,7 +438,10 @@ def _launch_thread_safe_queue(
             if item is None:
                 break
 
-            kwargs = item.request
+            kwargs = dict(item.request)
+            for k, v in kwargs.items():
+                if isinstance(v, torch.Tensor):
+                    kwargs[k] = v.to(device)
             response_queue = item.response_queue
 
             try:
