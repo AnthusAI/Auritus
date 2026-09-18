@@ -3,7 +3,7 @@
   "title": "Support Fish Speech on CUDA in worker image and verify on AWS Batch",
   "description": "Implement Fish Speech Linux/CUDA synthesis in worker-image using fish-speech with PyTorch/CUDA, pre-bake requirements into Dockerfile, deploy worker image, and verify audio generation on AWS Batch GPU queue.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -31,11 +31,18 @@
       "text": "Offloaded Fish Speech DAC vocoder to CPU to eliminate CUDA VRAM contention with 3.6B LLaMA model on 16GB GPU. Added recursive tensor device transfer in _safe_encode and worker request loop so prompt embeddings flow seamlessly from CPU encoder to CUDA LLaMA. Dispatched build 35350265313.",
       "created_at": "2026-09-18T13:27:06.465185Z",
       "comment_type": "default"
+    },
+    {
+      "id": "08323b94-b42a-44ee-aa6e-e0a78d06e074",
+      "author": "home",
+      "text": "Resolved CUDA/CPU device mismatch by overriding kwargs['device']=device in _launch_thread_safe_queue and adding _safe_forward_generate wrapper. Verified on AWS Batch GPU job f3e2d598: synthesized all 3 blocks with 9.84 GB GPU peak memory, decoded audio on CPU, uploaded 7.1 MB WAV audio/b3ece5e9.wav to S3, and marked job status as done. All 9 website examples now return HTTP 200/206 audio.",
+      "created_at": "2026-09-18T14:57:06.057962Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-17T19:01:44.838999Z",
-  "updated_at": "2026-09-18T13:27:06.465220Z",
-  "closed_at": null,
+  "updated_at": "2026-09-18T14:57:10.597283Z",
+  "closed_at": "2026-09-18T14:57:10.597263Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
