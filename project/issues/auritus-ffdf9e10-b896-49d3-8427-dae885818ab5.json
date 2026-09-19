@@ -1,0 +1,20 @@
+{
+  "id": "auritus-ffdf9e10-b896-49d3-8427-dae885818ab5",
+  "title": "Audible pause durations and Steve Jobs reference audio alignment",
+  "description": "Fix Steve Jobs reference audio truncation and transcript mismatch to eliminate F5-TTS 'don't settle' hallucination; tune pause silence to 0.45s and paragraph breaks to 0.75s for clear human audibility across all TTS backends.",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-19T14:44:40.463486Z",
+  "updated_at": "2026-09-19T14:44:43.872122Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
