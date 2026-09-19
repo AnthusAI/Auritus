@@ -77,7 +77,7 @@ def test_split_on_pauses_empty_and_plain() -> None:
 
 def test_default_pause_silence_duration() -> None:
     """Verify default pause silence duration is configured appropriately."""
-    assert 0.15 <= DEFAULT_PAUSE_SILENCE_SECONDS <= 0.3
+    assert 0.35 <= DEFAULT_PAUSE_SILENCE_SECONDS <= 0.6
 
 
 def test_parse_voiced_segments_preserves_pauses() -> None:
