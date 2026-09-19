@@ -94,6 +94,28 @@ jobs:
           npx playwright install --with-deps chromium
           npx playwright test
 
+      - name: Console — npm ci
+        working-directory: console
+        run: npm ci
+
+      - name: Console — lint
+        working-directory: console
+        run: npm run lint
+
+      - name: Console — build
+        working-directory: console
+        env:
+          NEXT_DIST_DIR: .next-ci
+        run: npm run build
+
+      - name: Console — Playwright
+        working-directory: console
+        env:
+          CI: true
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test
+
       - name: CDK — install dependencies
         working-directory: cdk
         run: python -m pip install -r requirements.txt
