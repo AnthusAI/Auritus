@@ -78,6 +78,11 @@ class FishBackend(TTSBackend):
         reporting success with fake audio -- this previously caught bare
         Exception here, the same anti-pattern confirmed happening in
         production for higgs.py and fixed there too.
+
+        :param text: Text string to synthesize.
+        :param meta: Generation metadata dictionary including voice settings.
+        :returns: Synthesized audio bytes in WAV format.
+        :raises ValueError: If input text is empty or whitespace.
         """
         if not text.strip():
             raise ValueError("Cannot generate audio for empty text")
@@ -133,9 +138,21 @@ class FishBackend(TTSBackend):
         ref_text = resolve_reference_text(voice)
         ref_mx = None
         if ref_audio_path:
-            audio_data, _ = sf.read(str(ref_audio_path))
+            audio_data, file_sr = sf.read(str(ref_audio_path))
             if audio_data.ndim > 1:
                 audio_data = audio_data.mean(axis=1)
+            target_sr = sample_rate
+            if file_sr != target_sr:
+                try:
+                    from scipy.signal import resample
+
+                    num_samples = int(len(audio_data) * target_sr / file_sr)
+                    audio_data = resample(audio_data, num_samples)
+                except ImportError:
+                    num_samples = int(len(audio_data) * target_sr / file_sr)
+                    x_old = np.linspace(0, 1, len(audio_data), endpoint=False)
+                    x_new = np.linspace(0, 1, num_samples, endpoint=False)
+                    audio_data = np.interp(x_new, x_old, audio_data)
             ref_mx = mx.array(audio_data.astype(np.float32))
 
         blocks = split_on_breaks(text)
@@ -338,10 +355,17 @@ def _to_wav(samples: list | Any, sample_rate: int = 24000) -> bytes:
         import numpy as np
 
         if isinstance(samples, np.ndarray):
+            max_val = float(np.max(np.abs(samples))) if samples.size > 0 else 0.0
+            if 0.0 < max_val < 0.7:
+                samples = samples * (0.85 / max_val)
             clamped = np.clip(samples, -1.0, 1.0)
             frames = (clamped * 32767.0).astype(np.int16).tobytes()
         else:
             flat = list(samples)
+            max_val = max((abs(float(s)) for s in flat), default=0.0)
+            if 0.0 < max_val < 0.7:
+                scale = 0.85 / max_val
+                flat = [s * scale for s in flat]
             frames = struct.pack(
                 "<" + "h" * len(flat),
                 *[
@@ -403,6 +427,11 @@ def _load_fish_mlx_model(repo_id: str) -> Any:
     model.eval()
 
     Model.post_load_hook(model, path)
+    codec_path = path / "codec-mlx"
+    if codec_path.exists():
+        from mlx_audio.codec.models.fish_s1_dac import DAC as FishS1DAC
+
+        model.codec = FishS1DAC.from_pretrained(str(codec_path))
     return model
 
 
