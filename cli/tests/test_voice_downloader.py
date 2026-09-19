@@ -33,7 +33,7 @@ def test_build_parser_defaults(downloader_module) -> None:
     assert args.voice_id == "steve_jobs"
     assert args.sample_rate == 24000
     assert args.clip_start == 464.0
-    assert args.clip_duration == 12.0
+    assert args.clip_duration == 10.5
     assert args.full_wav is False
 
 
@@ -93,4 +93,4 @@ def test_run_workflow_with_mocks(downloader_module, tmp_path: Path) -> None:
                 mock_extract.assert_called_once()
                 txt_file = out_dir / "jobs_test.txt"
                 assert txt_file.exists()
-                assert "Don't settle" in txt_file.read_text(encoding="utf-8")
+                assert "keep looking" in txt_file.read_text(encoding="utf-8")

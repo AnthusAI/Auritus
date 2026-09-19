@@ -38,7 +38,7 @@ FISH_MLX_MODEL = "mlx-community/fishaudio-s2-pro-8bit-mlx"
 # blocks for this specific backend/voice. The marker itself and how it's
 # split live in tts.breaks, shared by every backend -- only the gap length
 # is a per-backend tuning choice.
-BREAK_SILENCE_SECONDS = 0.4
+BREAK_SILENCE_SECONDS = 0.75
 PAUSE_SILENCE_SECONDS = DEFAULT_PAUSE_SILENCE_SECONDS
 
 

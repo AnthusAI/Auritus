@@ -37,7 +37,7 @@ CHATTERBOX_MLX_MODEL = "mlx-community/chatterbox-fp16"
 # blocks for this specific backend/voice. The marker itself and how it's
 # split live in auritus.tts.breaks, shared by every backend -- only the
 # gap length is a per-backend tuning choice.
-BREAK_SILENCE_SECONDS = 0.4
+BREAK_SILENCE_SECONDS = 0.75
 PAUSE_SILENCE_SECONDS = DEFAULT_PAUSE_SILENCE_SECONDS
 
 

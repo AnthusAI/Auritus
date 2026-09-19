@@ -28,7 +28,7 @@ __all__ = [
 F5_DEFAULT_VOICE = "default"
 F5_MLX_MODEL = "mlx-community/F5-TTS"
 
-BREAK_SILENCE_SECONDS = 0.4
+BREAK_SILENCE_SECONDS = 0.75
 PAUSE_SILENCE_SECONDS = DEFAULT_PAUSE_SILENCE_SECONDS
 
 
@@ -162,7 +162,7 @@ class F5Backend(TTSBackend):
             break_silence = np.zeros(
                 int(sample_rate * BREAK_SILENCE_SECONDS), dtype=np.float32
             )
-            sentence_silence = np.zeros(int(sample_rate * 0.15), dtype=np.float32)
+            sentence_silence = np.zeros(int(sample_rate * 0.25), dtype=np.float32)
             pause_silence = np.zeros(
                 int(sample_rate * PAUSE_SILENCE_SECONDS), dtype=np.float32
             )

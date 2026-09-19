@@ -23,10 +23,10 @@ DEFAULT_AUDIO_URL = (
 DEFAULT_OUTPUT_DIR = Path("voices")
 DEFAULT_SAMPLE_RATE = 24000
 DEFAULT_CLIP_START = 464.0
-DEFAULT_CLIP_DURATION = 12.0
+DEFAULT_CLIP_DURATION = 10.5
 DEFAULT_CLIP_TRANSCRIPT = (
     "The only way to do great work is to love what you do. "
-    "If you haven't found it yet, keep looking. Don't settle."
+    "If you haven't found it yet, keep looking."
 )
 
 
@@ -188,7 +188,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--clip-duration",
         type=float,
         default=DEFAULT_CLIP_DURATION,
-        help="Duration in seconds for reference clip extraction (default: 12.0).",
+        help="Duration in seconds for reference clip extraction (default: 10.5).",
     )
     parser.add_argument(
         "--full-wav",
