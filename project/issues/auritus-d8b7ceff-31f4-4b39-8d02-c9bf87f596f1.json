@@ -3,17 +3,25 @@
   "title": "Dual voice support (Steve and Serious) for Chatterbox, F5, and Fish cloning models",
   "description": "Support both Steve (commencement speech reference) and Serious (ElevenLabs sample) across zero-shot cloning backends (Chatterbox, F5, Fish), provide interactive VoiceSelector on example pages, pre-render commencement speech audio for Steve voice, and upload to S3/DynamoDB.",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-4a283524-27e9-4b48-b989-7acc06488132",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "7a3c5d38-579a-4e39-a31c-e7b08ddb4a1f",
+      "author": "home",
+      "text": "Merged PR #56 into develop. Dual voice support (Steve and Serious) is implemented and verified for Chatterbox, F5, and Fish cloning backends with interactive VoiceSelector pills, Gherkin specs, unit tests, and Playwright e2e tests. All 6 audio assets are pre-rendered in S3 and DynamoDB.",
+      "created_at": "2026-09-19T13:05:51.030959Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-19T12:20:56.709255Z",
-  "updated_at": "2026-09-19T12:20:58.982048Z",
-  "closed_at": null,
+  "updated_at": "2026-09-19T13:05:51.081153Z",
+  "closed_at": "2026-09-19T13:05:51.081129Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
