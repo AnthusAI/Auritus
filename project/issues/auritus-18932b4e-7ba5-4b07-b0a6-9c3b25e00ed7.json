@@ -3,17 +3,25 @@
   "title": "Fix Fish Speech MLX DAC codec loading and reference resampling",
   "description": "Fish Speech MLX model failed to load audio decoder weights from codec-mlx/model.safetensors, causing post_load_hook to use uninitialized random DAC weights and generate silent/blank audio (-40 dBFS). Fix codec path loading to codec-mlx, resample reference audio to 44.1kHz, and regenerate production audio.",
   "type": "bug",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "auritus-4a283524-27e9-4b48-b989-7acc06488132",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "fdb7a5a1-9e34-4bdf-9915-0c959aee1730",
+      "author": "home",
+      "text": "Fixed Fish Speech MLX DAC codec loading by loading FishS1DAC from codec-mlx/ directory instead of root snapshot. Resampled reference audio to 44.1 kHz. Added amplitude normalization safeguard in _to_wav. Synthesized 74s commencement speech audio with serious voice at full volume (-1.4 dBFS peak) and uploaded to S3 (37a5f620.wav) and updated DynamoDB. Landed via PR #55.",
+      "created_at": "2026-09-19T12:01:28.911458Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-19T11:45:06.042370Z",
-  "updated_at": "2026-09-19T11:45:18.838790Z",
-  "closed_at": null,
+  "updated_at": "2026-09-19T12:01:28.911474Z",
+  "closed_at": "2026-09-19T12:01:26.301499Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
