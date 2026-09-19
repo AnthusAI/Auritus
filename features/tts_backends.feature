@@ -88,3 +88,17 @@ Feature: Pluggable TTS backends
     When the F5 voice is resolved for synthesis
     Then the F5 voice_id is "serious"
 
+  Scenario: Chatterbox resolves steve voice_id
+    Given a Chatterbox job with voice_id "steve"
+    When the Chatterbox voice is resolved for synthesis
+    Then the Chatterbox voice_id is "steve"
+
+  Scenario: Fish resolves steve voice_id
+    Given a Fish job with voice_id "steve"
+    When the Fish voice is resolved for synthesis
+    Then the Fish voice_id is "steve"
+
+  Scenario: F5 resolves steve voice_id
+    Given an F5 job with voice_id "steve"
+    When the F5 voice is resolved for synthesis
+    Then the F5 voice_id is "steve"
