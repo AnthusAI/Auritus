@@ -78,8 +78,10 @@ class F5Backend(TTSBackend):
         :returns: WAV audio bytes.
         """
         import os
+        import re
         import tempfile
 
+        from auritus.tts.breaks import split_on_breaks
         from auritus.tts.voices import (
             resolve_reference_audio,
             resolve_reference_text,
@@ -90,26 +92,92 @@ class F5Backend(TTSBackend):
         ref_text = resolve_reference_text(voice) or ""
 
         try:
-            from f5_tts_mlx.generate import generate as f5_gen
+            import mlx.core as mx
+            import numpy as np
+            import soundfile as sf
+            from f5_tts_mlx.cfm import F5TTS
+            from f5_tts_mlx.generate import (
+                TARGET_RMS,
+                convert_char_to_pinyin,
+                estimated_duration,
+            )
 
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-                tmp_path = tmp.name
+            if F5Backend._model is None or not isinstance(F5Backend._model, F5TTS):
+                F5Backend._model = F5TTS.from_pretrained("lucasnewman/f5-tts-mlx")
 
-            try:
-                gen_kwargs: dict[str, Any] = {
-                    "generation_text": text,
-                    "output_path": tmp_path,
-                    "steps": 8,
-                }
-                if ref_audio:
-                    gen_kwargs["ref_audio_path"] = str(ref_audio)
-                    gen_kwargs["ref_audio_text"] = ref_text
-                f5_gen(**gen_kwargs)
-                with open(tmp_path, "rb") as f:
-                    return f.read()
-            finally:
-                if os.path.exists(tmp_path):
-                    os.unlink(tmp_path)
+            sample_rate = 24000
+            if ref_audio:
+                audio_data, file_sr = sf.read(str(ref_audio))
+                if audio_data.ndim > 1:
+                    audio_data = audio_data.mean(axis=1)
+                if file_sr != sample_rate:
+                    from scipy.signal import resample
+
+                    num_samples = int(len(audio_data) * sample_rate / file_sr)
+                    audio_data = resample(audio_data, num_samples)
+            else:
+                import pkgutil
+
+                ref_bytes = pkgutil.get_data(
+                    "f5_tts_mlx", "tests/test_en_1_ref_short.wav"
+                )
+                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as rf:
+                    rf.write(ref_bytes)
+                    rf_path = rf.name
+                try:
+                    audio_data, _ = sf.read(rf_path)
+                finally:
+                    if os.path.exists(rf_path):
+                        os.unlink(rf_path)
+                ref_text = "Some call me nature, others call me mother nature."
+
+            audio_mx = mx.array(audio_data.astype(np.float32))
+            rms = mx.sqrt(mx.mean(mx.square(audio_mx)))
+            if rms < TARGET_RMS:
+                audio_mx = audio_mx * TARGET_RMS / rms
+
+            blocks = split_on_breaks(text)
+            if not blocks:
+                blocks = [text]
+
+            frames_per_sec = 24000 / 256
+            break_silence = np.zeros(int(sample_rate * 0.4), dtype=np.float32)
+            sentence_silence = np.zeros(int(sample_rate * 0.15), dtype=np.float32)
+            all_waves: list[np.ndarray] = []
+
+            for b_idx, block in enumerate(blocks):
+                if b_idx > 0:
+                    all_waves.append(break_silence)
+                sentences = [
+                    s.strip() for s in re.split(r"(?<=[.?!])\s+", block) if s.strip()
+                ]
+                for s_idx, sentence in enumerate(sentences):
+                    if s_idx > 0:
+                        all_waves.append(sentence_silence)
+                    dur = int(
+                        estimated_duration(audio_mx, ref_text, sentence, 1.0)
+                        * frames_per_sec
+                    )
+                    pinyin = convert_char_to_pinyin([ref_text + " " + sentence])
+                    wave, _ = F5Backend._model.sample(
+                        mx.expand_dims(audio_mx, axis=0),
+                        text=pinyin,
+                        duration=dur,
+                        steps=8,
+                    )
+                    wave = wave[audio_mx.shape[0] :]
+                    mx.eval(wave)
+                    all_waves.append(np.array(wave))
+                    if hasattr(mx, "clear_cache"):
+                        mx.clear_cache()
+
+            if not all_waves:
+                raise ValueError("F5-TTS generated no audio")
+            combined = np.concatenate(all_waves)
+            peak = float(np.max(np.abs(combined)))
+            if peak > 0.95:
+                combined = combined * (0.95 / peak)
+            return _to_wav(combined, sample_rate=sample_rate)
         except ImportError:
             import numpy as np
             from mlx_audio.tts.utils import load_model

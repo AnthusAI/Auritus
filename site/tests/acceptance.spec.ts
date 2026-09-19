@@ -430,7 +430,7 @@ test("F5 example posts the same commencement excerpt with F5", async ({
   await page.goto("/examples/f5");
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("f5");
-  expect(body.voice_id).toBe("serious");
+  expect(body.voice_id).toBe("steve");
   expect(body.text).toContain(
     "getting fired from Apple was the best thing that could have ever happened to me",
   );
@@ -451,7 +451,7 @@ test("Chatterbox example posts the same commencement excerpt with Chatterbox", a
   await page.goto("/examples/chatterbox");
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("chatterbox");
-  expect(body.voice_id).toBe("serious");
+  expect(body.voice_id).toBe("steve");
   expect(body.text).toContain(
     "getting fired from Apple was the best thing that could have ever happened to me",
   );
@@ -472,7 +472,7 @@ test("Fish example posts the same commencement excerpt with Fish", async ({
   await page.goto("/examples/fish");
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("fish");
-  expect(body.voice_id).toBe("serious");
+  expect(body.voice_id).toBe("steve");
   expect(body.text).toContain(
     "getting fired from Apple was the best thing that could have ever happened to me",
   );
@@ -814,3 +814,109 @@ test("Qwen example page supports interactive voice selection", async ({
     "Qwen (Vivian)",
   );
 });
+
+test("Chatterbox example page supports interactive voice selection", async ({
+  page,
+}) => {
+  await page.goto("/examples/chatterbox");
+
+  const voiceShell = page.locator(".voice-selector-shell");
+  await expect(voiceShell).toBeVisible();
+
+  const pills = voiceShell.locator(".voice-pill");
+  await expect(pills).toHaveCount(2);
+
+  const activePill = voiceShell.locator(".voice-pill.active");
+  await expect(activePill).toContainText("Steve");
+  await expect(activePill).toContainText("steve");
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "steve",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "Chatterbox (Steve)",
+  );
+
+  const seriousPill = voiceShell.locator(".voice-pill", { hasText: "Serious" });
+  await seriousPill.click();
+
+  await expect(voiceShell.locator(".voice-pill.active")).toContainText("Serious");
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "serious",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "Chatterbox (Serious)",
+  );
+});
+
+test("F5 example page supports interactive voice selection", async ({
+  page,
+}) => {
+  await page.goto("/examples/f5");
+
+  const voiceShell = page.locator(".voice-selector-shell");
+  await expect(voiceShell).toBeVisible();
+
+  const pills = voiceShell.locator(".voice-pill");
+  await expect(pills).toHaveCount(2);
+
+  const activePill = voiceShell.locator(".voice-pill.active");
+  await expect(activePill).toContainText("Steve");
+  await expect(activePill).toContainText("steve");
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "steve",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "F5-TTS (Steve)",
+  );
+
+  const seriousPill = voiceShell.locator(".voice-pill", { hasText: "Serious" });
+  await seriousPill.click();
+
+  await expect(voiceShell.locator(".voice-pill.active")).toContainText("Serious");
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "serious",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "F5-TTS (Serious)",
+  );
+});
+
+test("Fish example page supports interactive voice selection", async ({
+  page,
+}) => {
+  await page.goto("/examples/fish");
+
+  const voiceShell = page.locator(".voice-selector-shell");
+  await expect(voiceShell).toBeVisible();
+
+  const pills = voiceShell.locator(".voice-pill");
+  await expect(pills).toHaveCount(2);
+
+  const activePill = voiceShell.locator(".voice-pill.active");
+  await expect(activePill).toContainText("Steve");
+  await expect(activePill).toContainText("steve");
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "steve",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "Fish Speech (Steve)",
+  );
+
+  const seriousPill = voiceShell.locator(".voice-pill", { hasText: "Serious" });
+  await seriousPill.click();
+
+  await expect(voiceShell.locator(".voice-pill.active")).toContainText("Serious");
+  await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
+    "data-auritus-voice",
+    "serious",
+  );
+  await expect(page.locator(".auritus-player-host")).toContainText(
+    "Fish Speech (Serious)",
+  );
+});
+

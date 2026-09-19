@@ -59,13 +59,19 @@ def _get_candidate_directories(
     return unique
 
 
+VOICE_ALIASES: dict[str, list[str]] = {
+    "steve": ["steve", "steve_jobs"],
+    "steve_jobs": ["steve_jobs", "steve"],
+}
+
+
 def resolve_reference_audio(
     voice_id: str,
     search_dirs: list[Path] | None = None,
 ) -> Path | None:
     """Find a reference audio file for a given voice identifier.
 
-    :param voice_id: Voice identifier string (e.g. ``"serious"``, ``"steve_jobs"``).
+    :param voice_id: Voice identifier string (e.g. ``"serious"``, ``"steve"``).
     :param search_dirs: Optional list of directory paths to search.
     :returns: Path to the reference audio file, or None if not found.
     """
@@ -76,12 +82,14 @@ def resolve_reference_audio(
     if os.path.isfile(voice_id):
         return Path(voice_id).resolve()
 
+    identifiers = VOICE_ALIASES.get(clean_id, [clean_id])
     directories = _get_candidate_directories(search_dirs)
     for directory in directories:
-        for ext in _AUDIO_EXTENSIONS:
-            candidate = directory / f"{clean_id}{ext}"
-            if candidate.is_file():
-                return candidate.resolve()
+        for identifier in identifiers:
+            for ext in _AUDIO_EXTENSIONS:
+                candidate = directory / f"{identifier}{ext}"
+                if candidate.is_file():
+                    return candidate.resolve()
     return None
 
 
@@ -99,12 +107,14 @@ def resolve_reference_text(
     if not clean_id:
         return None
 
+    identifiers = VOICE_ALIASES.get(clean_id, [clean_id])
     directories = _get_candidate_directories(search_dirs)
     for directory in directories:
-        candidate = directory / f"{clean_id}.txt"
-        if candidate.is_file():
-            try:
-                return candidate.read_text(encoding="utf-8").strip()
-            except (OSError, UnicodeDecodeError):
-                continue
+        for identifier in identifiers:
+            candidate = directory / f"{identifier}.txt"
+            if candidate.is_file():
+                try:
+                    return candidate.read_text(encoding="utf-8").strip()
+                except (OSError, UnicodeDecodeError):
+                    continue
     return None

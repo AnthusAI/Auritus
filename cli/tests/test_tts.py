@@ -162,6 +162,28 @@ def test_resolve_reference_audio_and_text(tmp_path: Path) -> None:
     assert resolved_text is not None
     assert "sample reference transcript" in resolved_text
 
+    mock_steve_audio = tmp_path / "steve_jobs.wav"
+    mock_steve_audio.touch()
+    mock_steve_text = tmp_path / "steve_jobs.txt"
+    mock_steve_text.write_text("steve jobs reference transcript")
+
+    assert (
+        resolve_reference_audio("steve", search_dirs=[tmp_path])
+        == mock_steve_audio.resolve()
+    )
+    assert (
+        resolve_reference_text("steve", search_dirs=[tmp_path])
+        == "steve jobs reference transcript"
+    )
+    assert (
+        resolve_reference_audio("steve_jobs", search_dirs=[tmp_path])
+        == mock_steve_audio.resolve()
+    )
+    assert (
+        resolve_reference_text("steve_jobs", search_dirs=[tmp_path])
+        == "steve jobs reference transcript"
+    )
+
 
 def test_fish_to_wav_normalization() -> None:
     import io
