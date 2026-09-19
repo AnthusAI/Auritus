@@ -686,7 +686,19 @@ class BackendStack(Stack):
         worker_image_tag = self.node.try_get_context("worker_image_tag") or "latest"
         worker_image_uri = f"{worker_repo.repository_uri}:{worker_image_tag}"
 
-        vpc = ec2.Vpc(self, "AuritusVpc", max_azs=2, nat_gateways=0)
+        vpc = ec2.Vpc(
+            self,
+            "AuritusVpc",
+            max_azs=2,
+            nat_gateways=0,
+            subnet_configuration=[
+                ec2.SubnetConfiguration(
+                    name="Public",
+                    subnet_type=ec2.SubnetType.PUBLIC,
+                    cidr_mask=18,
+                ),
+            ],
+        )
         batch_sg = ec2.SecurityGroup(self, "BatchSg", vpc=vpc, allow_all_outbound=True)
         instance_profile = self._batch_instance_profile()
 
