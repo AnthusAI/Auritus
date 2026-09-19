@@ -1,0 +1,20 @@
+{
+  "id": "auritus-b0fad3f5-4f40-4279-ae47-9f348da2c9ac",
+  "title": "Nuanced pause generation for em-dashes and punctuation hints across TTS backends",
+  "description": "Add nuanced pause handling for em-dashes (—, --, ―, parenthetical –) and pause punctuation hints (ellipses, explicit pause markers) across TTS backends. Block breaks (h1-h6, p, blockquote, li) remain as paragraph breaks (~400-500ms). Punctuation pauses insert a brief silence gap (~200ms) so speech does not rush past em-dashes. Re-generate all example audio assets locally with MLX and update S3 and DynamoDB.",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-19T13:30:04.862657Z",
+  "updated_at": "2026-09-19T13:30:08.613545Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
