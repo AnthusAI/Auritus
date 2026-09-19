@@ -3,17 +3,25 @@
   "title": "Voice cloning",
   "description": "Zero-shot voice cloning from reference audio samples across TTS backends (Chatterbox, F5-TTS, Fish Speech, and Qwen Base). Supports uploading or pointing to reference audio clips to clone speaker voices.",
   "type": "epic",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "fd18d2c9-062c-46a2-b787-7f4b131bedd6",
+      "author": "home",
+      "text": "All child tasks completed and verified in production (Steve Jobs and Serious voices active across Chatterbox, F5, and Fish).",
+      "created_at": "2026-09-19T15:34:41.873332Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-18T15:59:35.172555Z",
-  "updated_at": "2026-09-18T15:59:38.008784Z",
-  "closed_at": null,
+  "updated_at": "2026-09-19T15:34:43.907719Z",
+  "closed_at": "2026-09-19T15:34:43.907698Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
