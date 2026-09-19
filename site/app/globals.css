@@ -757,36 +757,6 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
   text-decoration: underline;
 }
 
-.model-nav-stepper {
-  align-items: center;
-  display: inline-flex;
-  gap: 0.5rem;
-}
-
-.model-stepper-btn {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--ink);
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 0.28rem 0.65rem;
-  text-decoration: none;
-  transition: all 0.15s ease;
-}
-
-.model-stepper-btn:hover {
-  background: var(--panel);
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.model-stepper-indicator {
-  color: var(--ink-muted);
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
 .model-switcher-bar {
   display: flex;
   flex-direction: column;
@@ -953,9 +923,6 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
   .model-compare-topbar {
     flex-direction: column;
     align-items: stretch;
-  }
-  .model-nav-stepper {
-    justify-content: space-between;
   }
 }
 
