@@ -1087,7 +1087,17 @@ def _list_sites(headers: dict[str, str]) -> dict[str, Any]:
 
 
 def _delete_site(site_id: str, headers: dict[str, str]) -> dict[str, Any]:
+    """Delete a site key.
+
+    :param site_id: The site key identifier to delete.
+    :param headers: Request headers for auth (operator-only).
+    :returns: 200 with the deleted site id.
+    :raises LookupError: If no site exists for the given id.
+    """
     _require_operator(headers)
+    item = _sites.get_item(Key={"site_id": site_id}).get("Item")
+    if not item:
+        raise LookupError("site_not_found")
     _sites.delete_item(Key={"site_id": site_id})
     return _response(200, {"site_id": site_id, "deleted": True})
 

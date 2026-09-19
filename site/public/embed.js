@@ -506,17 +506,23 @@ var Auritus = (() => {
     if (explicit) {
       return explicit.replace(/\/$/, "");
     }
+    let fallback = location.origin;
     if (element instanceof HTMLScriptElement) {
       try {
         const src = element.src;
         if (src) {
           const url = new URL(src);
-          return url.origin;
+          fallback = url.origin;
         }
       } catch {
       }
     }
-    return location.origin;
+    console.warn(
+      `Auritus embed: data-auritus-api is not set. Falling back to "${fallback}". ` +
+        "If your embed is served from a CDN or static host, set " +
+        'data-auritus-api="https://YOUR_API_GATEWAY_URL" on the script tag.'
+    );
+    return fallback;
   }
   function parseListAttribute(value) {
     if (!value?.trim()) {

@@ -203,17 +203,15 @@ def test_job_purge_dry_run_by_default_does_not_delete() -> None:
     assert "--yes" in result.output
 
 
-def test_job_purge_with_yes_confirms_then_deletes() -> None:
-    """job purge --yes should preview, confirm, then delete for real."""
+def test_job_purge_with_yes_deletes_without_prompt() -> None:
+    """job purge --yes should preview then delete without prompting."""
     fake_client = MagicMock()
     fake_client.bulk_delete_jobs.side_effect = [
         {"matched": 3, "deleted": 3, "dry_run": True},
         {"matched": 3, "deleted": 3, "dry_run": False},
     ]
     with patch("auritus.commands.job.AuritusClient", return_value=fake_client):
-        result = runner.invoke(
-            app, ["job", "purge", "--status", "failed", "--yes"], input="y\n"
-        )
+        result = runner.invoke(app, ["job", "purge", "--status", "failed", "--yes"])
     assert result.exit_code == 0, result.output
     assert fake_client.bulk_delete_jobs.call_count == 2
     fake_client.bulk_delete_jobs.assert_any_call(
@@ -223,24 +221,6 @@ def test_job_purge_with_yes_confirms_then_deletes() -> None:
         site_id=None, status="failed", older_than_days=None, dry_run=False
     )
     assert "Deleted 3 job(s)" in result.output
-
-
-def test_job_purge_with_yes_declining_confirmation_does_not_delete() -> None:
-    """job purge --yes, but declining the confirm prompt, must not delete."""
-    fake_client = MagicMock()
-    fake_client.bulk_delete_jobs.return_value = {
-        "matched": 3,
-        "deleted": 3,
-        "dry_run": True,
-    }
-    with patch("auritus.commands.job.AuritusClient", return_value=fake_client):
-        result = runner.invoke(
-            app, ["job", "purge", "--status", "failed", "--yes"], input="n\n"
-        )
-    assert result.exit_code == 0, result.output
-    fake_client.bulk_delete_jobs.assert_called_once_with(
-        site_id=None, status="failed", older_than_days=None, dry_run=True
-    )
 
 
 def test_job_purge_help_does_not_crash() -> None:

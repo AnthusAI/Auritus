@@ -155,9 +155,6 @@ def purge_jobs(
         typer.echo("Nothing to delete.")
         return
 
-    if not typer.confirm(f"Delete {matched} jobs?"):
-        raise typer.Exit(code=0)
-
     try:
         result = client.bulk_delete_jobs(
             site_id=site,
