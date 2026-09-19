@@ -562,13 +562,6 @@ test("ModelCompareNav renders all models and active states", async ({
   await expect(page.locator(".model-nav-back")).toHaveText("← All Examples");
   await expect(page.locator(".model-nav-docs")).toHaveText("Usage →");
 
-  // Check stepper
-  const prevBtn = page.locator(".model-stepper-btn").first();
-  const nextBtn = page.locator(".model-stepper-btn").last();
-  await expect(prevBtn).toHaveText("‹ Chatterbox");
-  await expect(nextBtn).toHaveText("Kokoro-82M ›");
-  await expect(page.locator(".model-stepper-indicator")).toHaveText("6 of 6");
-
   // Check model pills
   const pills = page.locator(".model-pill");
   await expect(pills).toHaveCount(6);
@@ -585,11 +578,10 @@ test("ModelCompareNav renders all models and active states", async ({
   await expect(specStrip).toContainText("44.1 kHz Mono");
   await expect(specStrip).toContainText("CC-BY-NC-SA-4.0");
 
-  // Click Prev model (Chatterbox)
-  await prevBtn.click();
+  // Click a different model pill (Chatterbox)
+  await page.locator(".model-pill", { hasText: "Chatterbox" }).click();
   await expect(page).toHaveURL("/examples/chatterbox");
   await expect(page.locator(".model-pill.active")).toContainText("Chatterbox");
-  await expect(page.locator(".model-stepper-indicator")).toHaveText("5 of 6");
 });
 
 test("ModelCompareNav dropdown is present for responsive viewports", async ({

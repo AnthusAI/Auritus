@@ -1,0 +1,55 @@
+{
+  "id": "auritus-a9ffed0f-e0b7-48cc-b77d-cccecc21bf81",
+  "title": "Remove duplicate model stepper from examples nav",
+  "description": "The examples model-compare topbar duplicated model navigation: a prev/next stepper with an N of 6 indicator sat above the same choice already offered by the model pill list and the dropdown below it. Removed the stepper (component, CSS, and the Playwright assertions that pinned it) and kept the pill list plus dropdown as the single navigation control. Change: site/components/ModelCompareNav.tsx, site/app/globals.css, site/tests/acceptance.spec.ts on branch claude/sharp-dirac-6esl2f.",
+  "type": "chore",
+  "status": "closed",
+  "priority": 4,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-f3fac494-0495-4d18-a1e6-4a9755e1fe1a",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "09264912-15c3-4cf2-a752-916368bc651a",
+      "author": "unknown",
+      "text": "Pull request: https://github.com/AnthusAI/Auritus/pull/62 (claude/sharp-dirac-6esl2f -> develop). Sub-agent /code-review (high effort) returned no findings. Validated locally: tsc --noEmit clean, eslint clean, site build succeeds, ModelCompareNav Playwright tests pass. Full acceptance suite has 3 pre-existing failures (live TTS network round trips) confirmed identical on unmodified develop via a scratch worktree -- not a regression.",
+      "created_at": "2026-09-19T18:02:10.551908Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-sonnet-5",
+        "name": "Claude",
+        "settings": {}
+      }
+    },
+    {
+      "id": "a87da423-6c3e-4035-a0cf-d3af14b573cb",
+      "author": "unknown",
+      "text": "Merged: https://github.com/AnthusAI/Auritus/pull/62 (squash 14f6388) into develop.",
+      "created_at": "2026-09-19T18:05:18.201559Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-sonnet-5",
+        "name": "Claude",
+        "settings": {}
+      }
+    }
+  ],
+  "created_at": "2026-09-19T17:40:16.883775Z",
+  "updated_at": "2026-09-19T18:05:18.754331Z",
+  "closed_at": "2026-09-19T18:05:18.754186Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "claude_code",
+    "model": "claude-sonnet-5",
+    "name": "Claude",
+    "settings": {}
+  }
+}
