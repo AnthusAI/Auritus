@@ -78,6 +78,11 @@ class FishBackend(TTSBackend):
         reporting success with fake audio -- this previously caught bare
         Exception here, the same anti-pattern confirmed happening in
         production for higgs.py and fixed there too.
+
+        :param text: Text string to synthesize.
+        :param meta: Generation metadata dictionary including voice settings.
+        :returns: Synthesized audio bytes in WAV format.
+        :raises ValueError: If input text is empty or whitespace.
         """
         if not text.strip():
             raise ValueError("Cannot generate audio for empty text")
@@ -136,7 +141,7 @@ class FishBackend(TTSBackend):
             audio_data, file_sr = sf.read(str(ref_audio_path))
             if audio_data.ndim > 1:
                 audio_data = audio_data.mean(axis=1)
-            target_sr = getattr(FishBackend._model, "sample_rate", 44100)
+            target_sr = sample_rate
             if file_sr != target_sr:
                 try:
                     from scipy.signal import resample

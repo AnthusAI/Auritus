@@ -161,3 +161,37 @@ def test_resolve_reference_audio_and_text(tmp_path: Path) -> None:
     resolved_text = resolve_reference_text("mock_voice", search_dirs=[tmp_path])
     assert resolved_text is not None
     assert "sample reference transcript" in resolved_text
+
+
+def test_fish_to_wav_normalization() -> None:
+    import io
+    import wave
+    import numpy as np
+    from auritus.tts.fish import _to_wav
+
+    low_arr = np.array([-0.3, 0.0, 0.3], dtype=np.float32)
+    wav_bytes = _to_wav(low_arr, sample_rate=24000)
+    with wave.open(io.BytesIO(wav_bytes), "rb") as wf:
+        data = np.frombuffer(wf.readframes(wf.getnframes()), dtype=np.int16)
+        expected_peak = int(0.85 * 32767)
+        assert abs(int(data.max()) - expected_peak) <= 2
+
+    low_list = [-0.2, 0.1, 0.2]
+    wav_bytes_list = _to_wav(low_list, sample_rate=24000)
+    with wave.open(io.BytesIO(wav_bytes_list), "rb") as wf:
+        data = np.frombuffer(wf.readframes(wf.getnframes()), dtype=np.int16)
+        assert abs(int(data.max()) - expected_peak) <= 2
+
+    high_arr = np.array([-0.8, 0.0, 0.8], dtype=np.float32)
+    wav_bytes_high = _to_wav(high_arr, sample_rate=24000)
+    with wave.open(io.BytesIO(wav_bytes_high), "rb") as wf:
+        data = np.frombuffer(wf.readframes(wf.getnframes()), dtype=np.int16)
+        expected_high = int(0.8 * 32767)
+        assert abs(int(data.max()) - expected_high) <= 2
+
+    zero_arr = np.zeros(100, dtype=np.float32)
+    wav_bytes_zero = _to_wav(zero_arr, sample_rate=24000)
+    with wave.open(io.BytesIO(wav_bytes_zero), "rb") as wf:
+        data = np.frombuffer(wf.readframes(wf.getnframes()), dtype=np.int16)
+        assert data.max() == 0
+        assert data.min() == 0
