@@ -1,0 +1,28 @@
+{
+  "id": "auritus-bc234f46-ad99-4d62-9a74-d6201b41e647",
+  "title": "Utility to download Steve Jobs reference audio and define voice asset conventions",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-4a283524-27e9-4b48-b989-7acc06488132",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "04af9d51-bfe4-416a-a6d9-c5d54dda0702",
+      "author": "home",
+      "text": "Implemented download-commencement-audio.py utility in PR #53, defined standard reference voice naming patterns in voices/README.md, updated .gitignore to ignore all binary audio files (*.wav, *.mp3, etc.) and voices/*, and verified unit tests in test_voice_downloader.py.",
+      "created_at": "2026-09-18T20:47:14.622290Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-18T20:40:58.623597Z",
+  "updated_at": "2026-09-18T20:47:14.697094Z",
+  "closed_at": "2026-09-18T20:47:14.697077Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

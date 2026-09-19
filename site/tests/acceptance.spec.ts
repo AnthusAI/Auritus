@@ -430,7 +430,7 @@ test("F5 example posts the same commencement excerpt with F5", async ({
   await page.goto("/examples/f5");
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("f5");
-  expect(body.voice_id).toBe("default");
+  expect(body.voice_id).toBe("serious");
   expect(body.text).toContain(
     "getting fired from Apple was the best thing that could have ever happened to me",
   );
@@ -439,6 +439,8 @@ test("F5 example posts the same commencement excerpt with F5", async ({
   );
   expect(body.text).not.toContain("Don't Settle");
   expect(body.text).not.toContain("This page speaks that excerpt");
+  await waitForPlayableClip(page);
+  expect(await clipDurationSeconds(page)).toBeGreaterThanOrEqual(20);
 });
 
 test("Chatterbox example posts the same commencement excerpt with Chatterbox", async ({
@@ -449,7 +451,7 @@ test("Chatterbox example posts the same commencement excerpt with Chatterbox", a
   await page.goto("/examples/chatterbox");
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("chatterbox");
-  expect(body.voice_id).toBe("narrator");
+  expect(body.voice_id).toBe("serious");
   expect(body.text).toContain(
     "getting fired from Apple was the best thing that could have ever happened to me",
   );
@@ -458,6 +460,8 @@ test("Chatterbox example posts the same commencement excerpt with Chatterbox", a
   );
   expect(body.text).not.toContain("Don't Settle");
   expect(body.text).not.toContain("This page speaks that excerpt");
+  await waitForPlayableClip(page);
+  expect(await clipDurationSeconds(page)).toBeGreaterThanOrEqual(20);
 });
 
 test("Fish example posts the same commencement excerpt with Fish", async ({
@@ -468,7 +472,7 @@ test("Fish example posts the same commencement excerpt with Fish", async ({
   await page.goto("/examples/fish");
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("fish");
-  expect(body.voice_id).toBe("narrator");
+  expect(body.voice_id).toBe("serious");
   expect(body.text).toContain(
     "getting fired from Apple was the best thing that could have ever happened to me",
   );
@@ -477,6 +481,8 @@ test("Fish example posts the same commencement excerpt with Fish", async ({
   );
   expect(body.text).not.toContain("Don't Settle");
   expect(body.text).not.toContain("This page speaks that excerpt");
+  await waitForPlayableClip(page);
+  expect(await clipDurationSeconds(page)).toBeGreaterThanOrEqual(20);
 });
 
 test("Kokoro, Qwen, and F5 examples POST the same spoken text", async ({

@@ -88,6 +88,8 @@ class ChatterboxBackend(TTSBackend):
         import numpy as np
         from mlx_audio.tts.utils import load_model
 
+        from tts.voices import resolve_reference_audio
+
         if ChatterboxBackend._model is None:
             ChatterboxBackend._model = load_model(
                 CHATTERBOX_MLX_MODEL,
@@ -100,6 +102,10 @@ class ChatterboxBackend(TTSBackend):
                 getattr(ChatterboxBackend._model, "sr", 24000),
             )
         )
+        voice = resolve_chatterbox_voice(meta)
+        ref_audio_path = resolve_reference_audio(voice)
+        ref_audio_arg = str(ref_audio_path) if ref_audio_path else None
+
         blocks = split_on_breaks(text)
         all_chunks: list[np.ndarray] = []
         silence = np.zeros(int(sample_rate * BREAK_SILENCE_SECONDS), dtype=np.float32)
@@ -107,7 +113,11 @@ class ChatterboxBackend(TTSBackend):
         for i, block in enumerate(blocks):
             if i > 0:
                 all_chunks.append(silence)
-            gen = ChatterboxBackend._model.generate(block)
+            gen = (
+                ChatterboxBackend._model.generate(block, ref_audio=ref_audio_arg)
+                if ref_audio_arg
+                else ChatterboxBackend._model.generate(block)
+            )
             block_chunks = [np.array(result.audio) for result in gen]
             if block_chunks:
                 all_chunks.extend(block_chunks)
@@ -137,12 +147,18 @@ class ChatterboxBackend(TTSBackend):
         except ImportError:
             return self._generate_fallback(text, meta)
 
+        from tts.voices import resolve_reference_audio
+
         if ChatterboxBackend._model is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
             print(f"[chatterbox] resolved device={device}", flush=True)
             ChatterboxBackend._model = ChatterboxTTS.from_pretrained(
                 device=device,
             )
+        voice = resolve_chatterbox_voice(meta)
+        ref_audio_path = resolve_reference_audio(voice)
+        ref_audio_arg = str(ref_audio_path) if ref_audio_path else None
+
         blocks = split_on_breaks(text)
         all_chunks: list[np.ndarray] = []
         sample_rate = int(getattr(ChatterboxBackend._model, "sr", 24000))
@@ -150,7 +166,12 @@ class ChatterboxBackend(TTSBackend):
         for i, block in enumerate(blocks):
             if i > 0:
                 all_chunks.append(silence)
-            wav = ChatterboxBackend._model.generate(block)
+            if ref_audio_arg:
+                wav = ChatterboxBackend._model.generate(
+                    block, audio_prompt_path=ref_audio_arg
+                )
+            else:
+                wav = ChatterboxBackend._model.generate(block)
             if hasattr(wav, "cpu"):
                 wav = wav.cpu().numpy()
             all_chunks.append(np.asarray(wav, dtype=np.float32).reshape(-1))

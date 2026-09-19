@@ -9,18 +9,18 @@ export default function ChatterboxExamplePage() {
       <ModelCompareNav currentBackend="chatterbox" />
       <AuritusPlayerHost
         name="Don't Settle"
-        byline="Steve Jobs, 2005 — Chatterbox"
+        byline="Steve Jobs, 2005 — Chatterbox (Serious)"
       />
       <article className="example-article">
-        <JobsCommencementExcerpt backendLabel="Chatterbox (Resemble AI)" />
+        <JobsCommencementExcerpt backendLabel="Chatterbox — Serious voice (Resemble AI)" />
       </article>
       <AuritusEmbed
         siteKey="demo-site-key"
         apiUrl="https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com"
         name="Don't Settle"
-        byline="Steve Jobs, 2005 — Chatterbox"
+        byline="Steve Jobs, 2005 — Chatterbox (Serious)"
         ttsBackend="chatterbox"
-        voiceId="narrator"
+        voiceId="serious"
         root=".example-article"
         playerHost=".auritus-player-host"
       />

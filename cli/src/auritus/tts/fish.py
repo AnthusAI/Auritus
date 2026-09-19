@@ -60,7 +60,10 @@ class FishBackend(TTSBackend):
 
     @classmethod
     def _detect_mlx(cls) -> bool:
-        """Detect whether MLX is available on this platform."""
+        """Detect whether MLX is available on this platform.
+
+        :returns: True if running on Apple Silicon Darwin, otherwise False.
+        """
         import platform
 
         if platform.system() != "Darwin":
@@ -78,6 +81,11 @@ class FishBackend(TTSBackend):
         reporting success with fake audio -- this previously caught bare
         Exception here, the same anti-pattern confirmed happening in
         production for higgs.py and fixed there too.
+
+        :param text: Text string to synthesize.
+        :param meta: Generation metadata dictionary including voice settings.
+        :returns: Synthesized audio bytes in WAV format.
+        :raises ValueError: If input text is empty or whitespace.
         """
         if not text.strip():
             raise ValueError("Cannot generate audio for empty text")
@@ -96,7 +104,12 @@ class FishBackend(TTSBackend):
             return self._generate_fallback(text, meta)
 
     def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via mlx-audio on Apple Silicon."""
+        """Generate via mlx-audio on Apple Silicon.
+
+        :param text: Text string to synthesize.
+        :param meta: Generation metadata dictionary.
+        :returns: Synthesized audio bytes in WAV format.
+        """
         import numpy as np
 
         try:
@@ -121,6 +134,23 @@ class FishBackend(TTSBackend):
                 getattr(FishBackend._model, "sr", 44100),
             )
         )
+        voice = resolve_fish_voice(meta)
+        import mlx.core as mx
+        import soundfile as sf
+        from auritus.tts.voices import (
+            resolve_reference_audio,
+            resolve_reference_text,
+        )
+
+        ref_audio_path = resolve_reference_audio(voice)
+        ref_text = resolve_reference_text(voice)
+        ref_mx = None
+        if ref_audio_path:
+            audio_data, _ = sf.read(str(ref_audio_path))
+            if audio_data.ndim > 1:
+                audio_data = audio_data.mean(axis=1)
+            ref_mx = mx.array(audio_data.astype(np.float32))
+
         blocks = split_on_breaks(text)
         all_chunks: list[np.ndarray] = []
         silence = np.zeros(int(sample_rate * BREAK_SILENCE_SECONDS), dtype=np.float32)
@@ -128,7 +158,12 @@ class FishBackend(TTSBackend):
         for i, block in enumerate(blocks):
             if i > 0:
                 all_chunks.append(silence)
-            gen = FishBackend._model.generate(block)
+            gen_kwargs: dict[str, Any] = {}
+            if ref_mx is not None:
+                gen_kwargs["ref_audio"] = ref_mx
+                if ref_text:
+                    gen_kwargs["ref_text"] = ref_text
+            gen = FishBackend._model.generate(block, **gen_kwargs)
             block_chunks = [np.array(result.audio) for result in gen]
             if block_chunks:
                 all_chunks.extend(block_chunks)
@@ -139,7 +174,12 @@ class FishBackend(TTSBackend):
         return _to_wav(audio_np, sample_rate=sample_rate)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via PyTorch on CUDA using fishaudio/s2-pro."""
+        """Generate via PyTorch on CUDA using fishaudio/s2-pro.
+
+        :param text: Text string to synthesize.
+        :param meta: Generation metadata dictionary including voice settings.
+        :returns: Synthesized audio bytes in WAV format.
+        """
         import numpy as np
         import torch
 
@@ -239,10 +279,21 @@ class FishBackend(TTSBackend):
 
         from fish_speech.inference_engine import ServeTTSRequest
         from fish_speech.utils.schema import ServeReferenceAudio
+        from auritus.tts.voices import (
+            resolve_reference_audio,
+            resolve_reference_text,
+        )
 
+        voice = resolve_fish_voice(meta)
         ref_file = meta.get("ref_file")
         ref_text = meta.get("ref_text")
         references = []
+        if not ref_file:
+            resolved_audio = resolve_reference_audio(voice)
+            if resolved_audio:
+                ref_file = str(resolved_audio)
+                if not ref_text:
+                    ref_text = resolve_reference_text(voice)
         if not ref_file:
             local_ref = os.path.join(os.path.dirname(__file__), "basic_ref_en.wav")
             if os.path.exists(local_ref):
@@ -288,7 +339,12 @@ class FishBackend(TTSBackend):
         return _to_wav(audio_np, sample_rate=sample_rate)
 
     def _generate_fallback(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Synthetic fallback audio for unit testing or environments without GPU weights."""
+        """Synthetic fallback audio for unit testing or environments without GPU weights.
+
+        :param text: Text string to synthesize.
+        :param meta: Generation metadata dictionary.
+        :returns: Synthesized audio bytes in WAV format.
+        """
         sample_rate = 24000
         duration_ms = max(500, min(len(text) * 60, 5000))
         frames = int(sample_rate * (duration_ms / 1000.0))
@@ -299,7 +355,12 @@ class FishBackend(TTSBackend):
 
 
 def _to_wav(samples: list | Any, sample_rate: int = 24000) -> bytes:
-    """Convert normalized audio samples to mono 16-bit WAV bytes."""
+    """Convert normalized audio samples to mono 16-bit WAV bytes.
+
+    :param samples: Audio amplitude samples.
+    :param sample_rate: Audio sampling frequency in Hz.
+    :returns: Serialized mono 16-bit WAV bytes.
+    """
     buffer = io.BytesIO()
     try:
         import numpy as np
@@ -383,6 +444,12 @@ def _launch_thread_safe_queue(
 
     Initializes DualARTransformer directly on the target device with the specified
     precision to prevent host memory exhaustion during weight loading.
+
+    :param checkpoint_path: Local filesystem directory containing model checkpoints.
+    :param device: Target compute device string (e.g. "cuda" or "cpu").
+    :param precision: Torch dtype precision for transformer weights.
+    :param compile: Whether to enable PyTorch compilation.
+    :returns: Queue of requests feeding the background worker thread.
     """
     import queue
     import threading
@@ -422,6 +489,44 @@ def _launch_thread_safe_queue(
                         max_seq_len=max_length,
                         dtype=next(model.parameters()).dtype,
                     )
+                    orig_forward_generate = model.forward_generate
+
+                    def _safe_forward_generate(
+                        inp: torch.Tensor,
+                        input_pos: Any = None,
+                        audio_masks: Any = None,
+                        audio_parts: Any = None,
+                        *args: Any,
+                        **kwargs: Any,
+                    ) -> Any:
+                        dev = next(model.parameters()).device
+                        if isinstance(inp, torch.Tensor) and inp.device != dev:
+                            inp = inp.to(dev)
+                        if (
+                            isinstance(input_pos, torch.Tensor)
+                            and input_pos.device != dev
+                        ):
+                            input_pos = input_pos.to(dev)
+                        if (
+                            isinstance(audio_masks, torch.Tensor)
+                            and audio_masks.device != dev
+                        ):
+                            audio_masks = audio_masks.to(dev)
+                        if (
+                            isinstance(audio_parts, torch.Tensor)
+                            and audio_parts.device != dev
+                        ):
+                            audio_parts = audio_parts.to(dev)
+                        return orig_forward_generate(
+                            inp,
+                            input_pos,
+                            *args,
+                            audio_masks=audio_masks,
+                            audio_parts=audio_parts,
+                            **kwargs,
+                        )
+
+                    model.forward_generate = _safe_forward_generate
             finally:
                 torch.set_default_dtype(old_default_dtype)
             init_event.set()
@@ -439,6 +544,7 @@ def _launch_thread_safe_queue(
                 break
 
             kwargs = dict(item.request)
+            kwargs["device"] = device
             for k, v in kwargs.items():
                 if isinstance(v, torch.Tensor):
                     kwargs[k] = v.to(device)
