@@ -102,14 +102,6 @@ export function ModelCompareNav({ currentBackend }: ModelCompareNavProps) {
   const currentIndex = TTS_MODELS.findIndex((m) => m.id === currentBackend);
   const currentModel =
     currentIndex !== -1 ? TTS_MODELS[currentIndex] : TTS_MODELS[0];
-  const prevModel =
-    currentIndex > 0
-      ? TTS_MODELS[currentIndex - 1]
-      : TTS_MODELS[TTS_MODELS.length - 1];
-  const nextModel =
-    currentIndex < TTS_MODELS.length - 1
-      ? TTS_MODELS[currentIndex + 1]
-      : TTS_MODELS[0];
 
   return (
     <nav className="model-compare-shell" aria-label="Model comparison navigation">
@@ -117,28 +109,6 @@ export function ModelCompareNav({ currentBackend }: ModelCompareNavProps) {
         <Link href="/examples" className="model-nav-back">
           ← All Examples
         </Link>
-
-        <div className="model-nav-stepper">
-          <Link
-            href={prevModel.href}
-            className="model-stepper-btn"
-            title={`Previous: ${prevModel.name}`}
-            aria-label={`Previous model: ${prevModel.name}`}
-          >
-            ‹ {prevModel.name}
-          </Link>
-          <span className="model-stepper-indicator">
-            {currentIndex + 1} of {TTS_MODELS.length}
-          </span>
-          <Link
-            href={nextModel.href}
-            className="model-stepper-btn"
-            title={`Next: ${nextModel.name}`}
-            aria-label={`Next model: ${nextModel.name}`}
-          >
-            {nextModel.name} ›
-          </Link>
-        </div>
 
         <Link href="/docs/usage" className="model-nav-docs">
           Usage →
