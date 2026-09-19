@@ -102,5 +102,3 @@ Feature: Pluggable TTS backends
     Given an F5 job with voice_id "steve"
     When the F5 voice is resolved for synthesis
     Then the F5 voice_id is "steve"
-
-
