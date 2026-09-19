@@ -2,6 +2,46 @@
 
 <!-- version list -->
 
+## v0.26.1 (2026-09-19)
+
+### Bug Fixes
+
+- Resolve three quick-win bugs (purge --yes, DELETE sites 404, embed API fallback)
+  ([#59](https://github.com/AnthusAI/Auritus/pull/59),
+  [`c2b97c5`](https://github.com/AnthusAI/Auritus/commit/c2b97c517585d91a617de0428d6d4a307a6470d5))
+
+- **cdk**: Remove NAT gateway and use public subnets for Batch
+  ([#61](https://github.com/AnthusAI/Auritus/pull/61),
+  [`334300d`](https://github.com/AnthusAI/Auritus/commit/334300da132fac18e88057fd947afff18663b167))
+
+- **cli**: Auritus job purge --yes now skips the redundant typer.confirm
+  ([#59](https://github.com/AnthusAI/Auritus/pull/59),
+  [`c2b97c5`](https://github.com/AnthusAI/Auritus/commit/c2b97c517585d91a617de0428d6d4a307a6470d5))
+
+### Chores
+
+- **project**: Close bug 63ef65 (NAT gateway removed, PR #61)
+  ([`c576a52`](https://github.com/AnthusAI/Auritus/commit/c576a52554eb060ea54bd791ae24e3a3871d9b75))
+
+- **project**: Close bugs 6cc298, 565415, 0ae6d0 (PR #59)
+  ([`4ac278e`](https://github.com/AnthusAI/Auritus/commit/4ac278ef81b40b8998c75c7aebf17651c82ebd03))
+
+- **project**: Close completed epics 4a2835, 19ba7b, initiative a4de88, and bug e62c40
+  ([`9306b50`](https://github.com/AnthusAI/Auritus/commit/9306b504c92498df4a2f89a720fae4e1e57d06c9))
+
+- **project**: Close M10 epic 434288 (all children completed)
+  ([`53a984e`](https://github.com/AnthusAI/Auritus/commit/53a984ebb072c826dc3e9fd6cd110874495e9bc7))
+
+- **project**: Close task 409867 (console CI, PR #60)
+  ([`e574ebf`](https://github.com/AnthusAI/Auritus/commit/e574ebf3862f184e83e9adc9e3f34d3015cb2964))
+
+### Continuous Integration
+
+- Add Console lint, build, and Playwright e2e to CI workflow
+  ([#60](https://github.com/AnthusAI/Auritus/pull/60),
+  [`3432184`](https://github.com/AnthusAI/Auritus/commit/3432184a93e82f6e499a2a0ee77e54094c4a8b27))
+
+
 ## v0.26.0 (2026-09-19)
 
 
