@@ -3,7 +3,7 @@
   "title": "Embed defaults data-auritus-api to script origin, which breaks CDN-hosted sites",
   "description": "Discovered while integrating Auritus into Pilobol.us (2026-09-14/15), a CDN-hosted static site (Amplify) with no server-side proxy to the Auritus API.\n\nembed/src/index.ts apiBaseFromElement():\n  const explicit = element.getAttribute('data-auritus-api')?.trim();\n  if (explicit) return explicit.replace(/\\/$/, '');\n  if (element instanceof HTMLScriptElement) {\n    const url = new URL(element.src);\n    return url.origin;  // <-- falls back to the SCRIPT's own origin\n  }\n  return location.origin;\n\nThe embed snippet README shows at the top of README.md:\n  <script src=\"https://aurit.us/embed.js\" data-auritus-site-key=\"YOUR_SITE_KEY\" ...></script>\nwith NO data-auritus-api attribute. Following that snippet literally (as I\ndid) means the embed's API base silently resolves to https://aurit.us itself\n-- the site key's OWN origin, which is a static Next.js site with no /jobs\nroute. Every createJob call then fails with a generic, unhelpful\n'TypeError: Failed to fetch' at AuritusApiClient.createJob, and because boot()\nnever reaches mountPlayer() on that path, NO player element appears at all --\nno error state, no fallback UI, nothing. From a reader's perspective the\nnarration feature simply doesn't exist on the page; there is no signal in\nthe DOM or a casual console check to explain why.\n\nThis cost a full debugging cycle: verified the site key, verified CORS\n(AllowOrigins: '*' at the API Gateway), verified the job creation endpoint\ndirectly via curl and via a raw fetch() in the browser (both succeeded),\nbefore finally diffing embed.js source to find apiBaseFromElement()'s\nfallback chain.\n\naurit.us's own homepage embed script IS correct -- it explicitly sets\ndata-auritus-api=\"https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com\" --\nso the bug never surfaces there. It only bites every OTHER site that copies\nthe quick-start snippet as written.\n\nTwo independent fixes worth doing, either one closes this:\n1. Update README.md's quick-start snippet to always include data-auritus-api\n   explicitly (simplest, but relies on every integrator reading closely).\n2. Have boot()/createJob fail loudly instead of silently: when createJob\n   throws, render a visible (even minimal) error state in a mounted host\n   element instead of returning before mountPlayer() is ever called. Silent\n   total absence is the worse failure mode regardless of root cause.\n\nFiled alongside auritus-294fa6 (worker/admin-jobs issues from the same\nintegration session).",
   "type": "bug",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -20,7 +20,7 @@
     }
   ],
   "created_at": "2026-09-15T01:50:28.922648Z",
-  "updated_at": "2026-09-15T11:02:22.505922Z",
+  "updated_at": "2026-09-19T15:38:25.342466Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

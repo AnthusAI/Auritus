@@ -21,6 +21,7 @@ After `auritus site create`, add the script to your page:
 <script
   src="https://aurit.us/embed.js"
   data-auritus-site-key="YOUR_SITE_KEY"
+  data-auritus-api="YOUR_API_URL"
   data-auritus-name="Article title"
   data-auritus-byline="By Author"
 ></script>
