@@ -1,5 +1,8 @@
-/** Pause marker inserted for elements with data-auritus-break. */
+/** Break marker inserted for block elements or data-auritus-break. */
 export const AURITUS_BREAK_MARKER = "[[auritus:break]]";
+
+/** Pause marker inserted for elements with data-auritus-pause. */
+export const AURITUS_PAUSE_MARKER = "[[auritus:pause]]";
 
 /** Reset marker inserted after elements with data-auritus-voice. */
 export const AURITUS_VOICE_RESET_MARKER = "[[auritus:voice:reset]]";

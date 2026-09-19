@@ -13,13 +13,21 @@ import wave
 from typing import Any
 
 from auritus.tts.base import TTSBackend
-from auritus.tts.breaks import AURITUS_BREAK_MARKER, split_on_breaks
+from auritus.tts.breaks import (
+    AURITUS_BREAK_MARKER,
+    AURITUS_PAUSE_MARKER,
+    DEFAULT_PAUSE_SILENCE_SECONDS,
+    split_on_breaks,
+    split_on_pauses,
+)
 
 __all__ = [
     "AURITUS_BREAK_MARKER",
-    "split_on_breaks",
+    "AURITUS_PAUSE_MARKER",
     "ChatterboxBackend",
     "resolve_chatterbox_voice",
+    "split_on_breaks",
+    "split_on_pauses",
 ]
 
 CHATTERBOX_DEFAULT_VOICE = "default"
@@ -30,6 +38,7 @@ CHATTERBOX_MLX_MODEL = "mlx-community/chatterbox-fp16"
 # split live in auritus.tts.breaks, shared by every backend -- only the
 # gap length is a per-backend tuning choice.
 BREAK_SILENCE_SECONDS = 0.4
+PAUSE_SILENCE_SECONDS = DEFAULT_PAUSE_SILENCE_SECONDS
 
 
 def resolve_chatterbox_voice(meta: dict[str, Any]) -> str:
@@ -120,18 +129,27 @@ class ChatterboxBackend(TTSBackend):
         blocks = split_on_breaks(text)
         all_chunks: list[np.ndarray] = []
         silence = np.zeros(int(sample_rate * BREAK_SILENCE_SECONDS), dtype=np.float32)
+        pause_silence = np.zeros(
+            int(sample_rate * PAUSE_SILENCE_SECONDS), dtype=np.float32
+        )
 
         for i, block in enumerate(blocks):
             if i > 0:
                 all_chunks.append(silence)
-            gen = (
-                ChatterboxBackend._model.generate(block, ref_audio=ref_audio_arg)
-                if ref_audio_arg
-                else ChatterboxBackend._model.generate(block)
-            )
-            block_chunks = [np.array(result.audio) for result in gen]
-            if block_chunks:
-                all_chunks.extend(block_chunks)
+            pause_segments = split_on_pauses(block)
+            for p_idx, pause_text in enumerate(pause_segments):
+                if p_idx > 0:
+                    all_chunks.append(pause_silence)
+                gen = (
+                    ChatterboxBackend._model.generate(
+                        pause_text, ref_audio=ref_audio_arg
+                    )
+                    if ref_audio_arg
+                    else ChatterboxBackend._model.generate(pause_text)
+                )
+                block_chunks = [np.array(result.audio) for result in gen]
+                if block_chunks:
+                    all_chunks.extend(block_chunks)
 
         if not all_chunks:
             raise ValueError("Chatterbox-TTS generated no audio segments")

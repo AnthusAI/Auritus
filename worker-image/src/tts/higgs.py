@@ -12,13 +12,21 @@ import wave
 from typing import Any
 
 from tts.base import TTSBackend
-from tts.breaks import AURITUS_BREAK_MARKER, split_on_breaks
+from tts.breaks import (
+    AURITUS_BREAK_MARKER,
+    AURITUS_PAUSE_MARKER,
+    DEFAULT_PAUSE_SILENCE_SECONDS,
+    split_on_breaks,
+    split_on_pauses,
+)
 
 __all__ = [
     "AURITUS_BREAK_MARKER",
-    "split_on_breaks",
+    "AURITUS_PAUSE_MARKER",
     "HiggsBackend",
     "resolve_higgs_voice",
+    "split_on_breaks",
+    "split_on_pauses",
 ]
 
 HIGGS_DEFAULT_VOICE = "default"
@@ -29,6 +37,7 @@ HIGGS_TORCH_MODEL = "multimodalart/higgs-audio-v3-tts-4b-transformers"
 # split live in tts.breaks, shared by every backend -- only the gap length
 # is a per-backend tuning choice.
 BREAK_SILENCE_SECONDS = 0.5
+PAUSE_SILENCE_SECONDS = DEFAULT_PAUSE_SILENCE_SECONDS
 
 
 def resolve_higgs_voice(meta: dict[str, Any]) -> str:
@@ -99,13 +108,20 @@ class HiggsBackend(TTSBackend):
         blocks = split_on_breaks(text)
         all_chunks: list[np.ndarray] = []
         silence = np.zeros(int(sample_rate * BREAK_SILENCE_SECONDS), dtype=np.float32)
+        pause_silence = np.zeros(
+            int(sample_rate * PAUSE_SILENCE_SECONDS), dtype=np.float32
+        )
         for i, block in enumerate(blocks):
             if i > 0:
                 all_chunks.append(silence)
-            gen = HiggsBackend._model.generate(block)
-            block_chunks = [np.array(result.audio) for result in gen]
-            if block_chunks:
-                all_chunks.extend(block_chunks)
+            pause_segments = split_on_pauses(block)
+            for p_idx, pause_text in enumerate(pause_segments):
+                if p_idx > 0:
+                    all_chunks.append(pause_silence)
+                gen = HiggsBackend._model.generate(pause_text)
+                block_chunks = [np.array(result.audio) for result in gen]
+                if block_chunks:
+                    all_chunks.extend(block_chunks)
         if not all_chunks:
             raise ValueError("Higgs Audio v3 generated no audio segments")
         audio_np = np.concatenate(all_chunks) if len(all_chunks) > 1 else all_chunks[0]
@@ -159,15 +175,20 @@ class HiggsBackend(TTSBackend):
             blocks = split_on_breaks(text)
             sample_rate = 24000
             silence = [0.0] * int(sample_rate * BREAK_SILENCE_SECONDS)
+            pause_silence = [0.0] * int(sample_rate * PAUSE_SILENCE_SECONDS)
             all_samples: list[float] = []
             for block in blocks:
                 if all_samples:
                     all_samples.extend(silence)
-                wav = HiggsBackend._model.generate_speech(
-                    block, HiggsBackend._tokenizer
-                )
-                audio_np = wav.detach().cpu().numpy().reshape(-1)
-                all_samples.extend(audio_np.tolist())
+                pause_segments = split_on_pauses(block)
+                for p_idx, pause_text in enumerate(pause_segments):
+                    if p_idx > 0:
+                        all_samples.extend(pause_silence)
+                    wav = HiggsBackend._model.generate_speech(
+                        pause_text, HiggsBackend._tokenizer
+                    )
+                    audio_np = wav.detach().cpu().numpy().reshape(-1)
+                    all_samples.extend(audio_np.tolist())
             if not all_samples:
                 raise ValueError("Higgs Audio v3 generated no audio segments")
             return _to_wav(all_samples, sample_rate=sample_rate)

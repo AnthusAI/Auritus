@@ -1,7 +1,10 @@
 import { JSDOM } from "jsdom";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { generateTtsText } from "../src/generator/index.js";
-import { AURITUS_BREAK_MARKER } from "../src/generator/hash.js";
+import {
+  AURITUS_BREAK_MARKER,
+  AURITUS_PAUSE_MARKER,
+} from "../src/index.js";
 
 describe("generateTtsText", () => {
   let dom: JSDOM;
@@ -161,5 +164,18 @@ describe("generateTtsText automatic block breaks", () => {
     expect(text).toContain("[[auritus:voice:af_bella]]");
     expect(text).toContain("[[auritus:voice:reset]]");
     expect(text).toContain("Character speaking.");
+  });
+
+  it("inserts pause marker for elements with data-auritus-pause attribute", () => {
+    dom = new JSDOM(
+      `<!DOCTYPE html><html><body>
+        <article id="content">
+          <p>Before pause<span data-auritus-pause></span>after pause.</p>
+        </article>
+      </body></html>`,
+    );
+    globalThis.document = dom.window.document;
+    const { text } = generateTtsText({ root: "#content" });
+    expect(text).toContain(`Before pause ${AURITUS_PAUSE_MARKER} after pause.`);
   });
 });

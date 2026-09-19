@@ -14,6 +14,7 @@ export {
   normalizeText,
   readEmbedMetadata,
   AURITUS_BREAK_MARKER,
+  AURITUS_PAUSE_MARKER,
   AURITUS_VOICE_RESET_MARKER,
   formatVoiceMarker,
 } from "./generator/index.js";
