@@ -8,12 +8,32 @@ import wave
 from typing import Any
 
 from auritus.tts.base import TTSBackend
-from auritus.tts.breaks import parse_voiced_segments
+from auritus.tts.breaks import (
+    AURITUS_BREAK_MARKER,
+    AURITUS_PAUSE_MARKER,
+    DEFAULT_PAUSE_SILENCE_SECONDS,
+    parse_voiced_segments,
+    split_on_breaks,
+    split_on_pauses,
+)
+
+__all__ = [
+    "AURITUS_BREAK_MARKER",
+    "AURITUS_PAUSE_MARKER",
+    "QwenBackend",
+    "resolve_qwen_voice",
+    "parse_voiced_segments",
+    "split_on_breaks",
+    "split_on_pauses",
+]
 
 QWEN_DEFAULT_VOICE = "Ryan"
 QWEN_MLX_MODEL = "mlx-community/Qwen3-TTS-12Hz-0.6B-CustomVoice-8bit"
 QWEN_TORCH_MODEL = "Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice"
 LEGACY_QWEN_VOICES = frozenset({"default", "Chelsie"})
+
+BREAK_SILENCE_SECONDS = 0.4
+PAUSE_SILENCE_SECONDS = DEFAULT_PAUSE_SILENCE_SECONDS
 
 
 def resolve_qwen_voice(meta: dict[str, Any]) -> str:
@@ -85,16 +105,23 @@ class QwenBackend(TTSBackend):
             )
         default_voice = resolve_qwen_voice(meta)
         sample_rate = 24000
-        silence = np.zeros(int(sample_rate * 0.4), dtype=np.float32)
+        silence = np.zeros(int(sample_rate * BREAK_SILENCE_SECONDS), dtype=np.float32)
+        pause_silence = np.zeros(
+            int(sample_rate * PAUSE_SILENCE_SECONDS), dtype=np.float32
+        )
         all_chunks: list[np.ndarray] = []
         for i, (block_text, block_voice) in enumerate(
             parse_voiced_segments(text, default_voice)
         ):
             if i > 0:
                 all_chunks.append(silence)
-            gen = QwenBackend._model.generate(block_text, voice=block_voice)
-            for result in gen:
-                all_chunks.append(np.array(result.audio).reshape(-1))
+            pause_segments = split_on_pauses(block_text)
+            for p_idx, pause_text in enumerate(pause_segments):
+                if p_idx > 0:
+                    all_chunks.append(pause_silence)
+                gen = QwenBackend._model.generate(pause_text, voice=block_voice)
+                for result in gen:
+                    all_chunks.append(np.array(result.audio).reshape(-1))
         if not all_chunks:
             raise ValueError("Qwen generated no audio segments")
         audio_np = np.concatenate(all_chunks) if len(all_chunks) > 1 else all_chunks[0]
@@ -121,20 +148,25 @@ class QwenBackend(TTSBackend):
         default_voice = resolve_qwen_voice(meta)
         all_samples: list[float] = []
         sample_rate = 24000
-        silence = [0.0] * int(sample_rate * 0.4)
+        silence = [0.0] * int(sample_rate * BREAK_SILENCE_SECONDS)
+        pause_silence = [0.0] * int(sample_rate * PAUSE_SILENCE_SECONDS)
         for i, (block_text, block_voice) in enumerate(
             parse_voiced_segments(text, default_voice)
         ):
             if i > 0:
                 all_samples.extend(silence)
-            wavs, sr = QwenBackend._model.generate_custom_voice(
-                text=block_text,
-                speaker=block_voice,
-                language="English",
-            )
-            sample_rate = int(sr)
-            audio_np = np.array(wavs[0]).reshape(-1)
-            all_samples.extend(audio_np.tolist())
+            pause_segments = split_on_pauses(block_text)
+            for p_idx, pause_text in enumerate(pause_segments):
+                if p_idx > 0:
+                    all_samples.extend(pause_silence)
+                wavs, sr = QwenBackend._model.generate_custom_voice(
+                    text=pause_text,
+                    speaker=block_voice,
+                    language="English",
+                )
+                sample_rate = int(sr)
+                audio_np = np.array(wavs[0]).reshape(-1)
+                all_samples.extend(audio_np.tolist())
         if not all_samples:
             raise ValueError("Qwen generated no audio segments")
         return _to_wav(all_samples, sample_rate=sample_rate)

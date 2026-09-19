@@ -88,6 +88,7 @@ var Auritus = (() => {
 
   // src/generator/hash.ts
   var AURITUS_BREAK_MARKER = "[[auritus:break]]";
+  var AURITUS_PAUSE_MARKER = "[[auritus:pause]]";
   var AURITUS_VOICE_RESET_MARKER = "[[auritus:voice:reset]]";
   function formatVoiceMarker(voiceId) {
     return `[[auritus:voice:${voiceId.trim()}]]`;
@@ -183,6 +184,9 @@ var Auritus = (() => {
       }
       if (el.hasAttribute("data-auritus-break")) {
         parts.push(AURITUS_BREAK_MARKER);
+      }
+      if (el.hasAttribute("data-auritus-pause")) {
+        parts.push(AURITUS_PAUSE_MARKER);
       }
       for (const child of el.childNodes) {
         walkNode(child, ignoreSelectors, parts);

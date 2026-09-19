@@ -1,5 +1,6 @@
 import {
   AURITUS_BREAK_MARKER,
+  AURITUS_PAUSE_MARKER,
   AURITUS_VOICE_RESET_MARKER,
   formatVoiceMarker,
   normalizeText,
@@ -7,6 +8,7 @@ import {
 
 export {
   AURITUS_BREAK_MARKER,
+  AURITUS_PAUSE_MARKER,
   AURITUS_VOICE_RESET_MARKER,
   formatVoiceMarker,
   normalizeText,
@@ -114,6 +116,10 @@ function walkNode(
 
     if (el.hasAttribute("data-auritus-break")) {
       parts.push(AURITUS_BREAK_MARKER);
+    }
+
+    if (el.hasAttribute("data-auritus-pause")) {
+      parts.push(AURITUS_PAUSE_MARKER);
     }
 
     for (const child of el.childNodes) {

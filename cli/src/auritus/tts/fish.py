@@ -13,13 +13,21 @@ import wave
 from typing import Any
 
 from auritus.tts.base import TTSBackend
-from auritus.tts.breaks import AURITUS_BREAK_MARKER, split_on_breaks
+from auritus.tts.breaks import (
+    AURITUS_BREAK_MARKER,
+    AURITUS_PAUSE_MARKER,
+    DEFAULT_PAUSE_SILENCE_SECONDS,
+    split_on_breaks,
+    split_on_pauses,
+)
 
 __all__ = [
     "AURITUS_BREAK_MARKER",
+    "AURITUS_PAUSE_MARKER",
     "FishBackend",
     "resolve_fish_voice",
     "split_on_breaks",
+    "split_on_pauses",
 ]
 
 FISH_DEFAULT_VOICE = "narrator"
@@ -31,6 +39,7 @@ FISH_MLX_MODEL = "mlx-community/fishaudio-s2-pro-8bit-mlx"
 # split live in tts.breaks, shared by every backend -- only the gap length
 # is a per-backend tuning choice.
 BREAK_SILENCE_SECONDS = 0.4
+PAUSE_SILENCE_SECONDS = DEFAULT_PAUSE_SILENCE_SECONDS
 
 
 def resolve_fish_voice(meta: dict[str, Any]) -> str:
@@ -166,19 +175,26 @@ class FishBackend(TTSBackend):
         blocks = split_on_breaks(text)
         all_chunks: list[np.ndarray] = []
         silence = np.zeros(int(sample_rate * BREAK_SILENCE_SECONDS), dtype=np.float32)
+        pause_silence = np.zeros(
+            int(sample_rate * PAUSE_SILENCE_SECONDS), dtype=np.float32
+        )
 
         for i, block in enumerate(blocks):
             if i > 0:
                 all_chunks.append(silence)
-            gen_kwargs: dict[str, Any] = {}
-            if ref_mx is not None:
-                gen_kwargs["ref_audio"] = ref_mx
-                if ref_text:
-                    gen_kwargs["ref_text"] = ref_text
-            gen = FishBackend._model.generate(block, **gen_kwargs)
-            block_chunks = [np.array(result.audio) for result in gen]
-            if block_chunks:
-                all_chunks.extend(block_chunks)
+            pause_segments = split_on_pauses(block)
+            for p_idx, pause_text in enumerate(pause_segments):
+                if p_idx > 0:
+                    all_chunks.append(pause_silence)
+                gen_kwargs: dict[str, Any] = {}
+                if ref_mx is not None:
+                    gen_kwargs["ref_audio"] = ref_mx
+                    if ref_text:
+                        gen_kwargs["ref_text"] = ref_text
+                gen = FishBackend._model.generate(pause_text, **gen_kwargs)
+                block_chunks = [np.array(result.audio) for result in gen]
+                if block_chunks:
+                    all_chunks.extend(block_chunks)
 
         if not all_chunks:
             raise ValueError("Fish Speech generated no audio segments")
@@ -321,29 +337,36 @@ class FishBackend(TTSBackend):
         all_chunks: list[np.ndarray] = []
         sample_rate = 44100
         silence = np.zeros(int(sample_rate * BREAK_SILENCE_SECONDS), dtype=np.float32)
+        pause_silence = np.zeros(
+            int(sample_rate * PAUSE_SILENCE_SECONDS), dtype=np.float32
+        )
 
         for i, block in enumerate(blocks):
             if i > 0:
                 all_chunks.append(silence)
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-            req = ServeTTSRequest(
-                text=block,
-                references=references,
-                streaming=False,
-                max_new_tokens=1024,
-            )
-            block_audio = None
-            for res in FishBackend._model.inference(req):
-                if res.code == "final":
-                    sr, block_audio = res.audio
-                    sample_rate = sr
-                elif res.code == "error":
-                    raise res.error
-            if block_audio is not None and len(block_audio) > 0:
-                all_chunks.append(block_audio)
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
+            pause_segments = split_on_pauses(block)
+            for p_idx, pause_text in enumerate(pause_segments):
+                if p_idx > 0:
+                    all_chunks.append(pause_silence)
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                req = ServeTTSRequest(
+                    text=pause_text,
+                    references=references,
+                    streaming=False,
+                    max_new_tokens=1024,
+                )
+                block_audio = None
+                for res in FishBackend._model.inference(req):
+                    if res.code == "final":
+                        sr, block_audio = res.audio
+                        sample_rate = sr
+                    elif res.code == "error":
+                        raise res.error
+                if block_audio is not None and len(block_audio) > 0:
+                    all_chunks.append(block_audio)
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
 
         if not all_chunks:
             raise ValueError("Fish Speech generated no audio segments")

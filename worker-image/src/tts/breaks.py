@@ -1,14 +1,15 @@
-"""Shared block-boundary pause marker for TTS backends.
+"""Shared block-boundary and punctuation pause markers for TTS backends.
 
-Must match embed/src/generator/hash.ts AURITUS_BREAK_MARKER exactly. The
-embed generator inserts this after headings, paragraphs, list items, and
-blockquotes automatically (plus wherever a page explicitly marks
-data-auritus-break). Each backend splits on it and inserts its own real
-silence gap between blocks -- how long that gap is stays a per-backend
-choice (BREAK_SILENCE_SECONDS in each backend module, not here), since
-different models and voices may reasonably want different pacing. What
-must not drift between backends is the marker string and how it's split,
-so those two live in exactly one place.
+Must match embed/src/generator/hash.ts AURITUS_BREAK_MARKER and
+AURITUS_PAUSE_MARKER exactly. The embed generator inserts break markers
+after headings, paragraphs, list items, and blockquotes automatically (plus
+wherever a page explicitly marks data-auritus-break), and pause markers
+wherever data-auritus-pause is marked.
+
+Punctuation hints such as em-dashes, quotation dashes, double hyphens,
+spaced en-dashes, and ellipses are split via split_on_pauses so each
+backend can insert a brief, natural hesitation gap (PAUSE_SILENCE_SECONDS)
+between phrases, distinct from the longer paragraph breath (BREAK_SILENCE_SECONDS).
 """
 
 from __future__ import annotations
@@ -16,9 +17,27 @@ from __future__ import annotations
 import re
 
 AURITUS_BREAK_MARKER = "[[auritus:break]]"
+AURITUS_PAUSE_MARKER = "[[auritus:pause]]"
 AURITUS_VOICE_RESET_MARKER = "[[auritus:voice:reset]]"
-_VOICE_TOKEN_REGEX = re.compile(r"(\[\[auritus:voice:[^\]]+\]\]|\[\[auritus:break\]\])")
+
+DEFAULT_PAUSE_SILENCE_SECONDS = 0.2
+
+_VOICE_TOKEN_REGEX = re.compile(
+    r"(\[\[auritus:voice:[^\]]+\]\]|\[\[auritus:break\]\]|\[\[auritus:pause\]\])"
+)
 _VOICE_MARKER_STRIP_REGEX = re.compile(r"\[\[auritus:voice:[^\]]+\]\]")
+
+_PAUSE_SPLIT_REGEX = re.compile(
+    r"\s*(?:"
+    r"\[\[auritus:pause\]\]"
+    r"|—"
+    r"|―"
+    r"|(?<=\s)–(?=\s)"
+    r"|--"
+    r"|…"
+    r"|\.{3,}"
+    r")\s*"
+)
 
 
 def split_on_breaks(text: str) -> list[str]:
@@ -33,6 +52,21 @@ def split_on_breaks(text: str) -> list[str]:
     cleaned = _VOICE_MARKER_STRIP_REGEX.sub("", text)
     segments = [s.strip() for s in cleaned.split(AURITUS_BREAK_MARKER)]
     return [s for s in segments if s]
+
+
+def split_on_pauses(text: str) -> list[str]:
+    """Split speech text into phrases on em-dashes and pause punctuation hints.
+
+    Strips pause markers, em-dashes, and trims whitespace so backends can
+    insert a brief silence gap between phrases without synthesizing pause
+    markers or dashes phonetically.
+
+    :param text: Input speech string within a block.
+    :returns: Non-empty, trimmed speech phrases in original order.
+    """
+    cleaned = _VOICE_MARKER_STRIP_REGEX.sub("", text)
+    parts = _PAUSE_SPLIT_REGEX.split(cleaned)
+    return [p.strip() for p in parts if p.strip()]
 
 
 def parse_voiced_segments(text: str, default_voice: str) -> list[tuple[str, str]]:

@@ -8,9 +8,28 @@ import wave
 from typing import Any
 
 from tts.base import TTSBackend
+from tts.breaks import (
+    AURITUS_BREAK_MARKER,
+    AURITUS_PAUSE_MARKER,
+    DEFAULT_PAUSE_SILENCE_SECONDS,
+    split_on_breaks,
+    split_on_pauses,
+)
+
+__all__ = [
+    "AURITUS_BREAK_MARKER",
+    "AURITUS_PAUSE_MARKER",
+    "F5Backend",
+    "resolve_f5_voice",
+    "split_on_breaks",
+    "split_on_pauses",
+]
 
 F5_DEFAULT_VOICE = "default"
 F5_MLX_MODEL = "mlx-community/F5-TTS"
+
+BREAK_SILENCE_SECONDS = 0.4
+PAUSE_SILENCE_SECONDS = DEFAULT_PAUSE_SILENCE_SECONDS
 
 
 def resolve_f5_voice(meta: dict[str, Any]) -> str:
@@ -81,7 +100,6 @@ class F5Backend(TTSBackend):
         import re
         import tempfile
 
-        from tts.breaks import split_on_breaks
         from tts.voices import (
             resolve_reference_audio,
             resolve_reference_text,
@@ -141,8 +159,13 @@ class F5Backend(TTSBackend):
                 blocks = [text]
 
             frames_per_sec = 24000 / 256
-            break_silence = np.zeros(int(sample_rate * 0.4), dtype=np.float32)
+            break_silence = np.zeros(
+                int(sample_rate * BREAK_SILENCE_SECONDS), dtype=np.float32
+            )
             sentence_silence = np.zeros(int(sample_rate * 0.15), dtype=np.float32)
+            pause_silence = np.zeros(
+                int(sample_rate * PAUSE_SILENCE_SECONDS), dtype=np.float32
+            )
             all_waves: list[np.ndarray] = []
 
             for b_idx, block in enumerate(blocks):
@@ -154,22 +177,26 @@ class F5Backend(TTSBackend):
                 for s_idx, sentence in enumerate(sentences):
                     if s_idx > 0:
                         all_waves.append(sentence_silence)
-                    dur = int(
-                        estimated_duration(audio_mx, ref_text, sentence, 1.0)
-                        * frames_per_sec
-                    )
-                    pinyin = convert_char_to_pinyin([ref_text + " " + sentence])
-                    wave, _ = F5Backend._model.sample(
-                        mx.expand_dims(audio_mx, axis=0),
-                        text=pinyin,
-                        duration=dur,
-                        steps=8,
-                    )
-                    wave = wave[audio_mx.shape[0] :]
-                    mx.eval(wave)
-                    all_waves.append(np.array(wave))
-                    if hasattr(mx, "clear_cache"):
-                        mx.clear_cache()
+                    pause_segments = split_on_pauses(sentence)
+                    for p_idx, pause_text in enumerate(pause_segments):
+                        if p_idx > 0:
+                            all_waves.append(pause_silence)
+                        dur = int(
+                            estimated_duration(audio_mx, ref_text, pause_text, 1.0)
+                            * frames_per_sec
+                        )
+                        pinyin = convert_char_to_pinyin([ref_text + " " + pause_text])
+                        wave, _ = F5Backend._model.sample(
+                            mx.expand_dims(audio_mx, axis=0),
+                            text=pinyin,
+                            duration=dur,
+                            steps=8,
+                        )
+                        wave = wave[audio_mx.shape[0] :]
+                        mx.eval(wave)
+                        all_waves.append(np.array(wave))
+                        if hasattr(mx, "clear_cache"):
+                            mx.clear_cache()
 
             if not all_waves:
                 raise ValueError("F5-TTS generated no audio")
@@ -252,14 +279,31 @@ class F5Backend(TTSBackend):
                             )
                 except Exception:
                     pass
-        infer_kwargs: dict[str, Any] = {"gen_text": text}
-        if ref_file:
-            infer_kwargs["ref_file"] = ref_file
-        if ref_text:
-            infer_kwargs["ref_text"] = ref_text
-        wav, sr, _ = F5Backend._model.infer(**infer_kwargs)
-        audio_np = np.array(wav).reshape(-1)
-        return _to_wav(audio_np, sample_rate=int(sr) if sr else 24000)
+        blocks = split_on_breaks(text)
+        all_waves: list[np.ndarray] = []
+        break_silence = np.zeros(int(24000 * BREAK_SILENCE_SECONDS), dtype=np.float32)
+        pause_silence = np.zeros(int(24000 * PAUSE_SILENCE_SECONDS), dtype=np.float32)
+        out_sr = 24000
+        for b_idx, block in enumerate(blocks):
+            if b_idx > 0:
+                all_waves.append(break_silence)
+            pause_segments = split_on_pauses(block)
+            for p_idx, pause_text in enumerate(pause_segments):
+                if p_idx > 0:
+                    all_waves.append(pause_silence)
+                infer_kwargs: dict[str, Any] = {"gen_text": pause_text}
+                if ref_file:
+                    infer_kwargs["ref_file"] = ref_file
+                if ref_text:
+                    infer_kwargs["ref_text"] = ref_text
+                wav, sr, _ = F5Backend._model.infer(**infer_kwargs)
+                if sr:
+                    out_sr = int(sr)
+                all_waves.append(np.array(wav).reshape(-1))
+        if not all_waves:
+            raise ValueError("F5-TTS generated no audio")
+        audio_np = np.concatenate(all_waves) if len(all_waves) > 1 else all_waves[0]
+        return _to_wav(audio_np, sample_rate=out_sr)
 
 
 def _to_wav(samples: list | Any, sample_rate: int = 24000) -> bytes:

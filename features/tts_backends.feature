@@ -102,3 +102,29 @@ Feature: Pluggable TTS backends
     Given an F5 job with voice_id "steve"
     When the F5 voice is resolved for synthesis
     Then the F5 voice_id is "steve"
+
+  Scenario: Text with em-dashes is segmented on pauses
+    Given a speech text "I was lucky — I found what I loved."
+    When the speech text is segmented on pauses
+    Then the resulting pause segments are:
+      | segment               |
+      | I was lucky           |
+      | I found what I loved. |
+
+  Scenario: Text with multiple pause punctuation hints is segmented
+    Given a speech text "We created — the Macintosh — a year earlier... and then I got fired."
+    When the speech text is segmented on pauses
+    Then the resulting pause segments are:
+      | segment               |
+      | We created            |
+      | the Macintosh         |
+      | a year earlier        |
+      | and then I got fired. |
+
+  Scenario: Explicit pause marker is segmented without phonetic leakage
+    Given a speech text "Hello [[auritus:pause]] world"
+    When the speech text is segmented on pauses
+    Then the resulting pause segments are:
+      | segment |
+      | Hello   |
+      | world   |

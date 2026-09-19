@@ -10,25 +10,26 @@ from typing import Any
 from tts.base import TTSBackend
 from tts.breaks import (
     AURITUS_BREAK_MARKER,
+    AURITUS_PAUSE_MARKER,
+    DEFAULT_PAUSE_SILENCE_SECONDS,
     parse_voiced_segments,
     split_on_breaks,
+    split_on_pauses,
 )
 
 __all__ = [
     "AURITUS_BREAK_MARKER",
+    "AURITUS_PAUSE_MARKER",
     "KokoroBackend",
     "parse_voiced_segments",
     "resolve_kokoro_voice",
     "split_on_breaks",
+    "split_on_pauses",
 ]
 
 KOKORO_DEFAULT_VOICE = "af_heart"
-
-# How long a real silence gap is between AURITUS_BREAK_MARKER-delimited
-# blocks for this specific backend/voice. The marker itself and how it's
-# split live in tts.breaks, shared by every backend -- only the gap length
-# is a per-backend tuning choice.
 BREAK_SILENCE_SECONDS = 0.5
+PAUSE_SILENCE_SECONDS = DEFAULT_PAUSE_SILENCE_SECONDS
 
 
 def resolve_kokoro_voice(meta: dict[str, Any]) -> str:
@@ -118,14 +119,25 @@ class KokoroBackend(TTSBackend):
         default_voice = resolve_kokoro_voice(meta)
         sample_rate = 24000
         block_audios: list[np.ndarray] = []
+        pause_gap = np.zeros(int(sample_rate * PAUSE_SILENCE_SECONDS), dtype=np.float32)
         for block_text, block_voice in parse_voiced_segments(text, default_voice):
-            gen = KokoroBackend._model.generate(block_text, voice=block_voice)
-            segments = [np.array(result.audio) for result in gen]
-            if not segments:
-                continue
-            block_audios.append(
-                np.concatenate(segments) if len(segments) > 1 else segments[0]
-            )
+            pause_segments = split_on_pauses(block_text)
+            block_parts: list[np.ndarray] = []
+            for p_idx, pause_text in enumerate(pause_segments):
+                if p_idx > 0:
+                    block_parts.append(pause_gap)
+                gen = KokoroBackend._model.generate(pause_text, voice=block_voice)
+                segments = [np.array(result.audio) for result in gen]
+                if segments:
+                    block_parts.append(
+                        np.concatenate(segments) if len(segments) > 1 else segments[0]
+                    )
+            if block_parts:
+                block_audios.append(
+                    np.concatenate(block_parts)
+                    if len(block_parts) > 1
+                    else block_parts[0]
+                )
         if not block_audios:
             raise ValueError("Kokoro generated no audio segments")
         audio_np = _join_with_silence(block_audios, sample_rate)
@@ -152,21 +164,24 @@ class KokoroBackend(TTSBackend):
             KokoroBackend._model = KPipeline(lang_code="a", device=device)
         default_voice = resolve_kokoro_voice(meta)
         sample_rate = 24000
-        silence = [0.0] * int(sample_rate * BREAK_SILENCE_SECONDS)
+        block_silence = [0.0] * int(sample_rate * BREAK_SILENCE_SECONDS)
+        pause_silence = [0.0] * int(sample_rate * PAUSE_SILENCE_SECONDS)
         audio_list: list[float] = []
         for block_text, block_voice in parse_voiced_segments(text, default_voice):
-            results = list(KokoroBackend._model(block_text, voice=block_voice))
-            if not results:
-                continue
             if audio_list:
-                audio_list.extend(silence)
-            for result in results:
-                audio_tensor = result.audio
-                audio_list.extend(
-                    audio_tensor.tolist()
-                    if hasattr(audio_tensor, "tolist")
-                    else list(audio_tensor)
-                )
+                audio_list.extend(block_silence)
+            pause_segments = split_on_pauses(block_text)
+            for p_idx, pause_text in enumerate(pause_segments):
+                if p_idx > 0:
+                    audio_list.extend(pause_silence)
+                results = list(KokoroBackend._model(pause_text, voice=block_voice))
+                for result in results:
+                    audio_tensor = result.audio
+                    audio_list.extend(
+                        audio_tensor.tolist()
+                        if hasattr(audio_tensor, "tolist")
+                        else list(audio_tensor)
+                    )
         if not audio_list:
             raise ValueError("Kokoro generated no audio segments")
         return _to_wav(audio_list, sample_rate=sample_rate)
