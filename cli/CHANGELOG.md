@@ -2,6 +2,43 @@
 
 <!-- version list -->
 
+## v0.23.0 (2026-09-19)
+
+### Bug Fixes
+
+- **tts**: Address PR review findings on voice resolution and cuda routing
+  ([`02852df`](https://github.com/AnthusAI/Auritus/commit/02852df707a09cf70d5d9b8de76b2f09a7457aba))
+
+### Chores
+
+- Close auritus-13b752 (wire serious voice reference audio into cloning models)
+  ([`a20283b`](https://github.com/AnthusAI/Auritus/commit/a20283b0f9394208d2298d7ce7213ccd2bbfc53b))
+
+- **board**: Close pricing card hrule alignment chore
+  ([`479f42d`](https://github.com/AnthusAI/Auritus/commit/479f42d2935abe47b4591877080b4a9553e0fd28))
+
+- **board**: Track pricing card hrule alignment in progress
+  ([`50e0215`](https://github.com/AnthusAI/Auritus/commit/50e02157966b063b3ab00b02d0e68c98833ba17f))
+
+- **kanbus**: Start auritus-13b752 wire serious voice into cloning models
+  ([`a21fd5f`](https://github.com/AnthusAI/Auritus/commit/a21fd5f2fc90b687fe95b5d6bf0633331253fdbd))
+
+### Code Style
+
+- **site**: Align pricing card dividing hrules with css subgrid
+  ([#52](https://github.com/AnthusAI/Auritus/pull/52),
+  [`58f99ca`](https://github.com/AnthusAI/Auritus/commit/58f99ca56f45e5e744535ae17db74d9a70dca4b0))
+
+### Features
+
+- **scripts**: Add utility to download Steve Jobs reference audio and define voice asset conventions
+  ([#53](https://github.com/AnthusAI/Auritus/pull/53),
+  [`9e92943`](https://github.com/AnthusAI/Auritus/commit/9e92943147f3d3ab41f2fb19c9daa476e61005c1))
+
+- **tts**: Wire serious voice reference audio into chatterbox, f5, and fish examples
+  ([`33bea16`](https://github.com/AnthusAI/Auritus/commit/33bea161c4006bd7be95d6b9c2cf977fff3642cd))
+
+
 ## v0.22.0 (2026-09-18)
 
 ### Bug Fixes
