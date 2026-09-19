@@ -686,7 +686,7 @@ class BackendStack(Stack):
         worker_image_tag = self.node.try_get_context("worker_image_tag") or "latest"
         worker_image_uri = f"{worker_repo.repository_uri}:{worker_image_tag}"
 
-        vpc = ec2.Vpc(self, "AuritusVpc", max_azs=2, nat_gateways=1)
+        vpc = ec2.Vpc(self, "AuritusVpc", max_azs=2, nat_gateways=0)
         batch_sg = ec2.SecurityGroup(self, "BatchSg", vpc=vpc, allow_all_outbound=True)
         instance_profile = self._batch_instance_profile()
 
@@ -715,7 +715,7 @@ class BackendStack(Stack):
                 desiredv_cpus=0,
                 instance_types=["g4dn.xlarge"],
                 allocation_strategy="BEST_FIT_PROGRESSIVE",
-                subnets=[subnet.subnet_id for subnet in vpc.private_subnets],
+                subnets=[subnet.subnet_id for subnet in vpc.public_subnets],
                 security_group_ids=[batch_sg.security_group_id],
                 instance_role=instance_profile.attr_arn,
                 launch_template=batch.CfnComputeEnvironment.LaunchTemplateSpecificationProperty(
