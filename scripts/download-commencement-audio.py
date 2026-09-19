@@ -188,7 +188,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--clip-duration",
         type=float,
         default=DEFAULT_CLIP_DURATION,
-        help="Duration in seconds for reference clip extraction (default: 12.0).",
+        help="Duration in seconds for reference clip extraction (default: 10.5).",
     )
     parser.add_argument(
         "--full-wav",
