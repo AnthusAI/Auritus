@@ -22,6 +22,7 @@ var Auritus = (() => {
   var src_exports = {};
   __export(src_exports, {
     AURITUS_BREAK_MARKER: () => AURITUS_BREAK_MARKER,
+    AURITUS_PAUSE_MARKER: () => AURITUS_PAUSE_MARKER,
     AURITUS_VOICE_RESET_MARKER: () => AURITUS_VOICE_RESET_MARKER,
     AuritusApiClient: () => AuritusApiClient,
     boot: () => boot,

@@ -78,3 +78,25 @@ def test_split_on_pauses_empty_and_plain() -> None:
 def test_default_pause_silence_duration() -> None:
     """Verify default pause silence duration is configured appropriately."""
     assert 0.15 <= DEFAULT_PAUSE_SILENCE_SECONDS <= 0.3
+
+
+def test_parse_voiced_segments_preserves_pauses() -> None:
+    """Verify parse_voiced_segments keeps pause markers inside segment text."""
+    text = f"Hello {AURITUS_PAUSE_MARKER} world"
+    segments = parse_voiced_segments(text, "af_heart")
+    assert segments == [("Hello [[auritus:pause]] world", "af_heart")]
+
+
+def test_parse_voiced_segments_with_multiple_voices_and_pauses() -> None:
+    """Verify parse_voiced_segments switches voices while keeping intra-block pauses."""
+    text = (
+        f"Narrator {AURITUS_PAUSE_MARKER} speaking."
+        f"[[auritus:voice:af_bella]]Character — responds."
+        f"[[auritus:voice:reset]]Narrator resumes."
+    )
+    segments = parse_voiced_segments(text, "af_heart")
+    assert segments == [
+        ("Narrator [[auritus:pause]] speaking.", "af_heart"),
+        ("Character — responds.", "af_bella"),
+        ("Narrator resumes.", "af_heart"),
+    ]

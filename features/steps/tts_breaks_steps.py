@@ -39,6 +39,6 @@ def step_then_pause_segments_are(context) -> None:
     :param context: Behave test execution context containing context.table.
     """
     expected = [row["segment"] for row in context.table]
-    assert context.pause_segments == expected, (
-        f"Expected {expected}, got {context.pause_segments}"
-    )
+    assert (
+        context.pause_segments == expected
+    ), f"Expected {expected}, got {context.pause_segments}"
