@@ -10,9 +10,22 @@
   "parent": "auritus-9ffcc2be-a4e7-48e4-8c85-22103d560d7b",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "9b1ba839-bb91-4a22-a6ce-9a2cb6fb932e",
+      "author": "home",
+      "text": "Finding while verifying A1: `tts_backends.feature` and `tts_pluggable.feature` both have an untagged 'Job requests the Higgs backend' scenario that calls the real worker-image Higgs `generate`. In CI it passes only because of the silent test-tone fallback. On a Mac with the model libraries installed it loads the 4B model and hung past 20 minutes. Once the fallback is removed, tag those scenarios `@integration` (or point them at the fake backend).",
+      "created_at": "2026-09-26T16:22:29.863790Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Opus 5.5",
+        "name": "auritus-voice-integration"
+      }
+    }
+  ],
   "created_at": "2026-09-26T15:20:03.868572Z",
-  "updated_at": "2026-09-26T15:20:03.868602Z",
+  "updated_at": "2026-09-26T16:22:29.863810Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
@@ -21,5 +34,8 @@
   },
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
 }
