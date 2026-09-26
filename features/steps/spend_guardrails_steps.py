@@ -135,3 +135,80 @@ def step_no_fallback(context) -> None:
 @then('the Batch job queue state is "{state}"')
 def step_queue_state(context, state: str) -> None:
     assert context.batch_queue_state == state
+
+
+def _fallback_definition() -> dict:
+    """Synthesize the backend stack and return the fallback state machine."""
+    cdk_path = str(Path(__file__).resolve().parents[2] / "cdk")
+    if cdk_path not in sys.path:
+        sys.path.insert(0, cdk_path)
+    from aws_cdk import App, Environment
+    from aws_cdk.assertions import Template
+    from stacks.backend import BackendStack
+
+    stack = BackendStack(
+        App(),
+        "FallbackSpecBackend",
+        env=Environment(account="123456789012", region="us-east-1"),
+    )
+    machines = Template.from_stack(stack).find_resources(
+        "AWS::StepFunctions::StateMachine"
+    )
+    for machine in machines.values():
+        parts = machine["Properties"]["DefinitionString"]["Fn::Join"][1]
+        definition = json.loads(
+            "".join(part if isinstance(part, str) else "TOKEN" for part in parts)
+        )
+        if "SubmitGpuJob" in definition["States"]:
+            return definition
+    raise AssertionError("no state machine submits the Batch GPU job")
+
+
+@given("the deployed Batch fallback state machine")
+def step_fallback_machine(context) -> None:
+    context.fallback_states = _fallback_definition()["States"]
+
+
+@when("the fallback's Batch job for a pending job fails or is refused")
+def step_submit_refused(context) -> None:
+    catchers = context.fallback_states["SubmitGpuJob"].get("Catch") or []
+    handler = next(
+        (catch for catch in catchers if "States.ALL" in catch["ErrorEquals"]), None
+    )
+    assert handler, "SubmitGpuJob has no catch-all error handler"
+    context.submit_failure_state = context.fallback_states[handler["Next"]]
+
+
+@then('the fallback marks the job failed with error "{error_message}"')
+def step_marks_failed(context, error_message: str) -> None:
+    state = context.submit_failure_state
+    assert state["Resource"].endswith(":dynamodb:updateItem"), state
+    parameters = state["Parameters"]
+    assert parameters["Key"]["content_hash"]["S.$"] == "$.content_hash"
+    names = parameters["ExpressionAttributeNames"]
+    values = parameters["ExpressionAttributeValues"]
+    assignments = dict(
+        clause.strip().split(" = ")
+        for clause in parameters["UpdateExpression"].removeprefix("SET ").split(",")
+    )
+    status_placeholder = next(key for key, name in names.items() if name == "status")
+    assert values[assignments[status_placeholder]] == {"S": "failed"}
+    assert values[assignments["error_message"]] == {"S": error_message}
+    assert "failed_at" in assignments
+    assert "updated_at" in assignments
+
+
+@then("the fallback only marks the job failed while it is still pending")
+def step_marks_failed_only_pending(context) -> None:
+    parameters = context.submit_failure_state["Parameters"]
+    placeholder, value = parameters["ConditionExpression"].split(" = ")
+    assert parameters["ExpressionAttributeNames"][placeholder] == "status"
+    assert parameters["ExpressionAttributeValues"][value] == {"S": "pending"}
+
+
+@then("the fallback execution ends as failed")
+def step_execution_fails(context) -> None:
+    state = context.submit_failure_state
+    assert context.fallback_states[state["Next"]]["Type"] == "Fail"
+    for catch in state.get("Catch") or []:
+        assert context.fallback_states[catch["Next"]]["Type"] == "Fail"
