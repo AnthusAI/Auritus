@@ -11,7 +11,7 @@ import struct
 import wave
 from typing import Any
 
-from auritus.tts.base import TTSBackend
+from auritus.tts.base import BackendUnavailable, TTSBackend
 from auritus.tts.breaks import (
     AURITUS_BREAK_MARKER,
     AURITUS_PAUSE_MARKER,
@@ -95,7 +95,11 @@ class HiggsBackend(TTSBackend):
 
         if HiggsBackend._is_mlx:
             return self._generate_mlx(text, meta)
-        return self._generate_fallback(text, meta)
+        raise BackendUnavailable(
+            self.name,
+            "it needs Apple Silicon (MLX) here; Linux/CUDA generation runs in the "
+            "worker image",
+        )
 
     def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
         """Generate via mlx-audio (Apple Silicon).
@@ -136,23 +140,6 @@ class HiggsBackend(TTSBackend):
             raise ValueError("Higgs Audio v3 generated no audio segments")
         audio_np = np.concatenate(all_chunks) if len(all_chunks) > 1 else all_chunks[0]
         return _to_wav(audio_np, sample_rate=sample_rate)
-
-    def _generate_fallback(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate audio on non-Apple platforms or fallback.
-
-        :param text: TTS input text.
-        :param meta: Job metadata.
-        :returns: WAV audio bytes.
-        """
-        import math
-
-        sample_rate = 24000
-        duration_ms = max(500, min(len(text) * 60, 5000))
-        frames = int(sample_rate * (duration_ms / 1000.0))
-        samples = [
-            0.2 * math.sin(2 * math.pi * 440.0 * i / sample_rate) for i in range(frames)
-        ]
-        return _to_wav(samples, sample_rate=sample_rate)
 
 
 def _to_wav(samples: list | Any, sample_rate: int = 24000) -> bytes:
