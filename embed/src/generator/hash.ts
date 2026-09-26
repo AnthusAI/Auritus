@@ -19,27 +19,23 @@ export function normalizeText(text: string): string {
   return text.normalize("NFC").replace(/\s+/g, " ").trim();
 }
 
-const FNV_OFFSET_BASIS = 0x811c9dc5;
-const FNV_PRIME = 0x01000193;
-
-function fnv1a32(input: string): string {
-  let hash = FNV_OFFSET_BASIS;
-  for (let i = 0; i < input.length; i++) {
-    hash ^= input.charCodeAt(i);
-    hash = Math.imul(hash, FNV_PRIME);
-  }
-  return (hash >>> 0).toString(16).padStart(8, "0");
-}
-
 /**
- * Stable content hash from normalized text, voice, and TTS backend.
+ * Canonical content hash: SHA-256 (hex) of normalized text, voice ID, and TTS
+ * backend joined by NUL characters. The API computes the same value and
+ * rejects job creation whose hash does not match.
  * Name and byline are cosmetics and must not affect the hash.
  */
-export function computeContentHash(
+export async function computeContentHash(
   text: string,
   voiceId: string,
   ttsBackend: string,
-): string {
+): Promise<string> {
   const payload = `${normalizeText(text)}\0${voiceId}\0${ttsBackend}`;
-  return fnv1a32(payload);
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(payload),
+  );
+  return Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
 }

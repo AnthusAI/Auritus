@@ -130,7 +130,9 @@ test("landing page posts the Kokoro product pitch", async ({ page }) => {
   const body = (await createJobRequest).postDataJSON() as JobPostBody;
   expect(body.tts_backend).toBe("kokoro");
   expect(body.voice_id).toBe("af_heart");
-  expect(body.content_hash).toBe("4304204c");
+  expect(body.content_hash).toBe(
+    "0ef513ba5a4593d25a74fd43546d73a6d28df71be3ee45cc0ded31c0bf6d0254",
+  );
   expect(body.text).not.toContain("Press play");
   expect(body.text).not.toContain("What you hear is this page reading itself");
   expect(body.text).toContain("Auritus turns any article into audio on demand");

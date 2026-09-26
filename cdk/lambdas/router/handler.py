@@ -7,8 +7,10 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
 import time
+import unicodedata
 import uuid
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
@@ -188,8 +190,21 @@ def _json_default(value: Any) -> Any:
     raise TypeError(f"not serializable: {type(value)}")
 
 
+WHITESPACE_RUN = re.compile(
+    "[\t\n\v\f\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+"
+)
+
+
 def _normalize_text(text: str) -> str:
-    return " ".join(text.split())
+    """Normalize TTS text for hashing exactly as the embed does.
+
+    Applies Unicode NFC, collapses each run of the characters JavaScript's
+    ``\\s`` matches into one space, and trims.
+
+    :param text: Raw TTS text.
+    :returns: The normalized text.
+    """
+    return WHITESPACE_RUN.sub(" ", unicodedata.normalize("NFC", text)).strip(" ")
 
 
 def _resolve_voice_id(raw: str | None, tts_backend: str) -> str:
@@ -550,13 +565,14 @@ def _create_job(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]
     voice_id = _resolve_voice_id(body.get("voice_id"), tts_backend)
     name = body.get("name") or ""
     byline = body.get("byline") or ""
-    if not text.strip():
+    normalized = _normalize_text(text)
+    if not normalized:
         raise ValueError("text_required")
 
-    normalized = _normalize_text(text)
-    content_hash = body.get("content_hash") or _content_hash(
-        normalized, voice_id, tts_backend
-    )
+    content_hash = _content_hash(normalized, voice_id, tts_backend)
+    claimed_hash = body.get("content_hash")
+    if claimed_hash and claimed_hash != content_hash:
+        raise ValueError("content_hash_mismatch")
     now = _utc_now_iso()
     job_token = secrets.token_urlsafe(32)
 
@@ -601,7 +617,7 @@ def _create_job(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]
 
     return _response(
         201,
-        {"content_hash": content_hash, "status": "pending", "job_token": job_token},
+        {"content_hash": content_hash, "status": "pending"},
     )
 
 

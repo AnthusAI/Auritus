@@ -1,53 +1,69 @@
 import { describe, expect, it } from "vitest";
 import { computeContentHash, normalizeText } from "../src/generator/hash.js";
+import { resolveVoiceId } from "../src/index.js";
 
 const SAMPLE_TEXT = "Hello   world.\nNew line.";
 const VOICE = "af_heart";
+const UNICODE_SPACES_TEXT = "Cafe\u0301\u00a0\u2003bar\ufeff";
 
 describe("normalizeText", () => {
   it("collapses whitespace and trims", () => {
     expect(normalizeText(SAMPLE_TEXT)).toBe("Hello world. New line.");
   });
+
+  it("composes to NFC and treats Unicode spaces as whitespace", () => {
+    expect(normalizeText(UNICODE_SPACES_TEXT)).toBe("Caf\u00e9 bar");
+  });
 });
 
 describe("computeContentHash", () => {
-  it("is stable for the same text, voice, and backend", () => {
-    const a = computeContentHash(SAMPLE_TEXT, VOICE, "kokoro");
-    const b = computeContentHash("Hello   world.\nNew line.", VOICE, "kokoro");
-    expect(a).toBe(b);
-  });
-
-  it("does not change when only name or byline would differ (hash ignores them)", () => {
-    const base = computeContentHash(SAMPLE_TEXT, VOICE, "kokoro");
-    const same = computeContentHash(SAMPLE_TEXT, VOICE, "kokoro");
-    expect(base).toBe(same);
-    expect(base).not.toBe(
-      computeContentHash("Different article body", VOICE, "kokoro"),
+  it("matches the API's canonical SHA-256 vectors (features/content_hash.feature)", async () => {
+    expect(await computeContentHash(SAMPLE_TEXT, VOICE, "kokoro")).toBe(
+      "be5ee98501f1984fe1eb93a0ab8e96b3d0f87da538eb37bfb92a702214b0cb6f",
+    );
+    expect(await computeContentHash(UNICODE_SPACES_TEXT, VOICE, "kokoro")).toBe(
+      "6f4ec549d0c26edd736a90e4132de08342f7ededbf34fdef79cd416d011e2824",
     );
   });
 
-  it("matches the live home-page Kokoro pitch hash", () => {
-    const pitch =
-      "Press play. What you hear is this page reading itself. Auritus turns any article into audio on demand, from a single script tag — no pre-recording, no studio, no per-article cost. You choose the voice model. You decide where the text goes. Your own GPU does the work, and AWS picks up the slack when it cannot. It's open source, and every article on your site can speak, with the choices that matter still yours.";
-    expect(computeContentHash(pitch, VOICE, "kokoro")).toBe("2caf28aa");
-  });
-
-  it("changes when tts_backend changes", () => {
-    const base = computeContentHash(SAMPLE_TEXT, VOICE, "kokoro");
-    expect(base).not.toBe(computeContentHash(SAMPLE_TEXT, VOICE, "qwen"));
-  });
-
-  it("changes when normalized text changes", () => {
-    const base = computeContentHash(SAMPLE_TEXT, VOICE, "kokoro");
-    expect(base).not.toBe(
-      computeContentHash("Hello world. New line!", VOICE, "kokoro"),
+  it("is stable for the same normalized text, voice, and backend", async () => {
+    expect(await computeContentHash(SAMPLE_TEXT, VOICE, "kokoro")).toBe(
+      await computeContentHash("Hello world.  New line. ", VOICE, "kokoro"),
     );
   });
 
-  it("changes when voice_id changes", () => {
-    const base = computeContentHash(SAMPLE_TEXT, VOICE, "kokoro");
-    expect(base).not.toBe(
-      computeContentHash(SAMPLE_TEXT, "alt-voice", "kokoro"),
+  it("changes when tts_backend changes", async () => {
+    expect(await computeContentHash(SAMPLE_TEXT, VOICE, "kokoro")).not.toBe(
+      await computeContentHash(SAMPLE_TEXT, VOICE, "qwen"),
     );
+  });
+
+  it("changes when normalized text changes", async () => {
+    expect(await computeContentHash(SAMPLE_TEXT, VOICE, "kokoro")).not.toBe(
+      await computeContentHash("Hello world. New line!", VOICE, "kokoro"),
+    );
+  });
+
+  it("changes when voice_id changes", async () => {
+    expect(await computeContentHash(SAMPLE_TEXT, VOICE, "kokoro")).not.toBe(
+      await computeContentHash(SAMPLE_TEXT, "alt-voice", "kokoro"),
+    );
+  });
+});
+
+describe("resolveVoiceId", () => {
+  it("resolves missing and 'default' voices to each backend's default like the API", () => {
+    expect(resolveVoiceId(undefined, "kokoro")).toBe("af_heart");
+    expect(resolveVoiceId("default", "kokoro")).toBe("af_heart");
+    expect(resolveVoiceId("default", "qwen")).toBe("Ryan");
+    expect(resolveVoiceId("Chelsie", "qwen")).toBe("Ryan");
+    expect(resolveVoiceId(undefined, "fish")).toBe("narrator");
+    expect(resolveVoiceId("default", "chatterbox")).toBe("narrator");
+    expect(resolveVoiceId(undefined, "higgs")).toBe("default");
+  });
+
+  it("keeps an explicit voice", () => {
+    expect(resolveVoiceId("am_adam", "kokoro")).toBe("am_adam");
+    expect(resolveVoiceId("Serena", "qwen")).toBe("Serena");
   });
 });
