@@ -95,6 +95,10 @@ jobs:
     needs: release
     if: ${{ needs.release.outputs.released == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
     steps:
       - name: Checkout the release tag
         uses: actions/checkout@v4
@@ -105,7 +109,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          registry-url: "https://registry.npmjs.org"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@anthusai"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -120,12 +125,12 @@ jobs:
           npm test
           npx jsii-pacmak --targets js python
 
-      - name: Publish to npm
-        if: ${{ vars.AURITUS_PUBLISH_NPM == 'true' }}
+      # GitHub Packages, with the workflow's own token: no registry account.
+      - name: Publish to GitHub Packages (npm)
         working-directory: construct
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish dist/js/*.tgz --access public --provenance
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish dist/js/*.tgz
 
       - name: Publish to PyPI (trusted publishing)
         if: ${{ vars.AURITUS_PUBLISH_PYPI == 'true' }}
@@ -137,6 +142,7 @@ jobs:
 # - PyPI (Kanbus a01473): create the `auritus` and `auritus-construct` projects,
 #   add this workflow as their trusted publisher (OIDC), then set the
 #   repository variable AURITUS_PUBLISH_PYPI to the string true.
-# - npm: create the @anthusai scope, store an automation token as the
-#   NPM_TOKEN secret, then set AURITUS_PUBLISH_NPM to true.
-# The worker image needs no switch: the OIDC role already exists.
+# The construct's npm package goes to GitHub Packages (npm.pkg.github.com)
+# with GITHUB_TOKEN, and the worker image to ECR through the existing OIDC
+# role; neither needs a switch. Installing from GitHub Packages needs a token
+# with read:packages, even for public packages.

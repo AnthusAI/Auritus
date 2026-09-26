@@ -68,5 +68,8 @@
       ]
     }
   },
-  "stability": "experimental"
+  "stability": "experimental",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
 }
