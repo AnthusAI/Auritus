@@ -3,17 +3,30 @@
   "title": "Jobs stay pending forever when the fallback cannot submit to a disabled Batch queue",
   "description": "When the budget guard (or the kill-switch) disables the Batch job queue, the fallback state machine's `SubmitGpuJob` task fails. It has no Catch, so the execution fails and the job row stays `pending` with no `error_message` or `failed_at`. The player polls forever and the operator console shows nothing wrong.\n\nFix: add a Catch on `SubmitGpuJob` that conditionally (`status = pending`) marks the job `failed` with `error_message = batch_submit_failed` and `failed_at`, then ends the execution in a Fail state. Specified in `features/spend_guardrails.feature`.",
   "type": "bug",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "16bb565a-7772-4db2-a126-fe3c81762180",
+      "author": "home",
+      "text": "Merged in #69 (9803a2c). SubmitGpuJob now catches all errors and conditionally marks a still-pending job failed (`batch_fallback_failed`). Not deployed. Follow-ups from review: a Batch job stuck RUNNABLE past the 2 h execution timeout still leaves the job pending (CDK's BatchSubmitJob task_timeout maps to Batch attempt duration, not a state timeout), and this path writes no retention `ttl`.",
+      "created_at": "2026-09-26T20:34:36.981555Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code desktop"
+      }
+    }
+  ],
   "created_at": "2026-09-26T18:44:06.910196Z",
-  "updated_at": "2026-09-26T18:44:06.910222Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T20:34:37.008677Z",
+  "closed_at": "2026-09-26T20:34:37.008633Z",
   "agent": {
     "platform": "claude_code",
     "model": "claude-opus-5-5",
