@@ -96,7 +96,7 @@ jobs:
     if: ${{ needs.release.outputs.released == 'true' }}
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
       packages: write
     steps:
@@ -125,7 +125,19 @@ jobs:
           npm test
           npx jsii-pacmak --targets js python
 
-      # GitHub Packages, with the workflow's own token: no registry account.
+      # The public, token-free way to install it: the npm tarball on the GitHub Release, e.g.
+      # "@anthusai/auritus-construct": "https://github.com/AnthusAI/Auritus/releases/download/v1.2.3/anthusai-auritus-construct-1.2.3.tgz"
+      - name: Attach the npm tarball to the GitHub Release
+        working-directory: construct
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          cp dist/js/*.jsii.tgz "anthusai-auritus-construct-${VERSION}.tgz"
+          gh release upload "v${VERSION}" "anthusai-auritus-construct-${VERSION}.tgz" --clobber
+
+      # GitHub Packages, with the workflow's own token: no registry account
+      # (installing from it needs a read:packages token).
       - name: Publish to GitHub Packages (npm)
         working-directory: construct
         env:
