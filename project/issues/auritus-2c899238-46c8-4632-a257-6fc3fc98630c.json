@@ -10,9 +10,22 @@
   "parent": "auritus-9ffcc2be-a4e7-48e4-8c85-22103d560d7b",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "097ef1c0-06c2-466a-a2c2-63b4d7d6e69c",
+      "author": "home",
+      "text": "PR #70: `auritus.render` plus the entrypoint dispatch (AURITUS_MODE=render). 4 behave scenarios (red without the module, green with it), moto S3 tests, and a real Kokoro render verified. The request contract that SpeechRenderer (auritus-c9d582) will submit is `AURITUS_RENDER_REQUEST={text, voice, speed?, seed?, output}`, plus `AURITUS_ALLOWED_BACKENDS` and `AURITUS_TTS_BACKEND`. Output is speech.wav and speech.json, or error.json.",
+      "created_at": "2026-09-26T19:11:04.467213Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Opus 5.5",
+        "name": "auritus-voice-integration"
+      }
+    }
+  ],
   "created_at": "2026-09-26T18:58:34.758857Z",
-  "updated_at": "2026-09-26T18:58:34.758922Z",
+  "updated_at": "2026-09-26T19:11:04.467495Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
@@ -21,5 +34,8 @@
   },
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
 }
