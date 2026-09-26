@@ -22,7 +22,7 @@ Feature: Admin monitoring and queue control API
     And the response includes worker attribution and timestamps
 
   Scenario: Operator toggles the AWS Batch queue state
-    Given an enabled Batch job queue
+    Given an enabled Batch job queue behind the Auritus API
     When the operator toggles the queue state to "DISABLED"
     Then the Batch job queue state is "DISABLED"
 

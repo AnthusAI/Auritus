@@ -241,13 +241,13 @@ class AuritusClient:
     def disable_batch_queue(self) -> dict[str, Any]:
         """Emergency kill-switch: disable the Batch job queue."""
         return self._request(
-            "POST", "/admin/killswitch", json_body={"action": "disable"}
+            "POST", "/admin/queue/toggle", json_body={"state": "DISABLED"}
         )
 
     def enable_batch_queue(self) -> dict[str, Any]:
         """Re-enable the Batch job queue after a kill-switch."""
         return self._request(
-            "POST", "/admin/killswitch", json_body={"action": "enable"}
+            "POST", "/admin/queue/toggle", json_body={"state": "ENABLED"}
         )
 
     def presign_upload(self, content_hash: str) -> dict[str, Any]:
