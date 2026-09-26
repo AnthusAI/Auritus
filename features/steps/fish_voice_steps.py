@@ -8,7 +8,7 @@ from pathlib import Path
 from behave import given, then, when
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "worker-image" / "src"))
+sys.path.insert(0, str(ROOT / "cli" / "src"))
 
 
 @given("a Fish job without an explicit voice_id")
@@ -28,7 +28,7 @@ def step_fish_job_with_empty_voice(context) -> None:
 
 @when("the Fish voice is resolved for synthesis")
 def step_resolve_fish_voice(context) -> None:
-    from tts.fish import resolve_fish_voice
+    from auritus.tts.fish import resolve_fish_voice
 
     context.resolved_voice_id = resolve_fish_voice(context.fish_meta)
 

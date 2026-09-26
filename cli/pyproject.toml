@@ -19,7 +19,49 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-worker = ["mlx-audio>=0.5.0", "kokoro>=0.9.0", "torch>=2.0.0", "soundfile>=0.12.0"]
+# One extra per speech backend: its model stack for PyTorch/CUDA, plus mlx-audio
+# on Apple Silicon. The Batch worker image pins exact versions per backend in
+# worker-image/requirements*.txt instead.
+kokoro = ["kokoro>=0.9.4", "torch>=2.5", "soundfile>=0.12", "numpy>=1.26", "mlx-audio>=0.5.0; sys_platform == 'darwin' and platform_machine == 'arm64'"]
+qwen = ["qwen-tts>=0.1.1", "torch>=2.5", "soundfile>=0.12", "numpy>=1.26", "mlx-audio>=0.5.0; sys_platform == 'darwin' and platform_machine == 'arm64'"]
+f5 = [
+  "f5-tts>=1.1.22",
+  "torch>=2.5",
+  "torchaudio>=2.5",
+  "soundfile>=0.12",
+  "numpy>=1.26",
+  "mlx-audio>=0.5.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "f5-tts-mlx; sys_platform == 'darwin' and platform_machine == 'arm64'",
+]
+chatterbox = [
+  "chatterbox-tts>=0.1.7",
+  "torch>=2.5",
+  "torchaudio>=2.5",
+  "soundfile>=0.12",
+  "numpy>=1.26",
+  "mlx-audio>=0.5.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
+]
+fish = [
+  "fish-speech",
+  "huggingface-hub",
+  "hydra-core",
+  "pyrootutils",
+  "safetensors",
+  "torch>=2.5",
+  "torchaudio>=2.5",
+  "soundfile>=0.12",
+  "numpy>=1.26",
+  "mlx-audio>=0.5.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
+]
+higgs = [
+  "transformers>=5.5.0",
+  "huggingface-hub",
+  "torch>=2.5",
+  "torchaudio>=2.5",
+  "soundfile>=0.12",
+  "numpy>=1.26",
+  "mlx-audio>=0.5.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
+]
 dev = [
   "behave>=1.2.6",
   "pytest>=8.0",
@@ -36,6 +78,10 @@ auritus = "auritus.cli:app"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+# The default reference clip for F5 and Fish voice cloning.
+auritus = ["tts/*.wav"]
 
 [tool.ruff]
 line-length = 88

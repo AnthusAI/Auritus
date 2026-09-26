@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - worker-image/**
+      - cli/src/auritus/**
+      - cli/pyproject.toml
   workflow_dispatch:
 
 permissions:
@@ -32,7 +34,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: worker-image
+          context: .
+          file: worker-image/Dockerfile
           push: true
           tags: |
             335163751677.dkr.ecr.us-east-1.amazonaws.com/auritus-worker:latest
