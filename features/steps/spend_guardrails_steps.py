@@ -58,15 +58,18 @@ def step_queue_behind_api(context, state_word: str) -> None:
     context.killswitch_mock = mock_aws()
     context.killswitch_mock.start()
     context.add_cleanup(context.killswitch_mock.stop)
-    os.environ.update(
+    router_environment = patch.dict(
+        os.environ,
         {
             "JOBS_TABLE": "killswitch-jobs",
             "SITES_TABLE": "killswitch-sites",
             "AUDIO_BUCKET": "killswitch-audio",
             "BATCH_JOB_QUEUE_NAME": "auritus-gpu-queue",
             "AWS_DEFAULT_REGION": "us-east-1",
-        }
+        },
     )
+    router_environment.start()
+    context.add_cleanup(router_environment.stop)
     router_path = str(LAMBDAS_PATH / "router")
     if router_path not in sys.path:
         sys.path.insert(0, router_path)
