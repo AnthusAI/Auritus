@@ -16,6 +16,10 @@ def get_backend(name: str) -> TTSBackend:
     :raises ValueError: If the name is unknown.
     """
     key = (name or "").strip().lower()
+    if key == "fake":
+        from auritus.tts.fake import FakeBackend
+
+        return FakeBackend()
     if key in ("higgs", "higgs-v3", "higgs3"):
         from auritus.tts.higgs import HiggsBackend
 
@@ -50,7 +54,8 @@ def get_backend(name: str) -> TTSBackend:
         return ChatterboxBackend()
     raise ValueError(
         f"Unknown TTS backend: {name!r}. "
-        "Known: ['bark', 'chatterbox', 'coqui', 'f5', 'fish', 'higgs', 'kokoro', 'qwen']"
+        "Known: ['bark', 'chatterbox', 'coqui', 'f5', 'fake', 'fish', 'higgs', "
+        "'kokoro', 'qwen']"
     )
 
 

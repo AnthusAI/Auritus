@@ -75,6 +75,27 @@ Embed snippet (after `auritus site create`):
 ></script>
 ```
 
+## Use as a library
+
+Other programs can synthesize speech offline, with no login, config file or AWS. You only need the chosen backend's dependencies.
+
+```python
+from auritus import SpeechOptions, Voice, synthesize
+
+speech = synthesize(
+    "Welcome to the show. [[auritus:break]] Tonight, something new.",
+    Voice.parse("kokoro:af_heart"),
+    SpeechOptions(speed=1.1, seed=3),
+)
+speech.wav          # mono 16-bit WAV bytes
+speech.sample_rate  # e.g. 24000
+speech.segments     # one timed Segment per [[auritus:break]] block
+speech.provenance   # engine, version, backend, model, voice, options
+speech.request_key  # stable SHA-256 of the request, for caching
+```
+
+`request_key(text, voice, options)` gives the same key without synthesizing. A backend that can't honour an option raises `UnsupportedOption` rather than ignoring it. The `fake` backend makes a deterministic tone for tests.
+
 ## Layout
 
 | Path | Role |
