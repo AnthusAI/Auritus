@@ -16,3 +16,10 @@ Feature: Spend guardrails
     Given an enabled Batch job queue
     When the operator runs auritus killswitch disable
     Then the Batch job queue state is "DISABLED"
+
+  Scenario: A job whose Batch submission is refused is marked failed
+    Given the deployed Batch fallback state machine
+    When the fallback's Batch submission for a pending job is refused
+    Then the fallback marks the job failed with error "batch_submit_failed"
+    And the fallback only marks the job failed while it is still pending
+    And the fallback execution ends as failed
