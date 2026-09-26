@@ -1,0 +1,25 @@
+{
+  "id": "auritus-f7f03a2d-55cf-4c39-9aa8-e27a4b01ad9d",
+  "title": "Jobs stay pending forever when the fallback cannot submit to a disabled Batch queue",
+  "description": "When the budget guard (or the kill-switch) disables the Batch job queue, the fallback state machine's `SubmitGpuJob` task fails. It has no Catch, so the execution fails and the job row stays `pending` with no `error_message` or `failed_at`. The player polls forever and the operator console shows nothing wrong.\n\nFix: add a Catch on `SubmitGpuJob` that conditionally (`status = pending`) marks the job `failed` with `error_message = batch_submit_failed` and `failed_at`, then ends the execution in a Fail state. Specified in `features/spend_guardrails.feature`.",
+  "type": "bug",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T18:44:06.910196Z",
+  "updated_at": "2026-09-26T18:44:06.910222Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code desktop"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
