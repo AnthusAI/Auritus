@@ -2,6 +2,49 @@
 
 <!-- version list -->
 
+## v0.27.1 (2026-09-26)
+
+### Bug Fixes
+
+- **auritus-0fe2de**: Attach the construct's npm tarball to each GitHub Release
+  ([#75](https://github.com/AnthusAI/Auritus/pull/75),
+  [`511c3de`](https://github.com/AnthusAI/Auritus/commit/511c3dee6e9e717ae7a809d19bc0963e564552b9))
+
+- **auritus-e3bc39**: Keep pending Play working when polls overlap
+  ([#74](https://github.com/AnthusAI/Auritus/pull/74),
+  [`f667b4d`](https://github.com/AnthusAI/Auritus/commit/f667b4d409aab85e1de5ec46dcf00a908505cd65))
+
+- **auritus-e3bc39**: Recover from stalled polls and ignore responses after dispose
+  ([#74](https://github.com/AnthusAI/Auritus/pull/74),
+  [`f667b4d`](https://github.com/AnthusAI/Auritus/commit/f667b4d409aab85e1de5ec46dcf00a908505cd65))
+
+- **auritus-f7f03a**: Address review of the fallback failure path
+  ([#69](https://github.com/AnthusAI/Auritus/pull/69),
+  [`9803a2c`](https://github.com/AnthusAI/Auritus/commit/9803a2c61e04ac021cc107380c7aa615597754af))
+
+- **auritus-f7f03a**: Mark jobs failed when Batch refuses the fallback submission
+  ([#69](https://github.com/AnthusAI/Auritus/pull/69),
+  [`9803a2c`](https://github.com/AnthusAI/Auritus/commit/9803a2c61e04ac021cc107380c7aa615597754af))
+
+- **auritus-fa4905**: Address review of operator token verification
+  ([#67](https://github.com/AnthusAI/Auritus/pull/67),
+  [`3ef7eab`](https://github.com/AnthusAI/Auritus/commit/3ef7eabb8f9635a6f0e96aeb47275337967d1bdd))
+
+- **auritus-fa4905**: Verify operator JWTs against the Cognito JWKS
+  ([#67](https://github.com/AnthusAI/Auritus/pull/67),
+  [`3ef7eab`](https://github.com/AnthusAI/Auritus/commit/3ef7eabb8f9635a6f0e96aeb47275337967d1bdd))
+
+- **auritus-fe837c**: Send the kill switch to /admin/queue/toggle
+  ([#71](https://github.com/AnthusAI/Auritus/pull/71),
+  [`a82058a`](https://github.com/AnthusAI/Auritus/commit/a82058a1513b735937d433dc285114c1408d5183))
+
+### Testing
+
+- **auritus-fe837c**: Scope kill switch router env to the scenario
+  ([#71](https://github.com/AnthusAI/Auritus/pull/71),
+  [`a82058a`](https://github.com/AnthusAI/Auritus/commit/a82058a1513b735937d433dc285114c1408d5183))
+
+
 ## v0.27.0 (2026-09-26)
 
 ### Bug Fixes
