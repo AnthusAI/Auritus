@@ -8,7 +8,7 @@ from pathlib import Path
 from behave import given, then, when
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "worker-image" / "src"))
+sys.path.insert(0, str(ROOT / "cli" / "src"))
 
 
 @given("a Higgs job without an explicit voice_id")
@@ -28,7 +28,7 @@ def step_higgs_job_with_empty_voice(context) -> None:
 
 @when("the Higgs voice is resolved for synthesis")
 def step_resolve_higgs_voice(context) -> None:
-    from tts.higgs import resolve_higgs_voice
+    from auritus.tts.higgs import resolve_higgs_voice
 
     context.resolved_voice_id = resolve_higgs_voice(context.higgs_meta)
 

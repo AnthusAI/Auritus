@@ -9,7 +9,7 @@ from pathlib import Path
 from behave import given, then, when
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "worker-image" / "src"))
+sys.path.insert(0, str(ROOT / "cli" / "src"))
 
 
 def _normalize(text: str) -> str:
@@ -77,7 +77,7 @@ def step_job(context, backend: str) -> None:
 
 @when("the worker generates audio for the job")
 def step_generate(context) -> None:
-    from tts import get_backend
+    from auritus.tts import get_backend
 
     backend = get_backend(context.job["tts_backend"])
     context.used_backend = backend.name

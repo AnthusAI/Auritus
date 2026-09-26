@@ -11,6 +11,9 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.version.outputs.released }}
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,15 +37,112 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python -m semantic_release version
 
+      # Did this run cut a release? Later jobs build that exact tag.
+      - name: Released version
+        id: version
+        working-directory: cli
+        run: |
+          git fetch --tags --force
+          version="$(python -m semantic_release version --print-last-released)"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          if [ -n "$version" ] && git tag --points-at HEAD | grep -qx "v${version}"; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish to PyPI (trusted publishing)
-        if: ${{ vars.AURITUS_PUBLISH_PYPI == 'true' }}
+        if: ${{ steps.version.outputs.released == 'true' && vars.AURITUS_PUBLISH_PYPI == 'true' }}
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: cli/dist/
 
-# PyPI stays last (Kanbus a01473). Set repository variable AURITUS_PUBLISH_PYPI
-# to the string true only after the trusted publisher exists on pypi.org.
-# 1. Create the `auritus` project on PyPI.
-# 2. Configure a trusted publisher (OIDC) for this GitHub repo/workflow.
-# 3. Ensure `python-semantic-release` builds into cli/dist/ before the publish step.
-# 4. Store no long-lived PyPI passwords in GitHub; rely on `id-token: write` above.
+  # The Batch worker image, tagged with the release version. The
+  # SpeechRenderer construct and Auritus's own stack pin that tag.
+  worker-image:
+    needs: release
+    if: ${{ needs.release.outputs.released == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the release tag
+        uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.version }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::335163751677:role/auritus-worker-image-build
+          aws-region: us-east-1
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registries: 335163751677
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: worker-image/Dockerfile
+          push: true
+          tags: |
+            335163751677.dkr.ecr.us-east-1.amazonaws.com/auritus-worker:${{ needs.release.outputs.version }}
+            335163751677.dkr.ecr.us-east-1.amazonaws.com/auritus-worker:latest
+
+  # The CDK constructs, versioned with the release: npm and PyPI.
+  construct:
+    needs: release
+    if: ${{ needs.release.outputs.released == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    steps:
+      - name: Checkout the release tag
+        uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.version }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@anthusai"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build, test and package
+        working-directory: construct
+        run: |
+          npm ci
+          npm version --no-git-tag-version "${{ needs.release.outputs.version }}"
+          npm test
+          npx jsii-pacmak --targets js python
+
+      # GitHub Packages, with the workflow's own token: no registry account.
+      - name: Publish to GitHub Packages (npm)
+        working-directory: construct
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish dist/js/*.tgz
+
+      - name: Publish to PyPI (trusted publishing)
+        if: ${{ vars.AURITUS_PUBLISH_PYPI == 'true' }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: construct/dist/python/
+
+# Publishing stays off until each registry is set up:
+# - PyPI (Kanbus a01473): create the `auritus` and `auritus-construct` projects,
+#   add this workflow as their trusted publisher (OIDC), then set the
+#   repository variable AURITUS_PUBLISH_PYPI to the string true.
+# The construct's npm package goes to GitHub Packages (npm.pkg.github.com)
+# with GITHUB_TOKEN, and the worker image to ECR through the existing OIDC
+# role; neither needs a switch. Installing from GitHub Packages needs a token
+# with read:packages, even for public packages.

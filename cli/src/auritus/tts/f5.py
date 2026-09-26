@@ -27,6 +27,7 @@ __all__ = [
 
 F5_DEFAULT_VOICE = "default"
 F5_MLX_MODEL = "mlx-community/F5-TTS"
+F5_TORCH_MODEL = "SWivid/F5-TTS"
 
 BREAK_SILENCE_SECONDS = 0.75
 PAUSE_SILENCE_SECONDS = DEFAULT_PAUSE_SILENCE_SECONDS
@@ -56,6 +57,13 @@ class F5Backend(TTSBackend):
     name = "f5"
     _model = None
     _is_mlx = None
+
+    def model_id(self) -> str:
+        """:returns: The MLX or PyTorch model repo this machine uses."""
+        cls = type(self)
+        if cls._is_mlx is None:
+            cls._is_mlx = cls._detect_mlx()
+        return F5_MLX_MODEL if cls._is_mlx else F5_TORCH_MODEL
 
     @classmethod
     def _detect_mlx(cls) -> bool:
@@ -106,8 +114,8 @@ class F5Backend(TTSBackend):
         )
 
         voice = resolve_f5_voice(meta)
-        ref_audio = resolve_reference_audio(voice)
-        ref_text = resolve_reference_text(voice) or ""
+        ref_audio = resolve_reference_audio(voice, meta.get("voices_dir"))
+        ref_text = resolve_reference_text(voice, meta.get("voices_dir")) or ""
 
         try:
             import mlx.core as mx
@@ -220,51 +228,65 @@ class F5Backend(TTSBackend):
             return _to_wav(audio_np, sample_rate=24000)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via PyTorch f5-tts (fallback for non-Apple).
+        """Generate via PyTorch f5-tts (fallback for non-Apple, e.g. AWS Batch).
+
+        F5TTS's own device default was previously trusted implicitly;
+        explicitly resolves and passes cuda/cpu here (mirroring higgs.py,
+        chatterbox.py, qwen.py) so a g4dn.xlarge Batch run is verified, not
+        assumed, to actually use the GPU it's billed for.
 
         :param text: TTS input text.
         :param meta: Job metadata.
         :returns: WAV audio bytes.
         """
         import os
-
         import numpy as np
         import torch
         from f5_tts.api import F5TTS
-
-        from auritus.tts.voices import (
-            resolve_reference_audio,
-            resolve_reference_text,
-        )
 
         if F5Backend._model is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
             print(f"[f5] resolved device={device}", flush=True)
             F5Backend._model = F5TTS(device=device)
+        from auritus.tts.voices import (
+            resolve_reference_audio,
+            resolve_reference_text,
+        )
 
         voice = resolve_f5_voice(meta)
         ref_file = meta.get("ref_file")
         ref_text = meta.get("ref_text")
         if not ref_file:
-            resolved_audio = resolve_reference_audio(voice)
+            resolved_audio = resolve_reference_audio(voice, meta.get("voices_dir"))
             if resolved_audio:
                 ref_file = str(resolved_audio)
                 if not ref_text:
-                    ref_text = resolve_reference_text(voice)
+                    ref_text = resolve_reference_text(voice, meta.get("voices_dir"))
         if not ref_file:
-            try:
-                from importlib.resources import files
+            local_candidate = os.path.join(
+                os.path.dirname(__file__), "basic_ref_en.wav"
+            )
+            if os.path.exists(local_candidate):
+                ref_file = local_candidate
+                if not ref_text:
+                    ref_text = "Some call me nature, others call me mother nature."
+            else:
+                try:
+                    from importlib.resources import files
 
-                candidate = str(
-                    files("f5_tts").joinpath("infer/examples/basic/basic_ref_en.wav")
-                )
-                if os.path.exists(candidate):
-                    ref_file = candidate
-                    if not ref_text:
-                        ref_text = "Some call me nature, others call me mother nature."
-            except Exception:
-                pass
-
+                    candidate = str(
+                        files("f5_tts").joinpath(
+                            "infer/examples/basic/basic_ref_en.wav"
+                        )
+                    )
+                    if os.path.exists(candidate):
+                        ref_file = candidate
+                        if not ref_text:
+                            ref_text = (
+                                "Some call me nature, others call me mother nature."
+                            )
+                except Exception:
+                    pass
         blocks = split_on_breaks(text)
         all_waves: list[np.ndarray] = []
         break_silence = np.zeros(int(24000 * BREAK_SILENCE_SECONDS), dtype=np.float32)

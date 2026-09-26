@@ -159,10 +159,15 @@ class KokoroBackend(TTSBackend):
         AURITUS_BREAK_MARKER for real pauses, segments from KPipeline's own
         generator within each block for Kokoro's internal length limit.
         """
+        import torch
         from kokoro import KPipeline
 
         if KokoroBackend._model is None:
-            KokoroBackend._model = KPipeline(lang_code="a")
+            # Resolve the device explicitly so a Batch GPU run is verified, not
+            # assumed, to use the GPU it is billed for.
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            print(f"[kokoro] resolved device={device}", flush=True)
+            KokoroBackend._model = KPipeline(lang_code="a", device=device)
         default_voice = resolve_kokoro_voice(meta)
         speed = float(meta.get("speed") or 1.0)
         sample_rate = 24000
