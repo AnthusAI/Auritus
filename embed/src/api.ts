@@ -61,12 +61,26 @@ export class AuritusApiClient {
     return (await response.json()) as JobRecord;
   }
 
-  async getJob(contentHash: string): Promise<JobRecord> {
+  /**
+   * Fetch a job record.
+   *
+   * @param contentHash - The job's content hash.
+   * @param options - `timeoutMs` aborts the request with a `TimeoutError`
+   *   when it has not completed in time.
+   */
+  async getJob(
+    contentHash: string,
+    options: { timeoutMs?: number } = {},
+  ): Promise<JobRecord> {
     const response = await this.fetchImpl(
       `${this.baseUrl}/jobs/${encodeURIComponent(contentHash)}`,
       {
         method: "GET",
         headers: this.headers(),
+        signal:
+          options.timeoutMs === undefined
+            ? undefined
+            : AbortSignal.timeout(options.timeoutMs),
       },
     );
     if (!response.ok) {

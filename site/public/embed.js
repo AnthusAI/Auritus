@@ -70,12 +70,20 @@ var Auritus = (() => {
       }
       return await response.json();
     }
-    async getJob(contentHash) {
+    /**
+     * Fetch a job record.
+     *
+     * @param contentHash - The job's content hash.
+     * @param options - `timeoutMs` aborts the request with a `TimeoutError`
+     *   when it has not completed in time.
+     */
+    async getJob(contentHash, options = {}) {
       const response = await this.fetchImpl(
         `${this.baseUrl}/jobs/${encodeURIComponent(contentHash)}`,
         {
           method: "GET",
-          headers: this.headers()
+          headers: this.headers(),
+          signal: options.timeoutMs === void 0 ? void 0 : AbortSignal.timeout(options.timeoutMs)
         }
       );
       if (!response.ok) {
@@ -338,6 +346,11 @@ var Auritus = (() => {
 
   // src/player/index.ts
   var DEFAULT_POLL_MS = 2e3;
+  var DEFAULT_POLL_TIMEOUT_MS = 15e3;
+  function isTimeout(err) {
+    const name = err?.name;
+    return name === "TimeoutError" || name === "AbortError";
+  }
   function rewindIfEnded(media) {
     const durationKnown = Number.isFinite(media.duration) && media.duration > 0;
     const atEnd = media.ended || durationKnown && media.currentTime >= media.duration;
@@ -364,7 +377,8 @@ var Auritus = (() => {
       contentHash,
       name,
       byline,
-      pollIntervalMs = DEFAULT_POLL_MS
+      pollIntervalMs = DEFAULT_POLL_MS,
+      pollTimeoutMs = DEFAULT_POLL_TIMEOUT_MS
     } = options;
     const shadow = host.shadowRoot ?? host.attachShadow({ mode: "open" });
     shadow.replaceChildren();
@@ -456,14 +470,14 @@ var Auritus = (() => {
       }
       refreshInFlight = true;
       try {
-        const job = await api.getJob(contentHash);
+        const job = await api.getJob(contentHash, { timeoutMs: pollTimeoutMs });
         applyJob(job);
       } catch (err) {
         if (settled) {
           return;
         }
         const message = err instanceof Error ? err.message : String(err);
-        if (/\b404\b/.test(message)) {
+        if (isTimeout(err) || /\b404\b/.test(message)) {
           statusEl.hidden = false;
           statusEl.textContent = pendingPlay ? "Starting when ready\u2026" : "Waiting for audio\u2026";
           return;
@@ -494,6 +508,7 @@ var Auritus = (() => {
     host.addEventListener(
       "auritus-dispose",
       () => {
+        settled = true;
         stopPolling();
         audio.pause();
         audio.removeAttribute("src");
