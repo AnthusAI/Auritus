@@ -134,3 +134,75 @@ def step_site_key_cannot_claim(context) -> None:
         "Item"
     ]
     assert item["status"] == "pending", item
+
+
+TOKEN_JOB_HASH = "token-revocation-spec-job"
+
+
+@given('a "{status}" job whose worker token "{token}" was handed out earlier')
+def step_job_with_handed_out_token(context, status: str, token: str) -> None:
+    item = {
+        "content_hash": TOKEN_JOB_HASH,
+        "status": status,
+        "text": "Token revocation narration.",
+        "voice_id": "af_heart",
+        "tts_backend": "kokoro",
+        "site_id": f"site-{SPEC_SITE_KEY}",
+        "job_token": token,
+        "created_at": "2026-09-01T00:00:00Z",
+    }
+    if status == "claimed":
+        item["claim_owner"] = "batch:spec-worker"
+    if status == "done":
+        item["audio_key"] = f"audio/{TOKEN_JOB_HASH}.wav"
+    context.hash_router.jobs_table.put_item(Item=item)
+
+
+def _call_with_token(context, method: str, route: str, token: str, body=None):
+    context.token_response = context.hash_router.call(
+        method,
+        f"/jobs/{TOKEN_JOB_HASH}/{route}",
+        headers={"authorization": f"Bearer {token}"},
+        body=body,
+        path_parameters={"hash": TOKEN_JOB_HASH},
+    )
+
+
+@when('the worker token "{token}" requests an audio upload URL for that job')
+def step_token_presigns(context, token: str) -> None:
+    _call_with_token(context, "POST", "presign-upload", token, body={})
+
+
+@when('the worker token "{token}" marks that job done')
+def step_token_marks_done(context, token: str) -> None:
+    _call_with_token(
+        context,
+        "PUT",
+        "done",
+        token,
+        body={
+            "audio_key": f"audio/{TOKEN_JOB_HASH}.wav",
+            "claim_owner": "batch:spec-worker",
+        },
+    )
+
+
+@then("the API refuses the upload as forbidden")
+def step_upload_forbidden(context) -> None:
+    assert context.token_response["statusCode"] == 403, context.token_response
+
+
+@then("the API returns an audio upload URL")
+def step_upload_allowed(context) -> None:
+    assert context.token_response["statusCode"] == 200, context.token_response
+    assert "upload_url" in json.loads(context.token_response["body"])
+
+
+@then("the finished job no longer holds a worker token")
+def step_finished_job_has_no_token(context) -> None:
+    assert context.token_response["statusCode"] == 200, context.token_response
+    item = context.hash_router.jobs_table.get_item(
+        Key={"content_hash": TOKEN_JOB_HASH}
+    )["Item"]
+    assert item["status"] == "done", item
+    assert "job_token" not in item, item

@@ -17,6 +17,7 @@ Feature: Re-keying stored jobs to the canonical content hash
     When the content hash copy runs with apply
     Then the job is stored under the canonical hash of "Press play."
     And the migrated job keeps its audio and records it was migrated from "2caf28aa"
+    And the migrated job holds no worker token
     And a job is still stored under "2caf28aa"
 
   Scenario: A dry run changes nothing
@@ -50,3 +51,14 @@ Feature: Re-keying stored jobs to the canonical content hash
     And a "done" job already stored under the canonical hash of "Press play."
     When the legacy row removal runs with apply
     Then a job is still stored under "2caf28aa"
+
+  Scenario: Worker tokens are revoked on every finished job
+    Job creation used to return the job's worker token. Finished jobs never
+    need one again, so the revocation phase removes them, while jobs still
+    in flight keep the token their Batch worker needs.
+
+    Given a "done" job stored under the legacy hash "2caf28aa" with text "Press play." and stored audio
+    And a "pending" job stored under the legacy hash "01355d8a" with text "Still rendering." and no audio
+    When the worker token revocation runs with apply
+    Then the job under "2caf28aa" holds no worker token
+    And the job under "01355d8a" still holds its worker token

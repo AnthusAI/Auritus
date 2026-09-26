@@ -180,6 +180,12 @@ export async function boot(options: BootOptions = {}): Promise<HTMLElement> {
     config.ttsBackend,
   );
 
+  if (generation !== bootGeneration) {
+    const skipped = document.createElement("div");
+    skipped.setAttribute("data-auritus-boot-skipped", "true");
+    return skipped;
+  }
+
   const api = new AuritusApiClient({
     baseUrl: config.apiBaseUrl,
     siteKey: config.siteKey,

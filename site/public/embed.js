@@ -107,7 +107,13 @@ var Auritus = (() => {
   }
   async function computeContentHash(text, voiceId, ttsBackend) {
     const payload = `${normalizeText(text)}\0${voiceId}\0${ttsBackend}`;
-    const digest = await crypto.subtle.digest(
+    const subtle = globalThis.crypto?.subtle;
+    if (!subtle) {
+      throw new Error(
+        "Auritus embed: computing the content hash needs Web Crypto, which browsers only provide in a secure context (HTTPS)"
+      );
+    }
+    const digest = await subtle.digest(
       "SHA-256",
       new TextEncoder().encode(payload)
     );
@@ -613,6 +619,11 @@ var Auritus = (() => {
       config.voiceId,
       config.ttsBackend
     );
+    if (generation !== bootGeneration) {
+      const skipped = document.createElement("div");
+      skipped.setAttribute("data-auritus-boot-skipped", "true");
+      return skipped;
+    }
     const api = new AuritusApiClient({
       baseUrl: config.apiBaseUrl,
       siteKey: config.siteKey

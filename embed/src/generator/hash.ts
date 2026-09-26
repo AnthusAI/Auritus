@@ -31,7 +31,13 @@ export async function computeContentHash(
   ttsBackend: string,
 ): Promise<string> {
   const payload = `${normalizeText(text)}\0${voiceId}\0${ttsBackend}`;
-  const digest = await crypto.subtle.digest(
+  const subtle = globalThis.crypto?.subtle;
+  if (!subtle) {
+    throw new Error(
+      "Auritus embed: computing the content hash needs Web Crypto, which browsers only provide in a secure context (HTTPS)",
+    );
+  }
+  const digest = await subtle.digest(
     "SHA-256",
     new TextEncoder().encode(payload),
   );

@@ -15,6 +15,10 @@ until the new embed and API are released:
     skipped because the fallback workflow and the Batch job token refer to
     their key. An existing canonical job is never overwritten.
 
+``revoke-tokens``
+    Remove the worker token from every finished job. Job creation used to
+    return it to any site-key caller; jobs in flight keep theirs.
+
 ``remove-legacy``
     After the release, delete each legacy row whose canonical copy records
     ``migrated_from`` it.
@@ -24,23 +28,33 @@ Both phases are dry runs unless ``--apply`` is passed.
 Usage::
 
     python3 scripts/migrate_content_hashes.py copy --table <JobsTable> [--apply]
+    python3 scripts/migrate_content_hashes.py revoke-tokens --table <JobsTable> [--apply]
     python3 scripts/migrate_content_hashes.py remove-legacy --table <JobsTable> [--apply]
 """
 
 from __future__ import annotations
 
 import argparse
-import hashlib
-import re
-import unicodedata
+import sys
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import boto3
 
-WHITESPACE_RUN = re.compile(
-    "[\t\n\v\f\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+"
+sys.path.insert(
+    0,
+    str(
+        Path(__file__).resolve().parents[1]
+        / "cdk"
+        / "lambdas"
+        / "operator_auth_layer"
+        / "python"
+    ),
 )
+
+from auritus_content_hash import content_hash  # noqa: E402
+
 FINISHED_STATUSES = ("done", "failed")
 
 
@@ -55,19 +69,7 @@ class MigrationReport:
     canonical_exists: list[tuple[str, str]] = field(default_factory=list)
     missing_text: list[str] = field(default_factory=list)
     kept: list[str] = field(default_factory=list)
-
-
-def canonical_content_hash(text: str, voice_id: str, tts_backend: str) -> str:
-    """Compute the canonical content hash the API and embed use.
-
-    :param text: TTS text, normalized or not.
-    :param voice_id: Resolved voice ID.
-    :param tts_backend: TTS backend name as stored.
-    :returns: Lower-case hex SHA-256.
-    """
-    normalized = WHITESPACE_RUN.sub(" ", unicodedata.normalize("NFC", text)).strip(" ")
-    payload = f"{normalized}\0{voice_id}\0{tts_backend}"
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    revoked: list[str] = field(default_factory=list)
 
 
 def copy_to_canonical(jobs_table: Any, *, apply: bool) -> MigrationReport:
@@ -101,7 +103,11 @@ def copy_to_canonical(jobs_table: Any, *, apply: bool) -> MigrationReport:
         report.copied.append((current, canonical))
         if apply:
             jobs_table.put_item(
-                Item={**item, "content_hash": canonical, "migrated_from": current},
+                Item={
+                    **{key: value for key, value in item.items() if key != "job_token"},
+                    "content_hash": canonical,
+                    "migrated_from": current,
+                },
                 ConditionExpression="attribute_not_exists(content_hash)",
             )
     return report
@@ -135,13 +141,38 @@ def remove_legacy_rows(jobs_table: Any, *, apply: bool) -> MigrationReport:
     return report
 
 
+def revoke_finished_job_tokens(jobs_table: Any, *, apply: bool) -> MigrationReport:
+    """Remove the worker token from every finished job.
+
+    Job creation used to return the worker token to any site-key caller.
+    Finished jobs never need it again; jobs in flight keep it for their
+    Batch worker.
+
+    :param jobs_table: A boto3 DynamoDB ``Table`` resource for the jobs table.
+    :param apply: Remove the tokens; otherwise only report them.
+    :returns: The migration report.
+    """
+    report = MigrationReport()
+    for item in _scan(jobs_table):
+        if "job_token" not in item or item.get("status") not in FINISHED_STATUSES:
+            continue
+        report.revoked.append(item["content_hash"])
+        if apply:
+            jobs_table.update_item(
+                Key={"content_hash": item["content_hash"]},
+                UpdateExpression="REMOVE job_token",
+                ConditionExpression="#status IN (:done, :failed)",
+                ExpressionAttributeNames={"#status": "status"},
+                ExpressionAttributeValues={":done": "done", ":failed": "failed"},
+            )
+    return report
+
+
 def _canonical_for(item: dict[str, Any]) -> str | None:
     text = item.get("text")
     if not text:
         return None
-    return canonical_content_hash(
-        text, item.get("voice_id") or "default", item.get("tts_backend") or ""
-    )
+    return content_hash(text, item.get("voice_id"), item.get("tts_backend"))
 
 
 def _scan(jobs_table: Any):
@@ -157,7 +188,7 @@ def _scan(jobs_table: Any):
 def main() -> None:
     """Run one migration phase from the command line and print the report."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("phase", choices=["copy", "remove-legacy"])
+    parser.add_argument("phase", choices=["copy", "revoke-tokens", "remove-legacy"])
     parser.add_argument("--table", required=True, help="DynamoDB jobs table name")
     parser.add_argument("--region", default="us-east-1")
     parser.add_argument("--apply", action="store_true", help="write the changes")
@@ -180,6 +211,10 @@ def main() -> None:
             f"canonical exists {len(report.canonical_exists)}; "
             f"no text {len(report.missing_text)}"
         )
+        return
+    if args.phase == "revoke-tokens":
+        report = revoke_finished_job_tokens(table, apply=args.apply)
+        print(f"{prefix}revoke {len(report.revoked)} finished-job worker tokens")
         return
     report = remove_legacy_rows(table, apply=args.apply)
     for current, canonical in report.removed:

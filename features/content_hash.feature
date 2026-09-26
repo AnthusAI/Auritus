@@ -58,3 +58,25 @@ Feature: Content hash scope
     When a job is created for the text "Article body" with voice "af_heart" on "kokoro"
     Then the job creation response carries no job token
     And a caller with only the site key cannot claim that job
+
+  Scenario: A finished job's old worker token can no longer upload audio
+    Job creation used to return the job's worker token, so tokens for
+    finished jobs may be in anyone's hands. Only a worker holding the claim
+    may request an upload URL with a job token.
+
+    Given a registered site key
+    And a "done" job whose worker token "leaked-worker-token" was handed out earlier
+    When the worker token "leaked-worker-token" requests an audio upload URL for that job
+    Then the API refuses the upload as forbidden
+
+  Scenario: A claimed job's worker may still upload audio with its token
+    Given a registered site key
+    And a "claimed" job whose worker token "batch-worker-token" was handed out earlier
+    When the worker token "batch-worker-token" requests an audio upload URL for that job
+    Then the API returns an audio upload URL
+
+  Scenario: Finishing a job revokes its worker token
+    Given a registered site key
+    And a "claimed" job whose worker token "batch-worker-token" was handed out earlier
+    When the worker token "batch-worker-token" marks that job done
+    Then the finished job no longer holds a worker token

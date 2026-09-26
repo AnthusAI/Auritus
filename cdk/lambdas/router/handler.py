@@ -3,20 +3,19 @@
 from __future__ import annotations
 
 import base64
-import hashlib
 import hmac
 import json
 import os
-import re
 import secrets
 import time
-import unicodedata
 import uuid
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
 
 import boto3
+from auritus_content_hash import content_hash as compute_content_hash
+from auritus_content_hash import normalize_text, resolve_voice_id
 from auritus_operator_auth import (
     OperatorTokenError,
     bearer_token,
@@ -67,8 +66,6 @@ COST_QUERY_MAX_DAYS = 366
 # -- matches the "what did last month cost" framing this story exists for
 # without forcing every dashboard load to specify an explicit range.
 DEFAULT_COST_RANGE_DAYS = 31
-
-KOKORO_DEFAULT_VOICE_ID = "af_heart"
 
 # The complete set of job lifecycle statuses, as also enumerated in
 # _get_admin_overview's counts dict. Shared here so the unfiltered admin
@@ -188,52 +185,6 @@ def _json_default(value: Any) -> Any:
     if isinstance(value, Decimal):
         return int(value) if value % 1 == 0 else float(value)
     raise TypeError(f"not serializable: {type(value)}")
-
-
-WHITESPACE_RUN = re.compile(
-    "[\t\n\v\f\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+"
-)
-
-
-def _normalize_text(text: str) -> str:
-    """Normalize TTS text for hashing exactly as the embed does.
-
-    Applies Unicode NFC, collapses each run of the characters JavaScript's
-    ``\\s`` matches into one space, and trims.
-
-    :param text: Raw TTS text.
-    :returns: The normalized text.
-    """
-    return WHITESPACE_RUN.sub(" ", unicodedata.normalize("NFC", text)).strip(" ")
-
-
-def _resolve_voice_id(raw: str | None, tts_backend: str) -> str:
-    backend = (tts_backend or "kokoro").strip().lower()
-    if backend == "kokoro":
-        if not raw or raw == "default":
-            return KOKORO_DEFAULT_VOICE_ID
-        return raw
-    if backend == "qwen":
-        if not raw or raw in ("default", "Chelsie"):
-            return "Ryan"
-        return raw
-    if backend in ("fish", "chatterbox"):
-        if not raw or raw == "default":
-            return "narrator"
-        return raw
-    if not raw:
-        return "default"
-    return raw
-
-
-def _content_hash(normalized_text: str, voice_id: str, tts_backend: str) -> str:
-    digest = hashlib.sha256()
-    digest.update(normalized_text.encode("utf-8"))
-    digest.update(b"\0")
-    digest.update(voice_id.encode("utf-8"))
-    digest.update(b"\0")
-    digest.update(tts_backend.encode("utf-8"))
-    return digest.hexdigest()
 
 
 def _require_operator(headers: dict[str, str]) -> None:
@@ -562,14 +513,14 @@ def _create_job(body: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]
 
     text = body.get("text") or ""
     tts_backend = body.get("tts_backend") or "kokoro"
-    voice_id = _resolve_voice_id(body.get("voice_id"), tts_backend)
+    voice_id = resolve_voice_id(body.get("voice_id"), tts_backend)
     name = body.get("name") or ""
     byline = body.get("byline") or ""
-    normalized = _normalize_text(text)
+    normalized = normalize_text(text)
     if not normalized:
         raise ValueError("text_required")
 
-    content_hash = _content_hash(normalized, voice_id, tts_backend)
+    content_hash = compute_content_hash(text, body.get("voice_id"), tts_backend)
     claimed_hash = body.get("content_hash")
     if claimed_hash and claimed_hash != content_hash:
         raise ValueError("content_hash_mismatch")
@@ -908,7 +859,7 @@ def _mark_done(
 
     _jobs.update_item(
         Key={"content_hash": content_hash},
-        UpdateExpression=f"SET {', '.join(set_clauses)} REMOVE claim_deadline",
+        UpdateExpression=f"SET {', '.join(set_clauses)} REMOVE claim_deadline, job_token",
         ConditionExpression="#status IN (:claimed, :pending)",
         ExpressionAttributeNames=attr_names,
         ExpressionAttributeValues=attr_values,
@@ -998,7 +949,7 @@ def _mark_failed(
         attr_values[":ttl"] = ttl_epoch
         attr_names["#ttl"] = "ttl"
 
-    update_expr = f"SET {', '.join(set_clauses)} REMOVE claim_deadline"
+    update_expr = f"SET {', '.join(set_clauses)} REMOVE claim_deadline, job_token"
 
     _jobs.update_item(
         Key={"content_hash": content_hash},
@@ -1046,7 +997,7 @@ def _redeem_token(
         {
             "content_hash": content_hash,
             "text": item.get("text", ""),
-            "voice_id": _resolve_voice_id(
+            "voice_id": resolve_voice_id(
                 item.get("voice_id"), item.get("tts_backend", "kokoro")
             ),
             "tts_backend": item.get("tts_backend", "kokoro"),
@@ -1064,7 +1015,11 @@ def _presign_upload(content_hash: str, headers: dict[str, str]) -> dict[str, Any
     :param headers: Request headers for auth.
     :returns: 200 with ``upload_url``, ``audio_key``, and ``content_type``.
     """
-    if not _check_job_token(headers, content_hash):
+    if _check_job_token(headers, content_hash):
+        item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item") or {}
+        if item.get("status") != "claimed":
+            raise PermissionError("job_not_claimed")
+    else:
         _require_operator(headers)
     audio_key = f"audio/{content_hash}.wav"
     upload_url = _s3.generate_presigned_url(

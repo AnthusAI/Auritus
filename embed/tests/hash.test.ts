@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { computeContentHash, normalizeText } from "../src/generator/hash.js";
 import { resolveVoiceId } from "../src/index.js";
 
@@ -47,6 +47,19 @@ describe("computeContentHash", () => {
   it("changes when voice_id changes", async () => {
     expect(await computeContentHash(SAMPLE_TEXT, VOICE, "kokoro")).not.toBe(
       await computeContentHash(SAMPLE_TEXT, "alt-voice", "kokoro"),
+    );
+  });
+});
+
+describe("computeContentHash outside a secure context", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("explains that Web Crypto needs HTTPS", async () => {
+    vi.stubGlobal("crypto", {});
+    await expect(computeContentHash(SAMPLE_TEXT, VOICE, "kokoro")).rejects.toThrow(
+      /secure context \(HTTPS\)/,
     );
   });
 });

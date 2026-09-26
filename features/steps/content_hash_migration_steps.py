@@ -145,3 +145,25 @@ def step_report_conflict(context, count: int) -> None:
 def step_canonical_unchanged(context) -> None:
     item = _job(context, context.canonical_item["content_hash"])
     assert item == context.canonical_item, item
+
+
+@then("the migrated job holds no worker token")
+def step_migrated_no_token(context) -> None:
+    assert "job_token" not in context.migrated_item, context.migrated_item
+
+
+@when("the worker token revocation runs with apply")
+def step_run_revocation(context) -> None:
+    context.migration_report = _load_migration().revoke_finished_job_tokens(
+        _jobs(context), apply=True
+    )
+
+
+@then('the job under "{content_hash}" holds no worker token')
+def step_job_has_no_token(context, content_hash: str) -> None:
+    assert "job_token" not in _job(context, content_hash)
+
+
+@then('the job under "{content_hash}" still holds its worker token')
+def step_job_keeps_token(context, content_hash: str) -> None:
+    assert _job(context, content_hash)["job_token"] == "legacy-job-token"
