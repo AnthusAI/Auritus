@@ -12,7 +12,14 @@ Feature: Spend guardrails
     When the budget action runs
     Then the Batch job queue state is "DISABLED"
 
-  Scenario: Operator kill switch disables Batch
-    Given an enabled Batch job queue
+  Scenario: Operator kill switch disables Batch through the Auritus API
+    Given an enabled Batch job queue behind the Auritus API
     When the operator runs auritus killswitch disable
     Then the Batch job queue state is "DISABLED"
+    And the kill switch did not fall back to direct AWS access
+
+  Scenario: Operator kill switch re-enables Batch through the Auritus API
+    Given a disabled Batch job queue behind the Auritus API
+    When the operator runs auritus killswitch enable
+    Then the Batch job queue state is "ENABLED"
+    And the kill switch did not fall back to direct AWS access
