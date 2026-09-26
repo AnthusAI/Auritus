@@ -86,6 +86,161 @@ describe("mountPlayer pending Play", () => {
     expect(audio.hasAttribute("controls")).toBe(true);
     expect(audio.src).toContain("speech.wav");
   });
+
+  it("keeps a pending Play going when overlapping polls all report the clip done", async () => {
+    const releases: Array<() => void> = [];
+    let status: JobRecord["status"] = "pending";
+    const api = {
+      getJob: () =>
+        new Promise<JobRecord>((resolve) => {
+          releases.push(() =>
+            resolve({
+              content_hash: "h",
+              status,
+              audio_url: "https://example.test/speech.wav",
+            }),
+          );
+        }),
+    } as unknown as AuritusApiClient;
+    const events: string[] = [];
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(() => {
+      events.push("play");
+      return Promise.resolve();
+    });
+    vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {
+      events.push("load");
+    });
+
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    mountPlayer({
+      host,
+      api,
+      contentHash: "h",
+      name: "Gettysburg",
+      byline: "Lincoln",
+      pollIntervalMs: 5,
+    });
+    (
+      host.shadowRoot?.querySelector(".auritus-play") as HTMLButtonElement
+    ).click();
+
+    await vi.waitFor(() => {
+      expect(releases.length).toBeGreaterThanOrEqual(1);
+    });
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    status = "done";
+    for (const release of releases.splice(0)) {
+      release();
+    }
+    await vi.waitFor(() => {
+      expect(events).toContain("play");
+    });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(events.filter((event) => event === "load")).toHaveLength(1);
+    expect(events[events.length - 1]).toBe("play");
+  });
+});
+
+describe("mountPlayer poll resilience", () => {
+  afterEach(() => {
+    document.body.replaceChildren();
+    vi.restoreAllMocks();
+  });
+
+  it("keeps polling after a job request times out", async () => {
+    const played: string[] = [];
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(function (
+      this: HTMLMediaElement,
+    ) {
+      played.push(this.src);
+      return Promise.resolve();
+    });
+    let calls = 0;
+    const timeouts: Array<number | undefined> = [];
+    const api = {
+      getJob: async (_hash: string, options?: { timeoutMs?: number }) => {
+        timeouts.push(options?.timeoutMs);
+        calls += 1;
+        if (calls === 1) {
+          throw new DOMException("signal timed out", "TimeoutError");
+        }
+        return {
+          content_hash: "h",
+          status: "done",
+          audio_url: "https://example.test/speech.wav",
+        } as JobRecord;
+      },
+    } as unknown as AuritusApiClient;
+
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    mountPlayer({
+      host,
+      api,
+      contentHash: "h",
+      name: "Gettysburg",
+      byline: "Lincoln",
+      pollIntervalMs: 5,
+      pollTimeoutMs: 1234,
+    });
+    (
+      host.shadowRoot?.querySelector(".auritus-play") as HTMLButtonElement
+    ).click();
+
+    await vi.waitFor(() => {
+      expect(played).toHaveLength(1);
+    });
+    expect(timeouts[0]).toBe(1234);
+    const errorEl = host.shadowRoot?.querySelector(
+      ".auritus-error",
+    ) as HTMLParagraphElement;
+    expect(errorEl.hidden).toBe(true);
+  });
+
+  it("ignores a job response that arrives after the player is disposed", async () => {
+    const played: string[] = [];
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(function (
+      this: HTMLMediaElement,
+    ) {
+      played.push(this.src);
+      return Promise.resolve();
+    });
+    vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    let release: (job: JobRecord) => void = () => {};
+    const api = {
+      getJob: () =>
+        new Promise<JobRecord>((resolve) => {
+          release = resolve;
+        }),
+    } as unknown as AuritusApiClient;
+
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    mountPlayer({
+      host,
+      api,
+      contentHash: "h",
+      name: "Gettysburg",
+      byline: "Lincoln",
+      pollIntervalMs: 5,
+    });
+    (
+      host.shadowRoot?.querySelector(".auritus-play") as HTMLButtonElement
+    ).click();
+    host.dispatchEvent(new Event("auritus-dispose"));
+    release({
+      content_hash: "h",
+      status: "done",
+      audio_url: "https://example.test/speech.wav",
+    });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(played).toHaveLength(0);
+    const audio = host.shadowRoot?.querySelector("audio") as HTMLAudioElement;
+    expect(audio.getAttribute("src")).toBeNull();
+  });
 });
 
 describe("formatDuration", () => {
