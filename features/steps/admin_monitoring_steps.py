@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import json
+
 from behave import given, then, when
+
+from support.operator_tokens import operator_headers
 
 
 @given("a set of historical jobs with varied statuses and worker types")
@@ -134,7 +138,18 @@ def step_check_worker_attribution(context) -> None:
 
 @when('the operator toggles the queue state to "{new_state}"')
 def step_toggle_queue_state(context, new_state: str) -> None:
-    context.batch_queue_state = new_state
+    response = context.killswitch_router.handler(
+        {
+            "requestContext": {"http": {"method": "POST"}},
+            "rawPath": "/admin/queue/toggle",
+            "headers": operator_headers(),
+            "body": json.dumps({"state": new_state}),
+            "pathParameters": None,
+            "queryStringParameters": None,
+        },
+        None,
+    )
+    assert response["statusCode"] == 200, response
 
 
 @when("the operator requests jobs with limit {limit:d}")

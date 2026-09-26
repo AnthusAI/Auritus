@@ -18,6 +18,7 @@ from unittest.mock import Mock
 
 import boto3
 import pytest
+from support.operator_tokens import operator_headers
 from moto import mock_aws
 
 
@@ -125,7 +126,7 @@ def cost_router_resources() -> Any:
 
 
 def _operator_headers() -> dict[str, str]:
-    return {"authorization": "Bearer test-operator-token"}
+    return operator_headers()
 
 
 def test_admin_costs_surfaces_account_reconciliation_row(

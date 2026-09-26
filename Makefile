@@ -17,12 +17,14 @@ help:
 check: diagrams lint-python test-python test-construct lint-embed test-embed lint-console test-console build-console synth-cdk
 
 lint-python:
-	cd cli && python3 -m black --check src tests ../features/steps ../worker-image/src
-	cd cli && python3 -m ruff check src tests ../features/steps ../worker-image/src
+	cd cli && python3 -m black --check src tests ../features/steps ../features/support ../worker-image/src
+	cd cli && python3 -m ruff check src tests ../features/steps ../features/support ../worker-image/src
 
 test-python:
 	cd cli && python3 -m pytest -q
+	python3 -m pip install -q -r cdk/requirements.txt
 	cd cli && python3 -m behave ../features
+	cd cdk && python3 -m pytest -q
 
 test-construct:
 	cd construct && npm ci && npm test

@@ -8,9 +8,16 @@ export interface MountPlayerOptions {
   name: string;
   byline: string;
   pollIntervalMs?: number;
+  pollTimeoutMs?: number;
 }
 
 const DEFAULT_POLL_MS = 2000;
+const DEFAULT_POLL_TIMEOUT_MS = 15000;
+
+function isTimeout(err: unknown): boolean {
+  const name = (err as { name?: unknown } | null)?.name;
+  return name === "TimeoutError" || name === "AbortError";
+}
 
 /**
  * Move playback to the start when the clip has already finished.
@@ -71,6 +78,7 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
     name,
     byline,
     pollIntervalMs = DEFAULT_POLL_MS,
+    pollTimeoutMs = DEFAULT_POLL_TIMEOUT_MS,
   } = options;
 
   const shadow = host.shadowRoot ?? host.attachShadow({ mode: "open" });
@@ -126,6 +134,8 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
   }
 
   let pollTimer: ReturnType<typeof setInterval> | undefined;
+  let refreshInFlight = false;
+  let settled = false;
   let pendingPlay =
     host.parentElement?.getAttribute("data-auritus-play-intent") === "true";
 
@@ -143,12 +153,17 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
   }
 
   function applyJob(job: JobRecord): void {
+    if (settled) {
+      return;
+    }
     if (job.status === "failed") {
+      settled = true;
       setError("Audio could not be generated.");
       stopPolling();
       return;
     }
     if (job.status === "done" && job.audio_url) {
+      settled = true;
       stopPolling();
       pendingEl.hidden = true;
       audio.hidden = false;
@@ -178,20 +193,30 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
   }
 
   async function refresh(): Promise<void> {
+    if (refreshInFlight || settled) {
+      return;
+    }
+    refreshInFlight = true;
     try {
-      const job = await api.getJob(contentHash);
+      const job = await api.getJob(contentHash, { timeoutMs: pollTimeoutMs });
       applyJob(job);
     } catch (err) {
+      if (settled) {
+        return;
+      }
       const message = err instanceof Error ? err.message : String(err);
-      if (/\b404\b/.test(message)) {
+      if (isTimeout(err) || /\b404\b/.test(message)) {
         statusEl.hidden = false;
         statusEl.textContent = pendingPlay
           ? "Starting when ready…"
           : "Waiting for audio…";
         return;
       }
+      settled = true;
       setError(message);
       stopPolling();
+    } finally {
+      refreshInFlight = false;
     }
   }
 
@@ -224,6 +249,7 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
   host.addEventListener(
     "auritus-dispose",
     () => {
+      settled = true;
       stopPolling();
       audio.pause();
       audio.removeAttribute("src");

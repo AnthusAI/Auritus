@@ -264,6 +264,16 @@ test("basic example plays Kokoro speech scoped to article", async ({
   expect(durationSeconds).toBeGreaterThanOrEqual(8);
 });
 
+async function clickNativePlayControl(page: Page) {
+  const audio = page.locator(".auritus-root audio");
+  await expect(audio).toBeVisible();
+  const box = await audio.boundingBox();
+  if (!box) {
+    throw new Error("player audio has no layout box");
+  }
+  await page.mouse.click(box.x + 20, box.y + box.height / 2);
+}
+
 test("Play while waiting starts Kokoro when audio arrives", async ({
   page,
 }) => {
@@ -285,35 +295,19 @@ test("Play while waiting starts Kokoro when audio arrives", async ({
     await route.continue();
   });
   await page.goto("/examples/basic");
-  await page.waitForFunction(() => {
-    const play = document
-      .querySelector(".auritus-root")
-      ?.shadowRoot?.querySelector(".auritus-play");
-    return Boolean(play);
-  });
-  await page.locator(".auritus-root").evaluate((host) => {
-    const playBtn = host.shadowRoot?.querySelector(
-      ".auritus-play",
-    ) as HTMLButtonElement | null;
-    playBtn?.click();
-  });
-  const waitingStatus = await page.locator(".auritus-root").evaluate((host) => {
-    return host.shadowRoot?.querySelector(".auritus-status")?.textContent ?? "";
-  });
-  expect(waitingStatus).toContain("Starting when ready");
+  const pendingPlay = page.locator(".auritus-root .auritus-play");
+  await pendingPlay.click();
+  await expect(page.locator(".auritus-root .auritus-status")).toContainText(
+    "Starting when ready",
+  );
   releaseJobGets();
+  await expect(pendingPlay).toBeHidden({ timeout: 120_000 });
   await page.waitForFunction(
     () => {
-      const host = document.querySelector(".auritus-root");
-      const audio = host?.shadowRoot?.querySelector("audio");
-      const playBtn = host?.shadowRoot?.querySelector(
-        ".auritus-play",
-      ) as HTMLButtonElement | null;
-      return Boolean(
-        audio &&
-        !audio.paused &&
-        playBtn?.getAttribute("aria-label") === "Pause",
-      );
+      const audio = document
+        .querySelector(".auritus-root")
+        ?.shadowRoot?.querySelector("audio");
+      return Boolean(audio && !audio.hidden && !audio.paused);
     },
     { timeout: 120_000 },
   );
@@ -324,56 +318,41 @@ test("Play after the clip ends starts Kokoro speech from the beginning", async (
 }) => {
   test.setTimeout(180_000);
   await page.goto("/examples/basic");
-  await page.waitForFunction(
-    () => {
-      const host = document.querySelector(".auritus-root");
-      const playBtn = host?.shadowRoot?.querySelector(
-        ".auritus-play",
-      ) as HTMLButtonElement | null;
-      const audio = host?.shadowRoot?.querySelector("audio");
-      return Boolean(playBtn && !playBtn.disabled && audio?.src);
-    },
-    { timeout: 120_000 },
-  );
+  await waitForPlayableClip(page);
+  const durationSeconds = await clipDurationSeconds(page);
+  expect(durationSeconds).toBeGreaterThanOrEqual(8);
 
   await page.locator(".auritus-root").evaluate(async (host) => {
     const audio = host.shadowRoot?.querySelector("audio");
     if (!audio) {
       throw new Error("player audio missing");
     }
-    if (!Number.isFinite(audio.duration) || audio.duration <= 0) {
-      await new Promise<void>((resolve, reject) => {
-        audio.addEventListener("loadedmetadata", () => resolve(), {
-          once: true,
-        });
-        audio.addEventListener(
-          "error",
-          () => reject(new Error("audio metadata load failed")),
-          { once: true },
-        );
-        audio.load();
-      });
-    }
-    audio.pause();
-    audio.currentTime = audio.duration;
+    audio.muted = true;
+    const ended = new Promise<void>((resolve) => {
+      audio.addEventListener("ended", () => resolve(), { once: true });
+    });
+    audio.currentTime = Math.max(0, audio.duration - 0.25);
+    await audio.play();
+    await ended;
   });
 
-  await page.getByRole("button", { name: "Play", disabled: false }).click();
+  const rewoundTo = await page.locator(".auritus-root").evaluate((host) => {
+    return host.shadowRoot?.querySelector("audio")?.currentTime ?? -1;
+  });
+  expect(rewoundTo).toBe(0);
+
+  await clickNativePlayControl(page);
 
   await page.waitForFunction(
     () => {
-      const host = document.querySelector(".auritus-root");
-      const audio = host?.shadowRoot?.querySelector("audio");
-      const playBtn = host?.shadowRoot?.querySelector(
-        ".auritus-play",
-      ) as HTMLButtonElement | null;
+      const audio = document
+        .querySelector(".auritus-root")
+        ?.shadowRoot?.querySelector("audio");
       return Boolean(
         audio &&
-        playBtn &&
         !audio.paused &&
         audio.currentTime > 0 &&
-        audio.currentTime < 8 &&
-        playBtn.getAttribute("aria-label") === "Pause",
+        audio.currentTime < 8,
       );
     },
     { timeout: 15_000 },
@@ -832,7 +811,9 @@ test("Chatterbox example page supports interactive voice selection", async ({
   const seriousPill = voiceShell.locator(".voice-pill", { hasText: "Serious" });
   await seriousPill.click();
 
-  await expect(voiceShell.locator(".voice-pill.active")).toContainText("Serious");
+  await expect(voiceShell.locator(".voice-pill.active")).toContainText(
+    "Serious",
+  );
   await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
     "data-auritus-voice",
     "serious",
@@ -867,7 +848,9 @@ test("F5 example page supports interactive voice selection", async ({
   const seriousPill = voiceShell.locator(".voice-pill", { hasText: "Serious" });
   await seriousPill.click();
 
-  await expect(voiceShell.locator(".voice-pill.active")).toContainText("Serious");
+  await expect(voiceShell.locator(".voice-pill.active")).toContainText(
+    "Serious",
+  );
   await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
     "data-auritus-voice",
     "serious",
@@ -902,7 +885,9 @@ test("Fish example page supports interactive voice selection", async ({
   const seriousPill = voiceShell.locator(".voice-pill", { hasText: "Serious" });
   await seriousPill.click();
 
-  await expect(voiceShell.locator(".voice-pill.active")).toContainText("Serious");
+  await expect(voiceShell.locator(".voice-pill.active")).toContainText(
+    "Serious",
+  );
   await expect(page.locator("[data-auritus-voice]")).toHaveAttribute(
     "data-auritus-voice",
     "serious",
@@ -911,4 +896,3 @@ test("Fish example page supports interactive voice selection", async ({
     "Fish Speech (Serious)",
   );
 });
-

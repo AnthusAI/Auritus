@@ -79,6 +79,8 @@ from aws_cdk import (
 )
 from constructs import Construct
 
+from stacks.operator_auth_layer import build_operator_auth_layer
+
 LAMBDA_ROOT = Path(__file__).resolve().parents[1] / "lambdas"
 DEFAULT_CLAIM_TIMEOUT_SECONDS = 900
 DEFAULT_RACE_SECONDS = 900
@@ -525,12 +527,21 @@ class BackendStack(Stack):
         if saml_idp:
             web_console_client.node.add_dependency(saml_idp)
 
+        operator_auth_layer = build_operator_auth_layer(self)
+        operator_client_ids = ",".join(
+            [
+                user_pool_client.user_pool_client_id,
+                web_console_client.user_pool_client_id,
+            ]
+        )
+
         router_fn = lambda_.Function(
             self,
             "RouterFn",
             runtime=lambda_.Runtime.PYTHON_3_11,
             handler="handler.handler",
             code=lambda_.Code.from_asset(str(LAMBDA_ROOT / "router")),
+            layers=[operator_auth_layer],
             timeout=Duration.seconds(30),
             memory_size=512,
             environment={
@@ -543,6 +554,7 @@ class BackendStack(Stack):
                     self.node.try_get_context("daily_site_quota") or 100
                 ),
                 "USER_POOL_ID": user_pool.user_pool_id,
+                "ALLOWED_CLIENT_IDS": operator_client_ids,
                 "SES_FROM_ADDRESS": str(
                     self.node.try_get_context("alert_from_address")
                     or "auritus@example.com"
@@ -586,11 +598,11 @@ class BackendStack(Stack):
             runtime=lambda_.Runtime.PYTHON_3_11,
             handler="handler.handler",
             code=lambda_.Code.from_asset(str(LAMBDA_ROOT / "authorizer")),
+            layers=[operator_auth_layer],
             timeout=Duration.seconds(10),
             environment={
                 "USER_POOL_ID": user_pool.user_pool_id,
-                "CLIENT_ID": user_pool_client.user_pool_client_id,
-                "ALLOWED_CLIENT_IDS": f"{user_pool_client.user_pool_client_id},{web_console_client.user_pool_client_id}",
+                "ALLOWED_CLIENT_IDS": operator_client_ids,
             },
         )
 
@@ -860,6 +872,49 @@ class BackendStack(Stack):
                 }
             ),
             result_path="$.batch",
+        )
+
+        batch_submit_failed = sfn.Fail(
+            self,
+            "BatchFallbackFailed",
+            error="BatchFallbackFailed",
+            cause="AWS Batch did not run the GPU job; the job was marked failed.",
+        )
+        mark_job_failed_on_submit_error = sfn_tasks.DynamoUpdateItem(
+            self,
+            "MarkJobFailedOnSubmitError",
+            table=jobs,
+            key={
+                "content_hash": sfn_tasks.DynamoAttributeValue.from_string(
+                    sfn.JsonPath.string_at("$.content_hash")
+                )
+            },
+            update_expression=(
+                "SET #status = :failed, error_message = :reason, "
+                "failed_at = :failed_at, updated_at = :failed_at"
+            ),
+            condition_expression="#status = :pending",
+            expression_attribute_names={"#status": "status"},
+            expression_attribute_values={
+                ":failed": sfn_tasks.DynamoAttributeValue.from_string("failed"),
+                ":pending": sfn_tasks.DynamoAttributeValue.from_string("pending"),
+                ":reason": sfn_tasks.DynamoAttributeValue.from_string(
+                    "batch_fallback_failed"
+                ),
+                ":failed_at": sfn_tasks.DynamoAttributeValue.from_string(
+                    sfn.JsonPath.string_at("$$.State.EnteredTime")
+                ),
+            },
+            result_path=sfn.JsonPath.DISCARD,
+        )
+        mark_job_failed_on_submit_error.add_catch(
+            batch_submit_failed, errors=["States.ALL"]
+        )
+        mark_job_failed_on_submit_error.next(batch_submit_failed)
+        submit_batch.add_catch(
+            mark_job_failed_on_submit_error,
+            errors=["States.ALL"],
+            result_path="$.submit_error",
         )
 
         local_delivered = sfn.Succeed(self, "LocalWorkerDelivered")
