@@ -86,6 +86,61 @@ describe("mountPlayer pending Play", () => {
     expect(audio.hasAttribute("controls")).toBe(true);
     expect(audio.src).toContain("speech.wav");
   });
+
+  it("keeps a pending Play going when overlapping polls all report the clip done", async () => {
+    const releases: Array<() => void> = [];
+    let status: JobRecord["status"] = "pending";
+    const api = {
+      getJob: () =>
+        new Promise<JobRecord>((resolve) => {
+          releases.push(() =>
+            resolve({
+              content_hash: "h",
+              status,
+              audio_url: "https://example.test/speech.wav",
+            }),
+          );
+        }),
+    } as unknown as AuritusApiClient;
+    const events: string[] = [];
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(() => {
+      events.push("play");
+      return Promise.resolve();
+    });
+    vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {
+      events.push("load");
+    });
+
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    mountPlayer({
+      host,
+      api,
+      contentHash: "h",
+      name: "Gettysburg",
+      byline: "Lincoln",
+      pollIntervalMs: 5,
+    });
+    (
+      host.shadowRoot?.querySelector(".auritus-play") as HTMLButtonElement
+    ).click();
+
+    await vi.waitFor(() => {
+      expect(releases.length).toBeGreaterThanOrEqual(1);
+    });
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    status = "done";
+    for (const release of releases.splice(0)) {
+      release();
+    }
+    await vi.waitFor(() => {
+      expect(events).toContain("play");
+    });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(events.filter((event) => event === "load")).toHaveLength(1);
+    expect(events[events.length - 1]).toBe("play");
+  });
 });
 
 describe("formatDuration", () => {

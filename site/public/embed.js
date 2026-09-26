@@ -404,6 +404,8 @@ var Auritus = (() => {
       bylineEl.hidden = true;
     }
     let pollTimer;
+    let refreshInFlight = false;
+    let settled = false;
     let pendingPlay = host.parentElement?.getAttribute("data-auritus-play-intent") === "true";
     playBtn.disabled = false;
     if (pendingPlay) {
@@ -416,12 +418,17 @@ var Auritus = (() => {
       pendingEl.hidden = true;
     }
     function applyJob(job) {
+      if (settled) {
+        return;
+      }
       if (job.status === "failed") {
+        settled = true;
         setError("Audio could not be generated.");
         stopPolling();
         return;
       }
       if (job.status === "done" && job.audio_url) {
+        settled = true;
         stopPolling();
         pendingEl.hidden = true;
         audio.hidden = false;
@@ -444,18 +451,28 @@ var Auritus = (() => {
       }
     }
     async function refresh() {
+      if (refreshInFlight || settled) {
+        return;
+      }
+      refreshInFlight = true;
       try {
         const job = await api.getJob(contentHash);
         applyJob(job);
       } catch (err) {
+        if (settled) {
+          return;
+        }
         const message = err instanceof Error ? err.message : String(err);
         if (/\b404\b/.test(message)) {
           statusEl.hidden = false;
           statusEl.textContent = pendingPlay ? "Starting when ready\u2026" : "Waiting for audio\u2026";
           return;
         }
+        settled = true;
         setError(message);
         stopPolling();
+      } finally {
+        refreshInFlight = false;
       }
     }
     function startPolling() {
@@ -518,9 +535,7 @@ var Auritus = (() => {
       }
     }
     console.warn(
-      `Auritus embed: data-auritus-api is not set. Falling back to "${fallback}". ` +
-        "If your embed is served from a CDN or static host, set " +
-        'data-auritus-api="https://YOUR_API_GATEWAY_URL" on the script tag.'
+      `Auritus embed: data-auritus-api is not set. Falling back to "${fallback}". If your embed is served from a CDN or static host, set data-auritus-api="https://YOUR_API_GATEWAY_URL" on the script tag.`
     );
     return fallback;
   }
