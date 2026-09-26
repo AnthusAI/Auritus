@@ -24,10 +24,22 @@
         "model": "claude-opus-5-5",
         "name": "Claude Code desktop"
       }
+    },
+    {
+      "id": "5fc1539f-68b4-4d61-83b3-ccf2067a2fa5",
+      "author": "home",
+      "text": "Merged in #76 (3233413) after two review rounds. Live data already changed: copy phase (41 jobs copied to canonical keys) and revoke-tokens (77 worker tokens removed; no job holds one). Remaining, awaiting user go-ahead: release site (promote develop -> main, major version), then `cdk deploy`, then `copy --apply` again and `remove-legacy --apply`. Keep open until then.",
+      "created_at": "2026-09-26T23:55:17.794654Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code desktop"
+      }
     }
   ],
   "created_at": "2026-09-26T19:04:31.653321Z",
-  "updated_at": "2026-09-26T23:31:50.994376Z",
+  "updated_at": "2026-09-26T23:55:17.794680Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
