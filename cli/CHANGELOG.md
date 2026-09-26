@@ -2,6 +2,160 @@
 
 <!-- version list -->
 
+## v0.27.0 (2026-09-26)
+
+### Bug Fixes
+
+- **auritus-d13b25**: Declare numpy for the test suite
+  ([#64](https://github.com/AnthusAI/Auritus/pull/64),
+  [`fdf3a37`](https://github.com/AnthusAI/Auritus/commit/fdf3a37001cb8a88b8d9735ca03162581f43659a))
+
+- **auritus-d13b25**: Pin ruff and black so CI lint cannot drift
+  ([#64](https://github.com/AnthusAI/Auritus/pull/64),
+  [`fdf3a37`](https://github.com/AnthusAI/Auritus/commit/fdf3a37001cb8a88b8d9735ca03162581f43659a))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`56442c0`](https://github.com/AnthusAI/Auritus/commit/56442c03e8134e62b796268774ae6f10176f7bb7))
+
+- **kanbus**: Commit board state (issues)
+  ([`3fa360f`](https://github.com/AnthusAI/Auritus/commit/3fa360f64a3e4317fa23f6adbb364bdbdcdba4a1))
+
+- **kanbus**: Commit board state (issues)
+  ([`8571e67`](https://github.com/AnthusAI/Auritus/commit/8571e673aafc9a89ceb019e79ab93db39d668afc))
+
+- **kanbus**: Commit board state (issues)
+  ([`b24ac2d`](https://github.com/AnthusAI/Auritus/commit/b24ac2d1e9262a571a83f8b8571fd2dc87339c1c))
+
+- **kanbus**: Commit board state (issues)
+  ([`03e00dd`](https://github.com/AnthusAI/Auritus/commit/03e00ddf48cd42b792bd51cb2b87548343275567))
+
+- **kanbus**: Commit board state (issues)
+  ([`2d9d985`](https://github.com/AnthusAI/Auritus/commit/2d9d9854607ff4b36b79f422318d6ed698ea203c))
+
+- **kanbus**: Commit board state (issues)
+  ([`9ca7889`](https://github.com/AnthusAI/Auritus/commit/9ca78892a7c089758607bf493c3645a8dbd9882f))
+
+- **kanbus**: Commit board state (issues)
+  ([`4b6cd68`](https://github.com/AnthusAI/Auritus/commit/4b6cd68c29ef92ea61f3eb067da5eeaca76df7f1))
+
+- **kanbus**: Commit board state (issues)
+  ([`eeb1ef4`](https://github.com/AnthusAI/Auritus/commit/eeb1ef48cb8850f7601875a14a2d783eed7c8869))
+
+- **kanbus**: Commit board state (issues)
+  ([`4691e1d`](https://github.com/AnthusAI/Auritus/commit/4691e1ddc01968a9c2a027ae218a4d6ddcbfdd97))
+
+- **kanbus**: Commit board state (issues)
+  ([`ad7ceeb`](https://github.com/AnthusAI/Auritus/commit/ad7ceebcc262ba8b2e2251885caa693b9b0607bc))
+
+- **kanbus**: Commit board state (issues)
+  ([`9457aac`](https://github.com/AnthusAI/Auritus/commit/9457aac56eff4043b1bee4b01ad5ff2f72faa438))
+
+- **kanbus**: Commit board state (issues)
+  ([`759ebcd`](https://github.com/AnthusAI/Auritus/commit/759ebcdbadf1a70d9eb4040504890bae06b71077))
+
+- **project**: Close bug 63ef65 (NAT gateway removed, PR #61)
+  ([`4d1e5e7`](https://github.com/AnthusAI/Auritus/commit/4d1e5e77e8a061b00a0b430af9c9fc1e7e892c04))
+
+- **project**: Close bug 63ef65 (NAT gateway removed, PR #61)
+  ([`c59e21c`](https://github.com/AnthusAI/Auritus/commit/c59e21cfaacaab1086448db2d724a526577bb39a))
+
+### Features
+
+- **auritus-0fe2de**: Publish the construct to GitHub Packages
+  ([#73](https://github.com/AnthusAI/Auritus/pull/73),
+  [`8295492`](https://github.com/AnthusAI/Auritus/commit/82954924ebfbccde134f9ad3b0c237d6161a2704))
+
+- **auritus-0fe2de**: Releases publish a versioned worker image and the construct
+  ([#73](https://github.com/AnthusAI/Auritus/pull/73),
+  [`8295492`](https://github.com/AnthusAI/Auritus/commit/82954924ebfbccde134f9ad3b0c237d6161a2704))
+
+- **auritus-2c8992**: Batch render mode writes speech and metadata for the host
+  ([#73](https://github.com/AnthusAI/Auritus/pull/73),
+  [`8295492`](https://github.com/AnthusAI/Auritus/commit/82954924ebfbccde134f9ad3b0c237d6161a2704))
+
+- **auritus-2c8992**: Batch render mode writes speech and metadata for the host
+  ([#72](https://github.com/AnthusAI/Auritus/pull/72),
+  [`4d0cd8d`](https://github.com/AnthusAI/Auritus/commit/4d0cd8d7f003fc63d4fd4559decaef3ced6d917e))
+
+- **auritus-2c8992**: Batch render mode writes speech and metadata for the host
+  ([#70](https://github.com/AnthusAI/Auritus/pull/70),
+  [`21d67ff`](https://github.com/AnthusAI/Auritus/commit/21d67ff2510888e3442f59c52625490b337dedbe))
+
+- **auritus-575fd4**: The worker image runs the auritus package; one backend codebase
+  ([#73](https://github.com/AnthusAI/Auritus/pull/73),
+  [`8295492`](https://github.com/AnthusAI/Auritus/commit/82954924ebfbccde134f9ad3b0c237d6161a2704))
+
+- **auritus-575fd4**: The worker image runs the auritus package; one backend codebase
+  ([#72](https://github.com/AnthusAI/Auritus/pull/72),
+  [`4d0cd8d`](https://github.com/AnthusAI/Auritus/commit/4d0cd8d7f003fc63d4fd4559decaef3ced6d917e))
+
+- **auritus-575fd4**: The worker image runs the auritus package; one backend codebase
+  ([#70](https://github.com/AnthusAI/Auritus/pull/70),
+  [`21d67ff`](https://github.com/AnthusAI/Auritus/commit/21d67ff2510888e3442f59c52625490b337dedbe))
+
+- **auritus-575fd4**: The worker image runs the auritus package; one backend codebase
+  ([#68](https://github.com/AnthusAI/Auritus/pull/68),
+  [`7542448`](https://github.com/AnthusAI/Auritus/commit/7542448d419bd187d76383738bc4241f5a2c3d45))
+
+- **auritus-70d43b**: Typed offline speech synthesis API
+  ([#63](https://github.com/AnthusAI/Auritus/pull/63),
+  [`dc633c7`](https://github.com/AnthusAI/Auritus/commit/dc633c7a1ddf09ec68b14e55d93a1fee135a875b))
+
+- **auritus-c9d582**: Reusable jsii CDK constructs GpuRenderFleet and SpeechRenderer
+  ([#73](https://github.com/AnthusAI/Auritus/pull/73),
+  [`8295492`](https://github.com/AnthusAI/Auritus/commit/82954924ebfbccde134f9ad3b0c237d6161a2704))
+
+- **auritus-c9d582**: Reusable jsii CDK constructs GpuRenderFleet and SpeechRenderer
+  ([#72](https://github.com/AnthusAI/Auritus/pull/72),
+  [`4d0cd8d`](https://github.com/AnthusAI/Auritus/commit/4d0cd8d7f003fc63d4fd4559decaef3ced6d917e))
+
+- **auritus-f6c3e1**: Missing backends raise BackendUnavailable, never fake audio
+  ([#73](https://github.com/AnthusAI/Auritus/pull/73),
+  [`8295492`](https://github.com/AnthusAI/Auritus/commit/82954924ebfbccde134f9ad3b0c237d6161a2704))
+
+- **auritus-f6c3e1**: Missing backends raise BackendUnavailable, never fake audio
+  ([#72](https://github.com/AnthusAI/Auritus/pull/72),
+  [`4d0cd8d`](https://github.com/AnthusAI/Auritus/commit/4d0cd8d7f003fc63d4fd4559decaef3ced6d917e))
+
+- **auritus-f6c3e1**: Missing backends raise BackendUnavailable, never fake audio
+  ([#70](https://github.com/AnthusAI/Auritus/pull/70),
+  [`21d67ff`](https://github.com/AnthusAI/Auritus/commit/21d67ff2510888e3442f59c52625490b337dedbe))
+
+- **auritus-f6c3e1**: Missing backends raise BackendUnavailable, never fake audio
+  ([#68](https://github.com/AnthusAI/Auritus/pull/68),
+  [`7542448`](https://github.com/AnthusAI/Auritus/commit/7542448d419bd187d76383738bc4241f5a2c3d45))
+
+- **auritus-f6c3e1**: Missing backends raise BackendUnavailable, never fake audio
+  ([#66](https://github.com/AnthusAI/Auritus/pull/66),
+  [`186ea4b`](https://github.com/AnthusAI/Auritus/commit/186ea4bdba9669b1b5f8dff7193ce50ebbddf4dd))
+
+- **auritus-f6c3e1**: Missing backends raise BackendUnavailable, never fake audio
+  ([#65](https://github.com/AnthusAI/Auritus/pull/65),
+  [`ec0f349`](https://github.com/AnthusAI/Auritus/commit/ec0f3499883ddff055e375b2fd50c531c7d18ea7))
+
+- **auritus-ff3401**: Reference voices come only from an explicit folder
+  ([#73](https://github.com/AnthusAI/Auritus/pull/73),
+  [`8295492`](https://github.com/AnthusAI/Auritus/commit/82954924ebfbccde134f9ad3b0c237d6161a2704))
+
+- **auritus-ff3401**: Reference voices come only from an explicit folder
+  ([#72](https://github.com/AnthusAI/Auritus/pull/72),
+  [`4d0cd8d`](https://github.com/AnthusAI/Auritus/commit/4d0cd8d7f003fc63d4fd4559decaef3ced6d917e))
+
+- **auritus-ff3401**: Reference voices come only from an explicit folder
+  ([#70](https://github.com/AnthusAI/Auritus/pull/70),
+  [`21d67ff`](https://github.com/AnthusAI/Auritus/commit/21d67ff2510888e3442f59c52625490b337dedbe))
+
+- **auritus-ff3401**: Reference voices come only from an explicit folder
+  ([#68](https://github.com/AnthusAI/Auritus/pull/68),
+  [`7542448`](https://github.com/AnthusAI/Auritus/commit/7542448d419bd187d76383738bc4241f5a2c3d45))
+
+- **auritus-ff3401**: Reference voices come only from an explicit folder
+  ([#66](https://github.com/AnthusAI/Auritus/pull/66),
+  [`186ea4b`](https://github.com/AnthusAI/Auritus/commit/186ea4bdba9669b1b5f8dff7193ce50ebbddf4dd))
+
+
 ## v0.26.1 (2026-09-19)
 
 ### Bug Fixes
