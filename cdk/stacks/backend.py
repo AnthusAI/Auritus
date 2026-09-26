@@ -864,9 +864,9 @@ class BackendStack(Stack):
 
         batch_submit_failed = sfn.Fail(
             self,
-            "BatchSubmitFailed",
-            error="BatchSubmitFailed",
-            cause="AWS Batch refused the GPU job; the job was marked failed.",
+            "BatchFallbackFailed",
+            error="BatchFallbackFailed",
+            cause="AWS Batch did not run the GPU job; the job was marked failed.",
         )
         mark_job_failed_on_submit_error = sfn_tasks.DynamoUpdateItem(
             self,
@@ -879,7 +879,7 @@ class BackendStack(Stack):
             },
             update_expression=(
                 "SET #status = :failed, error_message = :reason, "
-                "failed_at = :failed_at"
+                "failed_at = :failed_at, updated_at = :failed_at"
             ),
             condition_expression="#status = :pending",
             expression_attribute_names={"#status": "status"},
@@ -887,7 +887,7 @@ class BackendStack(Stack):
                 ":failed": sfn_tasks.DynamoAttributeValue.from_string("failed"),
                 ":pending": sfn_tasks.DynamoAttributeValue.from_string("pending"),
                 ":reason": sfn_tasks.DynamoAttributeValue.from_string(
-                    "batch_submit_failed"
+                    "batch_fallback_failed"
                 ),
                 ":failed_at": sfn_tasks.DynamoAttributeValue.from_string(
                     sfn.JsonPath.string_at("$$.State.EnteredTime")

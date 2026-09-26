@@ -21,6 +21,7 @@ lint-python:
 
 test-python:
 	cd cli && python3 -m pytest -q
+	python3 -m pip install -q -r cdk/requirements.txt
 	cd cli && python3 -m behave ../features
 
 lint-embed:

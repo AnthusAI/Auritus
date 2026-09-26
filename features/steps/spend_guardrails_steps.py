@@ -83,7 +83,7 @@ def step_fallback_machine(context) -> None:
     context.fallback_states = _fallback_definition()["States"]
 
 
-@when("the fallback's Batch submission for a pending job is refused")
+@when("the fallback's Batch job for a pending job fails or is refused")
 def step_submit_refused(context) -> None:
     catchers = context.fallback_states["SubmitGpuJob"].get("Catch") or []
     handler = next(
@@ -109,6 +109,7 @@ def step_marks_failed(context, error_message: str) -> None:
     assert values[assignments[status_placeholder]] == {"S": "failed"}
     assert values[assignments["error_message"]] == {"S": error_message}
     assert "failed_at" in assignments
+    assert "updated_at" in assignments
 
 
 @then("the fallback only marks the job failed while it is still pending")
