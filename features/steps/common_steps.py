@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import hashlib
+import re
 import sys
+import unicodedata
 from pathlib import Path
 
 from behave import given, then, when
@@ -12,8 +14,13 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "cli" / "src"))
 
 
+WHITESPACE_RUN = re.compile(
+    "[\t\n\v\f\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+"
+)
+
+
 def _normalize(text: str) -> str:
-    return " ".join(text.split())
+    return WHITESPACE_RUN.sub(" ", unicodedata.normalize("NFC", text)).strip(" ")
 
 
 def _hash(text: str, voice_id: str, tts_backend: str = "kokoro") -> str:

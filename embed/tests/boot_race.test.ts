@@ -64,4 +64,32 @@ describe("overlapping boot", () => {
     const play = hosts[0]?.shadowRoot?.querySelector(".auritus-play");
     expect(play).toBeTruthy();
   });
+
+  it("never mounts a player for a boot superseded while it was hashing", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => pendingResponse()),
+    );
+    const mountPoint = document.querySelector(
+      ".auritus-player-host",
+    ) as HTMLElement;
+    let playersAttached = 0;
+    const observer = new dom.window.MutationObserver((records) => {
+      for (const record of records) {
+        playersAttached += Array.from(record.addedNodes).filter(
+          (node) => (node as HTMLElement).className === "auritus-root",
+        ).length;
+      }
+    });
+    observer.observe(mountPoint, { childList: true });
+
+    const element = document.querySelector(
+      "[data-auritus-site-key]",
+    ) as HTMLElement;
+    await Promise.all([boot({ element }), boot({ element })]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    observer.disconnect();
+
+    expect(playersAttached).toBe(1);
+  });
 });

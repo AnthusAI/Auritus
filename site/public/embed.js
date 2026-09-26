@@ -35,7 +35,7 @@ var Auritus = (() => {
     normalizeText: () => normalizeText,
     readEmbedConfig: () => readEmbedConfig,
     readEmbedMetadata: () => readEmbedMetadata,
-    resolveDefaultVoice: () => resolveDefaultVoice,
+    resolveVoiceId: () => resolveVoiceId,
     rewindIfEnded: () => rewindIfEnded
   });
 
@@ -105,19 +105,22 @@ var Auritus = (() => {
   function normalizeText(text) {
     return text.normalize("NFC").replace(/\s+/g, " ").trim();
   }
-  var FNV_OFFSET_BASIS = 2166136261;
-  var FNV_PRIME = 16777619;
-  function fnv1a32(input) {
-    let hash = FNV_OFFSET_BASIS;
-    for (let i = 0; i < input.length; i++) {
-      hash ^= input.charCodeAt(i);
-      hash = Math.imul(hash, FNV_PRIME);
-    }
-    return (hash >>> 0).toString(16).padStart(8, "0");
-  }
-  function computeContentHash(text, voiceId, ttsBackend) {
+  async function computeContentHash(text, voiceId, ttsBackend) {
     const payload = `${normalizeText(text)}\0${voiceId}\0${ttsBackend}`;
-    return fnv1a32(payload);
+    const subtle = globalThis.crypto?.subtle;
+    if (!subtle) {
+      throw new Error(
+        "Auritus embed: computing the content hash needs Web Crypto, which browsers only provide in a secure context (HTTPS)"
+      );
+    }
+    const digest = await subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(payload)
+    );
+    return Array.from(
+      new Uint8Array(digest),
+      (byte) => byte.toString(16).padStart(2, "0")
+    ).join("");
   }
 
   // src/generator/metadata.ts
@@ -519,18 +522,19 @@ var Auritus = (() => {
   }
 
   // src/index.ts
-  function resolveDefaultVoice(ttsBackend) {
+  function resolveVoiceId(rawVoice, ttsBackend) {
     const backend = (ttsBackend || "kokoro").trim().toLowerCase();
+    const unset = !rawVoice || rawVoice === "default";
     switch (backend) {
       case "kokoro":
-        return "af_heart";
+        return unset ? "af_heart" : rawVoice;
       case "qwen":
-        return "Ryan";
+        return unset || rawVoice === "Chelsie" ? "Ryan" : rawVoice;
       case "fish":
       case "chatterbox":
-        return "narrator";
+        return unset ? "narrator" : rawVoice;
       default:
-        return "default";
+        return rawVoice || "default";
     }
   }
   function apiBaseFromElement(element) {
@@ -567,7 +571,7 @@ var Auritus = (() => {
     }
     const ttsBackend = element.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro";
     const explicitVoice = element.getAttribute("data-auritus-voice")?.trim();
-    const voiceId = explicitVoice || resolveDefaultVoice(ttsBackend);
+    const voiceId = resolveVoiceId(explicitVoice, ttsBackend);
     return {
       siteKey,
       apiBaseUrl: apiBaseFromElement(element),
@@ -610,11 +614,16 @@ var Auritus = (() => {
       root: config.root,
       ignoreSelectors: config.ignoreSelectors
     });
-    const contentHash = computeContentHash(
+    const contentHash = await computeContentHash(
       text,
       config.voiceId,
       config.ttsBackend
     );
+    if (generation !== bootGeneration) {
+      const skipped = document.createElement("div");
+      skipped.setAttribute("data-auritus-boot-skipped", "true");
+      return skipped;
+    }
     const api = new AuritusApiClient({
       baseUrl: config.apiBaseUrl,
       siteKey: config.siteKey
