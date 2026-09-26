@@ -874,6 +874,49 @@ class BackendStack(Stack):
             result_path="$.batch",
         )
 
+        batch_submit_failed = sfn.Fail(
+            self,
+            "BatchFallbackFailed",
+            error="BatchFallbackFailed",
+            cause="AWS Batch did not run the GPU job; the job was marked failed.",
+        )
+        mark_job_failed_on_submit_error = sfn_tasks.DynamoUpdateItem(
+            self,
+            "MarkJobFailedOnSubmitError",
+            table=jobs,
+            key={
+                "content_hash": sfn_tasks.DynamoAttributeValue.from_string(
+                    sfn.JsonPath.string_at("$.content_hash")
+                )
+            },
+            update_expression=(
+                "SET #status = :failed, error_message = :reason, "
+                "failed_at = :failed_at, updated_at = :failed_at"
+            ),
+            condition_expression="#status = :pending",
+            expression_attribute_names={"#status": "status"},
+            expression_attribute_values={
+                ":failed": sfn_tasks.DynamoAttributeValue.from_string("failed"),
+                ":pending": sfn_tasks.DynamoAttributeValue.from_string("pending"),
+                ":reason": sfn_tasks.DynamoAttributeValue.from_string(
+                    "batch_fallback_failed"
+                ),
+                ":failed_at": sfn_tasks.DynamoAttributeValue.from_string(
+                    sfn.JsonPath.string_at("$$.State.EnteredTime")
+                ),
+            },
+            result_path=sfn.JsonPath.DISCARD,
+        )
+        mark_job_failed_on_submit_error.add_catch(
+            batch_submit_failed, errors=["States.ALL"]
+        )
+        mark_job_failed_on_submit_error.next(batch_submit_failed)
+        submit_batch.add_catch(
+            mark_job_failed_on_submit_error,
+            errors=["States.ALL"],
+            result_path="$.submit_error",
+        )
+
         local_delivered = sfn.Succeed(self, "LocalWorkerDelivered")
 
         check_delivery_after_grace = sfn.Choice(self, "CheckDeliveryAfterGrace")

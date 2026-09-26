@@ -16,3 +16,17 @@ Feature: Spend guardrails
     Given an enabled Batch job queue
     When the operator runs auritus killswitch disable
     Then the Batch job queue state is "DISABLED"
+
+  Scenario: A pending job the Batch fallback cannot run is marked failed
+    The fallback submits a job that no local worker claimed within the race
+    window. If AWS Batch refuses the submission (for example because the
+    spend guardrails or the kill switch disabled the queue) or fails the job
+    before a worker claims it, the job is marked failed instead of staying
+    pending forever. While the kill switch is engaged, unclaimed jobs
+    therefore fail after the race window and need an operator retry.
+
+    Given the deployed Batch fallback state machine
+    When the fallback's Batch job for a pending job fails or is refused
+    Then the fallback marks the job failed with error "batch_fallback_failed"
+    And the fallback only marks the job failed while it is still pending
+    And the fallback execution ends as failed
