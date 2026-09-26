@@ -3,17 +3,30 @@
   "title": "auritus killswitch calls a non-existent /admin/killswitch route",
   "description": "`cli/src/auritus/api.py` `disable_batch_queue` / `enable_batch_queue` POST to `/admin/killswitch`, which is not a route on `auritus-api` (404). The CLI then falls back to boto3 `UpdateJobQueue`, which only works if the operator has AWS credentials and `batch_queue` in config.\n\nFix: call `POST /admin/queue/toggle` with `{\"state\": \"DISABLED\"}` / `{\"state\": \"ENABLED\"}`. Keep the boto3 fallback. Gherkin scenario in `features/spend_guardrails.feature`.",
   "type": "bug",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "auritus-55faa0cb-66e9-423a-9298-caa8f7a3df79",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "87d07f9f-3951-4599-bbd7-de5b14e1a664",
+      "author": "home",
+      "text": "Merged in #71. `auritus killswitch disable|enable` now POSTs `{\"state\": ...}` to `/admin/queue/toggle`; the kill switch and queue toggle scenarios run the real CLI against the router. CLI change ships with the next release; no backend deploy needed. Follow-up: auritus-d9d878.",
+      "created_at": "2026-09-26T20:40:22.571340Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code desktop"
+      }
+    }
+  ],
   "created_at": "2026-09-26T18:44:06.868611Z",
-  "updated_at": "2026-09-26T18:44:06.868639Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T20:40:22.599773Z",
+  "closed_at": "2026-09-26T20:40:22.599744Z",
   "agent": {
     "platform": "claude_code",
     "model": "claude-opus-5-5",
