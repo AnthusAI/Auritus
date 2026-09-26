@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 import pytest
-from support.operator_tokens import install_test_user_pool, operator_access_token
+from support.operator_tokens import (
+    TEST_USER_POOL_ID,
+    install_test_user_pool,
+    operator_access_token,
+)
 
 import auritus_operator_auth
 
@@ -47,3 +51,24 @@ def test_verifier_returns_claims_for_valid_access_token() -> None:
     """A pool-signed access token for an allowed client verifies."""
     claims = auritus_operator_auth.verify_operator_token(operator_access_token())
     assert claims["token_use"] == "access"
+
+
+def test_unknown_signing_key_refreshes_the_jwks_at_most_once_per_interval(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Tokens naming an unpublished kid cannot force a JWKS fetch per request."""
+    install_test_user_pool()
+    monkeypatch.setattr(auritus_operator_auth, "_last_unknown_key_refresh", {})
+    issuer = auritus_operator_auth.user_pool_issuer(TEST_USER_POOL_ID)
+    jwk_client = auritus_operator_auth._jwk_clients[issuer]
+    auritus_operator_auth.verify_operator_token(operator_access_token())
+    fetches_before = jwk_client.fetch_count
+    reasons = []
+    for _ in range(3):
+        with pytest.raises(auritus_operator_auth.OperatorTokenError) as raised:
+            auritus_operator_auth.verify_operator_token(
+                operator_access_token(key_id="rotated-away-key")
+            )
+        reasons.append(raised.value.reason)
+    assert jwk_client.fetch_count - fetches_before == 1
+    assert reasons == ["invalid_token", "unknown_signing_key", "unknown_signing_key"]

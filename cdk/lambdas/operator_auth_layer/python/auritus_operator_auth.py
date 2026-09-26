@@ -11,13 +11,17 @@ denies every token.
 from __future__ import annotations
 
 import os
+import time
 from typing import Any
 
 import jwt
 
 REQUIRED_CLAIMS = ["exp", "iat", "iss", "sub", "token_use", "client_id"]
+CLOCK_SKEW_LEEWAY_SECONDS = 5
+UNKNOWN_KEY_REFRESH_INTERVAL_SECONDS = 60
 
 _jwk_clients: dict[str, jwt.PyJWKClient] = {}
+_last_unknown_key_refresh: dict[str, float] = {}
 
 
 class OperatorTokenError(Exception):
@@ -81,12 +85,13 @@ def verify_operator_token(token: str) -> dict[str, Any]:
 
     issuer = user_pool_issuer(user_pool_id)
     try:
-        signing_key = _jwk_client(issuer).get_signing_key_from_jwt(token)
+        signing_key = _signing_key(issuer, token)
         claims = jwt.decode(
             token,
             signing_key.key,
             algorithms=["RS256"],
             issuer=issuer,
+            leeway=CLOCK_SKEW_LEEWAY_SECONDS,
             options={"require": REQUIRED_CLAIMS, "verify_aud": False},
         )
     except jwt.ExpiredSignatureError as exc:
@@ -99,6 +104,37 @@ def verify_operator_token(token: str) -> dict[str, Any]:
     if claims.get("client_id") not in allowed_client_ids:
         raise OperatorTokenError("client_not_allowed")
     return claims
+
+
+def _signing_key(issuer: str, token: str) -> jwt.PyJWK:
+    """Return the pool signing key named by a token's ``kid`` header.
+
+    A ``kid`` missing from the cached JWKS triggers at most one forced JWKS
+    refresh per issuer every ``UNKNOWN_KEY_REFRESH_INTERVAL_SECONDS``, so
+    unauthenticated callers cannot make every request fetch the JWKS.
+
+    :param issuer: The user pool issuer URL.
+    :param token: The raw JWT.
+    :returns: The matching signing key.
+    :raises OperatorTokenError: If the ``kid`` is malformed, or unknown and a
+        refresh already happened recently.
+    :raises jwt.PyJWTError: If the header or JWKS cannot be read.
+    """
+    kid = jwt.get_unverified_header(token).get("kid")
+    if not isinstance(kid, str) or not kid:
+        raise OperatorTokenError("invalid_token")
+    client = _jwk_client(issuer)
+    known_kids = {key.key_id for key in client.get_signing_keys()}
+    if kid not in known_kids:
+        now = time.monotonic()
+        last_refresh = _last_unknown_key_refresh.get(issuer)
+        if (
+            last_refresh is not None
+            and now - last_refresh < UNKNOWN_KEY_REFRESH_INTERVAL_SECONDS
+        ):
+            raise OperatorTokenError("unknown_signing_key")
+        _last_unknown_key_refresh[issuer] = now
+    return client.get_signing_key(kid)
 
 
 def _jwk_client(issuer: str) -> jwt.PyJWKClient:

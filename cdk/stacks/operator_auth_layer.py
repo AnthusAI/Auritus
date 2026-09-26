@@ -61,6 +61,7 @@ class LocalPipLayerBundler:
             check=False,
         )
         if result.returncode != 0:
+            shutil.rmtree(target, ignore_errors=True)
             return False
         for module_path in (OPERATOR_AUTH_LAYER_ROOT / "python").glob("*.py"):
             shutil.copy2(module_path, target / module_path.name)

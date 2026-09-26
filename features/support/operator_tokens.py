@@ -50,25 +50,43 @@ class StaticJwkClient(jwt.PyJWKClient):
     def __init__(self, jwks: dict[str, Any]) -> None:
         super().__init__("https://jwks.invalid/.well-known/jwks.json")
         self._static_jwks = jwks
+        self.fetch_count = 0
 
     def fetch_data(self) -> Any:
-        """Return the fixed JWKS document.
+        """Return the fixed JWKS document, count the fetch, and cache it.
+
+        Mirrors :meth:`jwt.PyJWKClient.fetch_data`, which writes each
+        successful fetch to the JWKS cache.
 
         :returns: The JWKS dictionary given at construction.
         """
+        self.fetch_count += 1
+        if self.jwk_set_cache is not None:
+            self.jwk_set_cache.put(self._static_jwks)
         return self._static_jwks
+
+
+def _test_pool_jwks() -> dict[str, Any]:
+    """Return the test pool's public JWKS document.
+
+    :returns: A JWKS with the pool's single RS256 signing key.
+    """
+    public_jwk = json.loads(
+        jwt.algorithms.RSAAlgorithm.to_jwk(_pool_private_key.public_key())
+    )
+    public_jwk.update({"kid": TEST_SIGNING_KEY_ID, "alg": "RS256", "use": "sig"})
+    return {"keys": [public_jwk]}
+
+
+TEST_POOL_JWK_CLIENT = StaticJwkClient(_test_pool_jwks())
 
 
 def install_test_user_pool() -> None:
     """Point the operator verifier at the test user pool and its JWKS."""
     os.environ["USER_POOL_ID"] = TEST_USER_POOL_ID
     os.environ["ALLOWED_CLIENT_IDS"] = f"{TEST_CLI_CLIENT_ID},{TEST_CONSOLE_CLIENT_ID}"
-    public_jwk = json.loads(
-        jwt.algorithms.RSAAlgorithm.to_jwk(_pool_private_key.public_key())
-    )
-    public_jwk.update({"kid": TEST_SIGNING_KEY_ID, "alg": "RS256", "use": "sig"})
     issuer = auritus_operator_auth.user_pool_issuer(TEST_USER_POOL_ID)
-    auritus_operator_auth._jwk_clients[issuer] = StaticJwkClient({"keys": [public_jwk]})
+    auritus_operator_auth._jwk_clients[issuer] = TEST_POOL_JWK_CLIENT
 
 
 def operator_access_token(
@@ -78,6 +96,7 @@ def operator_access_token(
     token_use: str = "access",
     client_id: str = TEST_CLI_CLIENT_ID,
     user_pool_id: str = TEST_USER_POOL_ID,
+    key_id: str = TEST_SIGNING_KEY_ID,
 ) -> str:
     """Mint an operator token for the test user pool.
 
@@ -87,6 +106,7 @@ def operator_access_token(
     :param token_use: The ``token_use`` claim (``access`` or ``id``).
     :param client_id: The app client the token claims to be issued to.
     :param user_pool_id: The user pool named in the issuer claim.
+    :param key_id: The ``kid`` header naming the signing key.
     :returns: A compact RS256 JWT.
     """
     install_test_user_pool()
@@ -106,9 +126,7 @@ def operator_access_token(
     if token_use == "id":
         claims["aud"] = client_id
     signing_key = _pool_private_key if signed_by_pool else _forger_private_key
-    return jwt.encode(
-        claims, signing_key, algorithm="RS256", headers={"kid": TEST_SIGNING_KEY_ID}
-    )
+    return jwt.encode(claims, signing_key, algorithm="RS256", headers={"kid": key_id})
 
 
 def unsigned_operator_token() -> str:

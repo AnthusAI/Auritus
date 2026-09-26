@@ -123,9 +123,15 @@ client. Missing verifier configuration denies every request.
 
 The job-mutation routes (`PUT /jobs/{hash}/claim`, `/done`, `/failed`, and
 `POST /jobs/{hash}/presign-upload`) have no gateway authorizer because Batch
-workers call them with a single-use job token. The router accepts either that
+workers call them with a per-job token. The router accepts either that
 job's token (compared in constant time) or a verified operator access token
-for an operator's local worker; anything else is refused with 403.
+for an operator's local worker; anything else is refused with 403. The job
+token is currently also returned to the site-key caller that creates the job,
+and job creation accepts a caller-supplied content hash; both are open
+security work.
+
+Verification is offline, so a signed-out or disabled operator's access token
+remains valid until it expires (one hour).
 
 ## Secure-by-design status
 

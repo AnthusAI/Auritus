@@ -22,6 +22,7 @@ lint-python:
 test-python:
 	cd cli && python3 -m pytest -q
 	cd cli && python3 -m behave ../features
+	cd cdk && python3 -m pytest -q
 
 lint-embed:
 	cd embed && npm run lint
