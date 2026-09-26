@@ -3,7 +3,7 @@
   "title": "Worker image render mode: auritus render writes speech.wav + speech.json to S3",
   "description": "A Batch entry point that doesn't use the Auritus API. The request JSON (text, voice, speed, seed, output bucket and prefix) comes from env or S3. It runs `auritus.synthesize` and writes `<prefix>/speech.wav` plus `<prefix>/speech.json` (sample_rate, duration, segments, provenance, request_key). On failure it writes `<prefix>/error.json` and exits non-zero. Specs use the fake backend and a local folder standing in for the bucket. Needs A5 (the worker image uses the auritus package).",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -25,8 +25,8 @@
     }
   ],
   "created_at": "2026-09-26T18:58:34.758857Z",
-  "updated_at": "2026-09-26T19:11:04.467495Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T19:20:38.630467Z",
+  "closed_at": "2026-09-26T19:20:38.630419Z",
   "agent": {
     "platform": "claude_code",
     "model": "Opus 5.5",
