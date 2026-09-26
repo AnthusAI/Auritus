@@ -154,11 +154,11 @@ def test_resolve_reference_audio_and_text(tmp_path: Path) -> None:
     mock_text = tmp_path / "mock_voice.txt"
     mock_text.write_text("sample reference transcript")
 
-    resolved_audio = resolve_reference_audio("mock_voice", search_dirs=[tmp_path])
+    resolved_audio = resolve_reference_audio("mock_voice", voices_dir=tmp_path)
     assert resolved_audio is not None
     assert resolved_audio.is_file()
 
-    resolved_text = resolve_reference_text("mock_voice", search_dirs=[tmp_path])
+    resolved_text = resolve_reference_text("mock_voice", voices_dir=tmp_path)
     assert resolved_text is not None
     assert "sample reference transcript" in resolved_text
 
@@ -167,20 +167,15 @@ def test_resolve_reference_audio_and_text(tmp_path: Path) -> None:
     mock_steve_text = tmp_path / "steve_jobs.txt"
     mock_steve_text.write_text("steve jobs reference transcript")
 
+    # No hidden aliases: "steve" is not "steve_jobs".
+    assert resolve_reference_audio("steve", voices_dir=tmp_path) is None
+    assert resolve_reference_text("steve", voices_dir=tmp_path) is None
     assert (
-        resolve_reference_audio("steve", search_dirs=[tmp_path])
+        resolve_reference_audio("steve_jobs", voices_dir=tmp_path)
         == mock_steve_audio.resolve()
     )
     assert (
-        resolve_reference_text("steve", search_dirs=[tmp_path])
-        == "steve jobs reference transcript"
-    )
-    assert (
-        resolve_reference_audio("steve_jobs", search_dirs=[tmp_path])
-        == mock_steve_audio.resolve()
-    )
-    assert (
-        resolve_reference_text("steve_jobs", search_dirs=[tmp_path])
+        resolve_reference_text("steve_jobs", voices_dir=tmp_path)
         == "steve jobs reference transcript"
     )
 

@@ -148,8 +148,8 @@ class FishBackend(TTSBackend):
             resolve_reference_text,
         )
 
-        ref_audio_path = resolve_reference_audio(voice)
-        ref_text = resolve_reference_text(voice)
+        ref_audio_path = resolve_reference_audio(voice, meta.get("voices_dir"))
+        ref_text = resolve_reference_text(voice, meta.get("voices_dir"))
         ref_mx = None
         if ref_audio_path:
             audio_data, file_sr = sf.read(str(ref_audio_path))
@@ -314,11 +314,11 @@ class FishBackend(TTSBackend):
         ref_text = meta.get("ref_text")
         references = []
         if not ref_file:
-            resolved_audio = resolve_reference_audio(voice)
+            resolved_audio = resolve_reference_audio(voice, meta.get("voices_dir"))
             if resolved_audio:
                 ref_file = str(resolved_audio)
                 if not ref_text:
-                    ref_text = resolve_reference_text(voice)
+                    ref_text = resolve_reference_text(voice, meta.get("voices_dir"))
         if not ref_file:
             local_ref = os.path.join(os.path.dirname(__file__), "basic_ref_en.wav")
             if os.path.exists(local_ref):
