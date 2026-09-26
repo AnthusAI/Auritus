@@ -1,0 +1,25 @@
+{
+  "id": "auritus-6cd44163-f15e-4fbc-bd57-cb78958d9ecb",
+  "title": "Speech library behavior",
+  "description": "## Behavior\n```gherkin\nFeature: Auritus as an embeddable speech library\n\n  Scenario: Synthesize speech with a typed request\n    Given the \"fake\" speech backend is installed\n    When I synthesize \"Hello there. [[auritus:break]] Welcome.\" with voice \"fake:plain\"\n    Then I receive WAV audio with its sample rate and duration\n    And the result lists 2 timed segments\n    And the result records the auritus version, backend, model and voice\n\n  Scenario: The request key is stable and sensitive to every input\n    When I compute request keys for the same text, voice and options twice\n    Then the keys are equal\n    And changing the text, voice, speed or seed changes the key\n\n  Scenario: A missing backend fails loudly\n    Given the \"chatterbox\" backend's dependencies are not installed\n    When I synthesize \"Hello\" with voice \"chatterbox:default\"\n    Then a BackendUnavailable error names the missing dependency\n    And no audio is produced\n\n  Scenario: Reference voices come only from an explicit folder\n    Given a voices folder containing \"narrator.wav\" and \"narrator.txt\"\n    And the current directory contains \"impostor.wav\"\n    When I list reference voices from that folder\n    Then \"narrator\" is listed\n    And \"impostor\" is not listed\n\n  Scenario: Non-commercial backends need an explicit opt-in\n    When I synthesize \"Hello\" with voice \"fish:narrator\" without allowing non-commercial use\n    Then a LicenseRestricted error explains the backend's licence\n\n  Scenario: Speak offline from the command line\n    Given no Auritus login or AWS credentials\n    When I run \"auritus speak 'Hello' --voice fake:plain -o out.wav --json\"\n    Then \"out.wav\" is a WAV file\n    And \"out.wav.json\" records sample rate, duration, segments, provenance and request key\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-9ffcc2be-a4e7-48e4-8c85-22103d560d7b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T15:20:03.798427Z",
+  "updated_at": "2026-09-26T15:20:03.798465Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Opus 5.5",
+    "name": "auritus-voice-integration"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

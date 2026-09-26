@@ -1,0 +1,25 @@
+{
+  "id": "auritus-f6c3e1c4-67b3-455d-9bfb-817308895dfb",
+  "title": "Replace test-tone fallbacks with BackendUnavailable",
+  "description": "The CLI copies of higgs, chatterbox and fish (and any other backend) return a 440 Hz tone on ImportError or on non-Apple machines. Raise a typed `BackendUnavailable` that names the missing dependency.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-9ffcc2be-a4e7-48e4-8c85-22103d560d7b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T15:20:03.868572Z",
+  "updated_at": "2026-09-26T15:20:03.868602Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Opus 5.5",
+    "name": "auritus-voice-integration"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
