@@ -1,7 +1,10 @@
-"""Voice reference audio and transcript discovery utilities.
+"""Reference voices for zero-shot cloning (Chatterbox, F5-TTS, Fish-Speech).
 
-Discovers local and pre-baked voice assets for zero-shot voice cloning
-across supported TTS backends (Chatterbox, F5-TTS, Fish-Speech).
+A reference voice is ``<id>.wav`` (or another audio format) plus the
+``<id>.txt`` transcript of what it says, in one folder the caller names: the
+``voices_dir`` argument, or else the ``AURITUS_VOICES`` environment variable.
+Nothing else is searched, and there are no aliases, so which recording a
+voice id means is always visible from the folder itself.
 """
 
 from __future__ import annotations
@@ -10,111 +13,91 @@ import os
 from pathlib import Path
 
 __all__ = [
+    "list_voices",
     "resolve_reference_audio",
     "resolve_reference_text",
+    "voices_directory",
 ]
 
 _AUDIO_EXTENSIONS = (".wav", ".mp3", ".flac", ".ogg", ".m4a")
+#: ``<id>_full.<ext>`` holds an untrimmed source recording, not a voice.
+_SOURCE_SUFFIX = "_full"
 
 
-def _get_candidate_directories(
-    custom_dirs: list[Path] | None = None,
-) -> list[Path]:
-    """Return an ordered list of directories to inspect for voice assets.
+def voices_directory(voices_dir: str | Path | None = None) -> Path | None:
+    """The folder reference voices come from.
 
-    :param custom_dirs: Optional custom search directories.
-    :returns: List of existing directory paths to inspect.
+    :param voices_dir: Folder named by the caller.
+    :returns: ``voices_dir``, else ``$AURITUS_VOICES``, else None (no voices).
     """
-    candidates: list[Path] = []
-    if custom_dirs:
-        candidates.extend(custom_dirs)
-
-    current_dir = Path.cwd()
-    candidates.append(current_dir / "voices")
-    candidates.append(current_dir)
-
-    module_dir = Path(__file__).resolve().parent
-    candidates.append(module_dir)
-
-    for parent in Path(__file__).resolve().parents:
-        repo_voices = parent / "voices"
-        if repo_voices.is_dir():
-            candidates.append(repo_voices)
-
-    container_voices = Path("/app/voices")
-    if container_voices.is_dir():
-        candidates.append(container_voices)
-
-    unique: list[Path] = []
-    seen: set[str] = set()
-    for directory in candidates:
-        try:
-            resolved = directory.resolve()
-            path_str = str(resolved)
-            if path_str not in seen and resolved.is_dir():
-                seen.add(path_str)
-                unique.append(resolved)
-        except (OSError, PermissionError):
-            continue
-    return unique
+    if voices_dir:
+        return Path(voices_dir)
+    env = os.environ.get("AURITUS_VOICES", "").strip()
+    return Path(env) if env else None
 
 
-VOICE_ALIASES: dict[str, list[str]] = {
-    "steve": ["steve", "steve_jobs"],
-    "steve_jobs": ["steve_jobs", "steve"],
-}
+def list_voices(voices_dir: str | Path | None = None) -> list[str]:
+    """Voice ids available in the voices folder, sorted.
+
+    :param voices_dir: Folder named by the caller (see :func:`voices_directory`).
+    :returns: One id per reference recording; empty when there is no folder.
+    """
+    directory = voices_directory(voices_dir)
+    if directory is None or not directory.is_dir():
+        return []
+    return sorted(
+        {
+            path.stem
+            for path in directory.iterdir()
+            if path.suffix.lower() in _AUDIO_EXTENSIONS
+            and path.is_file()
+            and not path.stem.endswith(_SOURCE_SUFFIX)
+        }
+    )
 
 
 def resolve_reference_audio(
     voice_id: str,
-    search_dirs: list[Path] | None = None,
+    voices_dir: str | Path | None = None,
 ) -> Path | None:
-    """Find a reference audio file for a given voice identifier.
+    """Find the reference recording for a voice.
 
-    :param voice_id: Voice identifier string (e.g. ``"serious"``, ``"steve"``).
-    :param search_dirs: Optional list of directory paths to search.
-    :returns: Path to the reference audio file, or None if not found.
+    :param voice_id: Voice id (``"serious"``, matched lowercase), or a path
+        to an audio file.
+    :param voices_dir: Folder named by the caller (see :func:`voices_directory`).
+    :returns: The recording's path, or None if the folder has no such voice.
     """
+    if voice_id.strip() and os.path.isfile(voice_id.strip()):
+        return Path(voice_id.strip()).resolve()
     clean_id = voice_id.strip().lower()
     if not clean_id:
         return None
-
-    if os.path.isfile(voice_id):
-        return Path(voice_id).resolve()
-
-    identifiers = VOICE_ALIASES.get(clean_id, [clean_id])
-    directories = _get_candidate_directories(search_dirs)
-    for directory in directories:
-        for identifier in identifiers:
-            for ext in _AUDIO_EXTENSIONS:
-                candidate = directory / f"{identifier}{ext}"
-                if candidate.is_file():
-                    return candidate.resolve()
+    directory = voices_directory(voices_dir)
+    if directory is None:
+        return None
+    for ext in _AUDIO_EXTENSIONS:
+        candidate = directory / f"{clean_id}{ext}"
+        if candidate.is_file():
+            return candidate.resolve()
     return None
 
 
 def resolve_reference_text(
     voice_id: str,
-    search_dirs: list[Path] | None = None,
+    voices_dir: str | Path | None = None,
 ) -> str | None:
-    """Find and read a reference transcript for a given voice identifier.
+    """Read the transcript of a voice's reference recording.
 
-    :param voice_id: Voice identifier string.
-    :param search_dirs: Optional list of directory paths to search.
-    :returns: Reference transcript string if found, otherwise None.
+    :param voice_id: Voice id.
+    :param voices_dir: Folder named by the caller (see :func:`voices_directory`).
+    :returns: The transcript, or None if the folder has none for this voice.
     """
     clean_id = voice_id.strip().lower()
-    if not clean_id:
+    directory = voices_directory(voices_dir)
+    if not clean_id or directory is None:
         return None
-
-    identifiers = VOICE_ALIASES.get(clean_id, [clean_id])
-    directories = _get_candidate_directories(search_dirs)
-    for directory in directories:
-        for identifier in identifiers:
-            candidate = directory / f"{identifier}.txt"
-            if candidate.is_file():
-                try:
-                    return candidate.read_text(encoding="utf-8").strip()
-                except (OSError, UnicodeDecodeError):
-                    continue
-    return None
+    candidate = directory / f"{clean_id}.txt"
+    try:
+        return candidate.read_text(encoding="utf-8").strip()
+    except (OSError, UnicodeDecodeError):
+        return None

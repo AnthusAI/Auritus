@@ -21,6 +21,7 @@ import json
 import random
 import wave
 from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Any
 
 from auritus import __version__
@@ -190,7 +191,13 @@ def _read_wav(data: bytes) -> tuple[Any, bytes]:
         return wav.getparams(), wav.readframes(wav.getnframes())
 
 
-def synthesize(text: str, voice: Voice, options: SpeechOptions | None = None) -> Speech:
+def synthesize(
+    text: str,
+    voice: Voice,
+    options: SpeechOptions | None = None,
+    *,
+    voices_dir: str | Path | None = None,
+) -> Speech:
     """Speak ``text`` offline and return audio with timing and provenance.
 
     Each ``[[auritus:break]]`` block is synthesized separately and joined with
@@ -200,6 +207,9 @@ def synthesize(text: str, voice: Voice, options: SpeechOptions | None = None) ->
     :param text: Text to speak, optionally with Auritus markers.
     :param voice: Backend and voice.
     :param options: Speaking options (defaults if omitted).
+    :param voices_dir: Folder of reference voices for cloning backends; see
+        :func:`auritus.tts.voices.voices_directory` (``$AURITUS_VOICES`` if
+        omitted).
     :returns: The synthesized speech.
     :raises ValueError: If ``text`` has nothing to speak or the backend is
         unknown.
@@ -226,6 +236,8 @@ def synthesize(text: str, voice: Voice, options: SpeechOptions | None = None) ->
     cursor = 0
     for block_text, block_voice in blocks:
         meta: dict[str, Any] = {"voice_id": block_voice}
+        if voices_dir is not None:
+            meta["voices_dir"] = voices_dir
         if backend.supports_speed:
             meta["speed"] = options.speed
         try:

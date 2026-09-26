@@ -106,8 +106,8 @@ class F5Backend(TTSBackend):
         )
 
         voice = resolve_f5_voice(meta)
-        ref_audio = resolve_reference_audio(voice)
-        ref_text = resolve_reference_text(voice) or ""
+        ref_audio = resolve_reference_audio(voice, meta.get("voices_dir"))
+        ref_text = resolve_reference_text(voice, meta.get("voices_dir")) or ""
 
         try:
             import mlx.core as mx
@@ -246,11 +246,11 @@ class F5Backend(TTSBackend):
         ref_file = meta.get("ref_file")
         ref_text = meta.get("ref_text")
         if not ref_file:
-            resolved_audio = resolve_reference_audio(voice)
+            resolved_audio = resolve_reference_audio(voice, meta.get("voices_dir"))
             if resolved_audio:
                 ref_file = str(resolved_audio)
                 if not ref_text:
-                    ref_text = resolve_reference_text(voice)
+                    ref_text = resolve_reference_text(voice, meta.get("voices_dir"))
         if not ref_file:
             try:
                 from importlib.resources import files

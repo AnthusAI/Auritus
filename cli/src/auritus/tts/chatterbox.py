@@ -126,7 +126,7 @@ class ChatterboxBackend(TTSBackend):
             )
         )
         voice = resolve_chatterbox_voice(meta)
-        ref_audio_path = resolve_reference_audio(voice)
+        ref_audio_path = resolve_reference_audio(voice, meta.get("voices_dir"))
         ref_audio_arg = str(ref_audio_path) if ref_audio_path else None
 
         blocks = split_on_breaks(text)

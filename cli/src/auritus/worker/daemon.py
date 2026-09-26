@@ -6,6 +6,8 @@ import socket
 import threading
 import time
 import uuid
+from pathlib import Path
+from typing import Any
 
 import httpx
 import typer
@@ -34,6 +36,22 @@ def _heartbeat_loop(
             pass
 
 
+def worker_voices_dir(worker_cfg: dict[str, Any], *, cwd: Path | None = None) -> Path:
+    """The reference-voice folder the local worker reads cloned voices from.
+
+    The ``[worker] voices_dir`` setting, resolved against ``cwd``; when unset,
+    ``voices`` in the directory the worker was started from (the repository's
+    ``voices/`` when run from its root). The library itself never guesses:
+    this is the worker command's documented default, and it is logged.
+
+    :param worker_cfg: The ``[worker]`` config section.
+    :param cwd: Directory relative paths resolve against (default: cwd).
+    :returns: Absolute folder path.
+    """
+    base = cwd if cwd is not None else Path.cwd()
+    return base / Path(str(worker_cfg.get("voices_dir") or "voices")).expanduser()
+
+
 def run_worker(*, once: bool = False) -> None:
     """Poll claimable jobs and process them locally.
 
@@ -46,9 +64,10 @@ def run_worker(*, once: bool = False) -> None:
     tts_backend_name = str(worker_cfg["tts_backend"])
     heartbeat_interval = max(5, min(poll_interval, claim_timeout // 3))
     owner = f"local:{socket.gethostname()}:{uuid.uuid4().hex[:8]}"
+    voices_dir = worker_voices_dir(worker_cfg)
     typer.echo(
         f"Worker starting as {owner} backend={tts_backend_name} "
-        f"poll={poll_interval}s claim_timeout={claim_timeout}s"
+        f"poll={poll_interval}s claim_timeout={claim_timeout}s voices={voices_dir}"
     )
 
     try:
@@ -105,6 +124,7 @@ def run_worker(*, once: bool = False) -> None:
                 "voice_id": job.get("voice_id") or "default",
                 "name": job.get("name") or "",
                 "byline": job.get("byline") or "",
+                "voices_dir": voices_dir,
             }
             typer.echo(
                 f"Generating audio for {content_hash[:16]} backend={job_backend}"
