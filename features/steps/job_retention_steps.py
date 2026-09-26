@@ -12,6 +12,7 @@ from unittest.mock import Mock
 
 import boto3
 from behave import given, then, when
+from support.operator_tokens import operator_headers
 from moto import mock_aws
 
 RETENTION_TOLERANCE_SECONDS = 60
@@ -24,12 +25,12 @@ def _utc_now_iso() -> str:
 def _operator_headers() -> dict[str, str]:
     """Return valid operator auth headers.
 
-    Also satisfies ``_check_job_token``'s "Authorization: Bearer <token>"
-    fallback path for the non-admin ``/done`` route -- it just won't match
-    any real job token, so ``_mark_done``/``_mark_failed`` fall through to
-    ``_require_operator``, which only checks that a bearer token is present.
+    The non-admin ``/done`` route checks the bearer value as a job token
+    first; this operator access token matches no job token, so
+    ``_mark_done``/``_mark_failed`` fall through to ``_require_operator``,
+    which verifies it as an operator access token.
     """
-    return {"authorization": "Bearer test-operator-token-12345"}
+    return operator_headers()
 
 
 def _ensure_handler_loaded(context) -> None:

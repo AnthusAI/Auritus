@@ -12,6 +12,7 @@ from unittest.mock import Mock
 
 import boto3
 from behave import given, then, when
+from support.operator_tokens import operator_headers
 from botocore.exceptions import ClientError
 from moto import mock_aws
 
@@ -29,7 +30,7 @@ def _iso_days_ago(days: int) -> str:
 
 
 def _operator_headers() -> dict[str, str]:
-    return {"authorization": "Bearer test-operator-token-12345"}
+    return operator_headers()
 
 
 def _ensure_handler_loaded(context) -> None:

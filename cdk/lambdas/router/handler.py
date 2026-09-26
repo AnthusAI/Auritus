@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import hmac
 import json
 import os
 import secrets
@@ -14,6 +15,11 @@ from decimal import Decimal
 from typing import Any
 
 import boto3
+from auritus_operator_auth import (
+    OperatorTokenError,
+    bearer_token,
+    verify_operator_token,
+)
 from botocore.exceptions import BotoCoreError, ClientError
 
 
@@ -215,11 +221,20 @@ def _content_hash(normalized_text: str, voice_id: str, tts_backend: str) -> str:
     return digest.hexdigest()
 
 
-def _require_operator(_headers: dict[str, str]) -> None:
-    """Operator routes are protected by the API authorizer; presence is enough here."""
-    auth = _headers.get("authorization", "")
-    if not auth.lower().startswith("bearer "):
-        raise PermissionError("operator_auth_required")
+def _require_operator(headers: dict[str, str]) -> None:
+    """Require a verified Cognito operator access token on the request.
+
+    Verified here as well as in the API authorizer because the job-mutation
+    routes carry no authorizer (Batch workers present a job token instead).
+
+    :param headers: Lower-cased request headers.
+    :raises PermissionError: If the bearer token is not a valid operator
+        access token.
+    """
+    try:
+        verify_operator_token(bearer_token(headers))
+    except OperatorTokenError as exc:
+        raise PermissionError("operator_auth_required") from exc
 
 
 def _check_job_token(headers: dict[str, str], content_hash: str) -> bool:
@@ -228,15 +243,24 @@ def _check_job_token(headers: dict[str, str], content_hash: str) -> bool:
     Checks both the ``X-Auritus-Job-Token`` header and the ``Authorization:
     Bearer <token>`` header for the job token.
     """
-    token = headers.get("x-auritus-job-token", "")
-    if not token:
-        auth = headers.get("authorization", "")
-        if auth.lower().startswith("bearer "):
-            token = auth.split(" ", 1)[1].strip()
+    token = headers.get("x-auritus-job-token", "") or bearer_token(headers)
     if not token:
         return False
     item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
-    return bool(item and item.get("job_token") == token)
+    return _job_token_matches(item, token)
+
+
+def _job_token_matches(item: dict[str, Any] | None, token: str) -> bool:
+    """Compare a presented job token to a job's stored token in constant time.
+
+    :param item: The job record, or ``None`` when the job does not exist.
+    :param token: The token the caller presented.
+    :returns: Whether the job exists, has a token, and the tokens match.
+    """
+    stored_token = str((item or {}).get("job_token") or "")
+    return bool(stored_token) and hmac.compare_digest(
+        stored_token.encode("utf-8"), str(token).encode("utf-8")
+    )
 
 
 def _site_from_headers(headers: dict[str, str]) -> dict[str, Any]:
@@ -999,7 +1023,7 @@ def _redeem_token(
     if not token:
         raise ValueError("job_token required")
     item = _jobs.get_item(Key={"content_hash": content_hash}).get("Item")
-    if not item or item.get("job_token") != token:
+    if not _job_token_matches(item, token):
         raise LookupError("invalid job token")
     return _response(
         200,

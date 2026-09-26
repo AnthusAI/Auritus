@@ -11,6 +11,7 @@ from unittest.mock import Mock
 
 import boto3
 from behave import given, then, when
+from support.operator_tokens import operator_headers
 from botocore.exceptions import ClientError
 from moto import mock_aws
 
@@ -21,7 +22,7 @@ def _utc_now_iso() -> str:
 
 def _operator_headers() -> dict[str, str]:
     """Return valid operator auth headers."""
-    return {"authorization": "Bearer test-operator-token-12345"}
+    return operator_headers()
 
 
 def _site_headers() -> dict[str, str]:
