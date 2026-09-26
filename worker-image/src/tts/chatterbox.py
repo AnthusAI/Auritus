@@ -6,12 +6,11 @@ Weights are fetched at runtime per docs/TTS_LICENSES.md.
 from __future__ import annotations
 
 import io
-import math
 import struct
 import wave
 from typing import Any
 
-from tts.base import TTSBackend
+from tts.base import BackendUnavailable, TTSBackend
 from tts.breaks import (
     AURITUS_BREAK_MARKER,
     AURITUS_PAUSE_MARKER,
@@ -146,24 +145,18 @@ class ChatterboxBackend(TTSBackend):
         return _to_wav(audio_np, sample_rate=sample_rate)
 
     def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via PyTorch / CUDA, or a stub tone when the package isn't installed.
+        """Generate via PyTorch / CUDA.
 
-        Only ImportError falls back to the stub -- a missing optional
-        dependency (e.g. running a quick smoke test without the heavy
-        torch/chatterbox install) is a legitimate reason to stub. A model
-        that loads and then fails mid-generation (OOM, a CUDA error, an
-        actual bug) must raise: swallowing every exception here previously
-        meant any real failure silently produced a normal-looking 'done'
-        job with a fake 440Hz tone as its audio -- indistinguishable from
-        success to a reader, and to the job API. Let real errors surface so
-        the job is correctly marked failed with the actual error_message.
+        Every failure raises, so a job is marked failed rather than reporting
+        success with fake audio. Missing libraries raise
+        :class:`BackendUnavailable`.
         """
         try:
             import numpy as np
             import torch
             from chatterbox.tts import ChatterboxTTS
-        except ImportError:
-            return self._generate_fallback(text, meta)
+        except ImportError as exc:
+            raise BackendUnavailable.from_import_error(self.name, exc) from exc
 
         from tts.voices import resolve_reference_audio
 
@@ -205,16 +198,6 @@ class ChatterboxBackend(TTSBackend):
             raise ValueError("Chatterbox-TTS generated no audio segments")
         audio_np = np.concatenate(all_chunks) if len(all_chunks) > 1 else all_chunks[0]
         return _to_wav(audio_np, sample_rate=sample_rate)
-
-    def _generate_fallback(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Synthesize a safe WAV fallback when models cannot load."""
-        sample_rate = 24000
-        duration_ms = max(500, min(len(text) * 60, 5000))
-        frames = int(sample_rate * (duration_ms / 1000.0))
-        samples = [
-            0.2 * math.sin(2 * math.pi * 440.0 * i / sample_rate) for i in range(frames)
-        ]
-        return _to_wav(samples, sample_rate=sample_rate)
 
 
 def _to_wav(samples: list | Any, sample_rate: int = 24000) -> bytes:

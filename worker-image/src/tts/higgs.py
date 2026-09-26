@@ -6,12 +6,11 @@ Weights are fetched at runtime (not baked into the Docker image) per docs/TTS_LI
 from __future__ import annotations
 
 import io
-import math
 import struct
 import wave
 from typing import Any
 
-from tts.base import TTSBackend
+from tts.base import BackendUnavailable, TTSBackend
 from tts.breaks import (
     AURITUS_BREAK_MARKER,
     AURITUS_PAUSE_MARKER,
@@ -192,22 +191,8 @@ class HiggsBackend(TTSBackend):
             if not all_samples:
                 raise ValueError("Higgs Audio v3 generated no audio segments")
             return _to_wav(all_samples, sample_rate=sample_rate)
-        except ImportError:
-            # Only a missing optional dependency (e.g. local dev/test
-            # without the runtime-installed package) is a legitimate reason
-            # to stub. This previously caught bare Exception, which meant a
-            # real generation failure (CUDA OOM, a model bug, a download
-            # failure) silently produced a normal-looking 'done' job with a
-            # fake 440Hz tone -- confirmed happening in production. Let real
-            # errors propagate so the job is correctly marked failed.
-            sample_rate = 24000
-            duration_ms = max(500, min(len(text) * 60, 5000))
-            frames = int(sample_rate * (duration_ms / 1000.0))
-            samples = [
-                0.2 * math.sin(2 * math.pi * 440.0 * i / sample_rate)
-                for i in range(frames)
-            ]
-            return _to_wav(samples, sample_rate=sample_rate)
+        except ImportError as exc:
+            raise BackendUnavailable.from_import_error(self.name, exc) from exc
 
 
 def _to_wav(samples: list | Any, sample_rate: int = 24000) -> bytes:

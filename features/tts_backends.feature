@@ -8,6 +8,7 @@ Feature: Pluggable TTS backends
     When the worker generates audio for the job
     Then the Qwen backend is used
 
+  @integration
   Scenario: Job requests the Higgs backend
     Given a claimable job with tts_backend "higgs"
     When the worker generates audio for the job

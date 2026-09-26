@@ -25,10 +25,11 @@ from typing import Any
 
 from auritus import __version__
 from auritus.tts import get_backend
-from auritus.tts.base import TTSBackend
+from auritus.tts.base import BackendUnavailable, TTSBackend
 from auritus.tts.breaks import DEFAULT_BREAK_SILENCE_SECONDS, parse_voiced_segments
 
 __all__ = [
+    "BackendUnavailable",
     "Segment",
     "Speech",
     "SpeechOptions",
@@ -203,6 +204,8 @@ def synthesize(text: str, voice: Voice, options: SpeechOptions | None = None) ->
     :raises ValueError: If ``text`` has nothing to speak or the backend is
         unknown.
     :raises UnsupportedOption: If the backend cannot honour ``options``.
+    :raises BackendUnavailable: If the backend's libraries are missing or it
+        cannot run on this machine.
     """
     options = options or SpeechOptions()
     backend: TTSBackend = get_backend(voice.backend)
@@ -225,7 +228,11 @@ def synthesize(text: str, voice: Voice, options: SpeechOptions | None = None) ->
         meta: dict[str, Any] = {"voice_id": block_voice}
         if backend.supports_speed:
             meta["speed"] = options.speed
-        block_params, block_frames = _read_wav(backend.generate(block_text, meta))
+        try:
+            audio = backend.generate(block_text, meta)
+        except ImportError as exc:
+            raise BackendUnavailable.from_import_error(backend.name, exc) from exc
+        block_params, block_frames = _read_wav(audio)
         if block_params.nchannels != 1 or block_params.sampwidth != 2:
             raise ValueError(
                 f"The {backend.name!r} backend returned "
