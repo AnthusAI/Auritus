@@ -81,10 +81,12 @@ def _install_backend(name: str) -> None:
 
 def redeem_job_token(
     api_url: str, job_hash: str, job_token: str
-) -> tuple[str, dict[str, Any]]:
+) -> tuple[str, dict[str, Any]] | None:
     """Exchange the single-job token for a worker-scoped bearer and optional job payload.
 
-    :returns: Tuple of (bearer token, job fields such as text and voice_id).
+    :returns: Tuple of (bearer token, job fields such as text and voice_id), or
+        ``None`` when the API no longer recognizes the token because the job
+        finished and its token was revoked.
     """
     response = httpx.post(
         f"{api_url}/jobs/{job_hash}/redeem",
@@ -93,7 +95,7 @@ def redeem_job_token(
         timeout=30.0,
     )
     if response.status_code == 404:
-        return job_token, {}
+        return None
     response.raise_for_status()
     body = response.json()
     bearer = str(body.get("access_token") or body.get("bearer") or job_token)
@@ -131,7 +133,14 @@ def main() -> int:
     )
     owner = f"batch:{os.environ.get('AWS_BATCH_JOB_ID', 'unknown')}"
 
-    bearer, redeemed_job = redeem_job_token(api_url, job_hash, job_token)
+    redeemed = redeem_job_token(api_url, job_hash, job_token)
+    if redeemed is None:
+        print(
+            f"job {job_hash}: worker token already revoked; the job is finished",
+            file=sys.stderr,
+        )
+        return 0
+    bearer, redeemed_job = redeemed
     headers = _auth_headers(bearer)
 
     job_body: dict[str, Any] = dict(redeemed_job)

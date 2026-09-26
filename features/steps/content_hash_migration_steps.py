@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 from behave import given, then, when
@@ -167,3 +168,19 @@ def step_job_has_no_token(context, content_hash: str) -> None:
 @then('the job under "{content_hash}" still holds its worker token')
 def step_job_keeps_token(context, content_hash: str) -> None:
     assert _job(context, content_hash)["job_token"] == "legacy-job-token"
+
+
+@given('the job under "{content_hash}" was created just now')
+def step_created_just_now(context, content_hash: str) -> None:
+    _jobs(context).update_item(
+        Key={"content_hash": content_hash},
+        UpdateExpression="SET created_at = :now",
+        ExpressionAttributeValues={
+            ":now": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        },
+    )
+
+
+@then('the job under "{content_hash}" is still "{status}"')
+def step_job_status_unchanged(context, content_hash: str, status: str) -> None:
+    assert _job(context, content_hash)["status"] == status

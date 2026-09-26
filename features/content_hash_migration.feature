@@ -59,6 +59,17 @@ Feature: Re-keying stored jobs to the canonical content hash
 
     Given a "done" job stored under the legacy hash "2caf28aa" with text "Press play." and stored audio
     And a "pending" job stored under the legacy hash "01355d8a" with text "Still rendering." and no audio
+    And the job under "01355d8a" was created just now
     When the worker token revocation runs with apply
     Then the job under "2caf28aa" holds no worker token
     And the job under "01355d8a" still holds its worker token
+
+  Scenario: Worker tokens are revoked on jobs stuck in flight past the fallback timeout
+    The fallback workflow gives up after two hours, so a job still pending or
+    claimed long after that has no legitimate token holder, only whoever
+    harvested the token from an old job creation response.
+
+    Given a "claimed" job stored under the legacy hash "139c884e" with text "Stuck since September." and no audio
+    When the worker token revocation runs with apply
+    Then the job under "139c884e" holds no worker token
+    And the job under "139c884e" is still "claimed"

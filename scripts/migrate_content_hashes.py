@@ -16,8 +16,9 @@ until the new embed and API are released:
     their key. An existing canonical job is never overwritten.
 
 ``revoke-tokens``
-    Remove the worker token from every finished job. Job creation used to
-    return it to any site-key caller; jobs in flight keep theirs.
+    Remove the worker token from every finished job and from jobs stuck in
+    flight past the fallback workflow's two-hour timeout. Job creation used
+    to return it to any site-key caller; recent in-flight jobs keep theirs.
 
 ``remove-legacy``
     After the release, delete each legacy row whose canonical copy records
@@ -36,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from datetime import datetime, timedelta, timezone
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -56,6 +58,8 @@ sys.path.insert(
 from auritus_content_hash import content_hash  # noqa: E402
 
 FINISHED_STATUSES = ("done", "failed")
+IN_FLIGHT_STATUSES = ("pending", "claimed")
+FALLBACK_TIMEOUT = timedelta(hours=2)
 
 
 @dataclass
@@ -141,31 +145,53 @@ def remove_legacy_rows(jobs_table: Any, *, apply: bool) -> MigrationReport:
     return report
 
 
-def revoke_finished_job_tokens(jobs_table: Any, *, apply: bool) -> MigrationReport:
-    """Remove the worker token from every finished job.
+def revoke_finished_job_tokens(
+    jobs_table: Any, *, apply: bool, now: datetime | None = None
+) -> MigrationReport:
+    """Remove worker tokens that no legitimate worker can still hold.
 
     Job creation used to return the worker token to any site-key caller.
-    Finished jobs never need it again; jobs in flight keep it for their
-    Batch worker.
+    Finished jobs never need it again, and a job still pending or claimed
+    longer than the fallback workflow's two-hour timeout has no Batch worker
+    left to use it. Recent in-flight jobs keep their token.
 
     :param jobs_table: A boto3 DynamoDB ``Table`` resource for the jobs table.
     :param apply: Remove the tokens; otherwise only report them.
+    :param now: The current time; defaults to the system clock.
     :returns: The migration report.
     """
     report = MigrationReport()
+    cutoff = (now or datetime.now(timezone.utc)) - FALLBACK_TIMEOUT
     for item in _scan(jobs_table):
-        if "job_token" not in item or item.get("status") not in FINISHED_STATUSES:
+        if "job_token" not in item:
+            continue
+        status = item.get("status")
+        finished = status in FINISHED_STATUSES
+        stale = status in IN_FLIGHT_STATUSES and _created_before(item, cutoff)
+        if not finished and not stale:
             continue
         report.revoked.append(item["content_hash"])
         if apply:
             jobs_table.update_item(
                 Key={"content_hash": item["content_hash"]},
                 UpdateExpression="REMOVE job_token",
-                ConditionExpression="#status IN (:done, :failed)",
+                ConditionExpression="#status = :status AND created_at = :created",
                 ExpressionAttributeNames={"#status": "status"},
-                ExpressionAttributeValues={":done": "done", ":failed": "failed"},
+                ExpressionAttributeValues={
+                    ":status": status,
+                    ":created": item.get("created_at", ""),
+                },
             )
     return report
+
+
+def _created_before(item: dict[str, Any], cutoff: datetime) -> bool:
+    created = str(item.get("created_at") or "")
+    try:
+        created_at = datetime.strptime(created, "%Y-%m-%dT%H:%M:%SZ")
+    except ValueError:
+        return False
+    return created_at.replace(tzinfo=timezone.utc) < cutoff
 
 
 def _canonical_for(item: dict[str, Any]) -> str | None:
@@ -214,7 +240,7 @@ def main() -> None:
         return
     if args.phase == "revoke-tokens":
         report = revoke_finished_job_tokens(table, apply=args.apply)
-        print(f"{prefix}revoke {len(report.revoked)} finished-job worker tokens")
+        print(f"{prefix}revoke {len(report.revoked)} worker tokens")
         return
     report = remove_legacy_rows(table, apply=args.apply)
     for current, canonical in report.removed:
