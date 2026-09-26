@@ -1,0 +1,41 @@
+{
+  "id": "auritus-f6c3e1c4-67b3-455d-9bfb-817308895dfb",
+  "title": "Replace test-tone fallbacks with BackendUnavailable",
+  "description": "The CLI copies of higgs, chatterbox and fish (and any other backend) return a 440 Hz tone on ImportError or on non-Apple machines. Raise a typed `BackendUnavailable` that names the missing dependency.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-9ffcc2be-a4e7-48e4-8c85-22103d560d7b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "9b1ba839-bb91-4a22-a6ce-9a2cb6fb932e",
+      "author": "home",
+      "text": "Finding while verifying A1: `tts_backends.feature` and `tts_pluggable.feature` both have an untagged 'Job requests the Higgs backend' scenario that calls the real worker-image Higgs `generate`. In CI it passes only because of the silent test-tone fallback. On a Mac with the model libraries installed it loads the 4B model and hung past 20 minutes. Once the fallback is removed, tag those scenarios `@integration` (or point them at the fake backend).",
+      "created_at": "2026-09-26T16:22:29.863790Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Opus 5.5",
+        "name": "auritus-voice-integration"
+      }
+    }
+  ],
+  "created_at": "2026-09-26T15:20:03.868572Z",
+  "updated_at": "2026-09-26T18:59:44.788552Z",
+  "closed_at": "2026-09-26T18:59:44.788505Z",
+  "agent": {
+    "platform": "claude_code",
+    "model": "Opus 5.5",
+    "name": "auritus-voice-integration"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
+}

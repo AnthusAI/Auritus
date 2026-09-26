@@ -1,0 +1,9 @@
+# Only the worker image is built from the repository root; send it just what
+# it needs (worker-image/Dockerfile).
+*
+!cli/pyproject.toml
+!cli/README.md
+!cli/src/
+!worker-image/
+**/__pycache__
+**/*.pyc

@@ -1,7 +1,6 @@
-"""Higgs Audio v3 (Boson AI) TTS backend (MLX on Apple Silicon).
+"""Higgs Audio v3 (Boson AI) TTS backend for AWS Batch and Linux GPU workers.
 
-The production Higgs integration loads model weights at runtime from Hugging Face
-(bosonai/higgs-audio-v3-tts-4b). See ``docs/TTS_LICENSES.md`` for license and fetch policy.
+Weights are fetched at runtime (not baked into the Docker image) per docs/TTS_LICENSES.md.
 """
 
 from __future__ import annotations
@@ -11,7 +10,7 @@ import struct
 import wave
 from typing import Any
 
-from auritus.tts.base import TTSBackend
+from auritus.tts.base import BackendUnavailable, TTSBackend
 from auritus.tts.breaks import (
     AURITUS_BREAK_MARKER,
     AURITUS_PAUSE_MARKER,
@@ -31,17 +30,18 @@ __all__ = [
 
 HIGGS_DEFAULT_VOICE = "default"
 HIGGS_MLX_MODEL = "bosonai/higgs-audio-v3-tts-4b"
+HIGGS_TORCH_MODEL = "multimodalart/higgs-audio-v3-tts-4b-transformers"
 
 # How long a real silence gap is between AURITUS_BREAK_MARKER-delimited
 # blocks for this specific backend/voice. The marker itself and how it's
-# split live in auritus.tts.breaks, shared by every backend -- only the
-# gap length is a per-backend tuning choice.
+# split live in tts.breaks, shared by every backend -- only the gap length
+# is a per-backend tuning choice.
 BREAK_SILENCE_SECONDS = 0.75
 PAUSE_SILENCE_SECONDS = DEFAULT_PAUSE_SILENCE_SECONDS
 
 
 def resolve_higgs_voice(meta: dict[str, Any]) -> str:
-    """Return an Higgs voice or reference style name for synthesis.
+    """Return a Higgs voice or reference style name for synthesis.
 
     :param meta: Job metadata containing an optional ``voice_id``.
     :returns: Voice identifier string.
@@ -55,22 +55,27 @@ def resolve_higgs_voice(meta: dict[str, Any]) -> str:
 
 
 class HiggsBackend(TTSBackend):
-    """Higgs Audio v3 TTS backend using mlx-audio on Apple Silicon.
+    """Higgs Audio v3 TTS backend.
 
-    Loads bosonai/higgs-audio-v3-tts-4b at runtime via mlx-audio.
-    Falls back to a safe synthesized WAV on non-Apple platforms.
+    On Apple Silicon: loads bosonai/higgs-audio-v3-tts-4b via mlx-audio.
+    On Linux / AWS Batch GPU: loads Higgs v3 via transformers/PyTorch on CUDA.
     """
 
     name = "higgs"
     _model = None
+    _tokenizer = None
     _is_mlx = None
+
+    def model_id(self) -> str:
+        """:returns: The MLX or PyTorch model repo this machine uses."""
+        cls = type(self)
+        if cls._is_mlx is None:
+            cls._is_mlx = cls._detect_mlx()
+        return HIGGS_MLX_MODEL if cls._is_mlx else HIGGS_TORCH_MODEL
 
     @classmethod
     def _detect_mlx(cls) -> bool:
-        """Detect whether MLX is available on this platform.
-
-        :returns: True if running on Apple Silicon Darwin.
-        """
+        """Detect whether MLX is available on this platform."""
         import platform
 
         if platform.system() != "Darwin":
@@ -80,9 +85,6 @@ class HiggsBackend(TTSBackend):
 
     def generate(self, text: str, meta: dict[str, Any]) -> bytes:
         """Generate speech audio using Higgs Audio v3.
-
-        On Apple Silicon: uses mlx-audio (fast, native MLX).
-        On other platforms: falls back to CPU/PyTorch synthesis.
 
         :param text: TTS input text.
         :param meta: Job metadata (voice_id, name, byline).
@@ -95,15 +97,10 @@ class HiggsBackend(TTSBackend):
 
         if HiggsBackend._is_mlx:
             return self._generate_mlx(text, meta)
-        return self._generate_fallback(text, meta)
+        return self._generate_torch(text, meta)
 
     def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via mlx-audio (Apple Silicon).
-
-        :param text: TTS input text.
-        :param meta: Job metadata.
-        :returns: WAV audio bytes.
-        """
+        """Generate via mlx-audio on Apple Silicon."""
         import numpy as np
         from mlx_audio.tts.utils import load_model
 
@@ -137,31 +134,77 @@ class HiggsBackend(TTSBackend):
         audio_np = np.concatenate(all_chunks) if len(all_chunks) > 1 else all_chunks[0]
         return _to_wav(audio_np, sample_rate=sample_rate)
 
-    def _generate_fallback(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate audio on non-Apple platforms or fallback.
+    def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
+        """Generate via PyTorch / transformers on CUDA for AWS Batch."""
+        try:
+            import torch
+            from transformers import AutoModelForCausalLM, AutoTokenizer
 
-        :param text: TTS input text.
-        :param meta: Job metadata.
-        :returns: WAV audio bytes.
-        """
-        import math
+            if HiggsBackend._model is None:
+                device = "cuda" if torch.cuda.is_available() else "cpu"
+                print(f"[higgs] resolved device={device}", flush=True)
+                dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
+                try:
+                    HiggsBackend._tokenizer = AutoTokenizer.from_pretrained(
+                        HIGGS_TORCH_MODEL,
+                        trust_remote_code=True,
+                    )
+                except AttributeError:
+                    from huggingface_hub import hf_hub_download
+                    import json
 
-        sample_rate = 24000
-        duration_ms = max(500, min(len(text) * 60, 5000))
-        frames = int(sample_rate * (duration_ms / 1000.0))
-        samples = [
-            0.2 * math.sin(2 * math.pi * 440.0 * i / sample_rate) for i in range(frames)
-        ]
-        return _to_wav(samples, sample_rate=sample_rate)
+                    cfg_path = hf_hub_download(
+                        HIGGS_TORCH_MODEL, "tokenizer_config.json"
+                    )
+                    with open(cfg_path, "r", encoding="utf-8") as f:
+                        cfg = json.load(f)
+                    tokens = cfg.get("extra_special_tokens") or []
+                    token_dict = (
+                        {t: t for t in tokens} if isinstance(tokens, list) else tokens
+                    )
+                    HiggsBackend._tokenizer = AutoTokenizer.from_pretrained(
+                        HIGGS_TORCH_MODEL,
+                        extra_special_tokens=token_dict,
+                        trust_remote_code=True,
+                    )
+                HiggsBackend._model = (
+                    AutoModelForCausalLM.from_pretrained(
+                        HIGGS_TORCH_MODEL,
+                        trust_remote_code=True,
+                        torch_dtype=dtype,
+                    )
+                    .to(device)
+                    .eval()
+                )
+
+            voice = resolve_higgs_voice(meta)
+            _ = voice
+            blocks = split_on_breaks(text)
+            sample_rate = 24000
+            silence = [0.0] * int(sample_rate * BREAK_SILENCE_SECONDS)
+            pause_silence = [0.0] * int(sample_rate * PAUSE_SILENCE_SECONDS)
+            all_samples: list[float] = []
+            for block in blocks:
+                if all_samples:
+                    all_samples.extend(silence)
+                pause_segments = split_on_pauses(block)
+                for p_idx, pause_text in enumerate(pause_segments):
+                    if p_idx > 0:
+                        all_samples.extend(pause_silence)
+                    wav = HiggsBackend._model.generate_speech(
+                        pause_text, HiggsBackend._tokenizer
+                    )
+                    audio_np = wav.detach().cpu().numpy().reshape(-1)
+                    all_samples.extend(audio_np.tolist())
+            if not all_samples:
+                raise ValueError("Higgs Audio v3 generated no audio segments")
+            return _to_wav(all_samples, sample_rate=sample_rate)
+        except ImportError as exc:
+            raise BackendUnavailable.from_import_error(self.name, exc) from exc
 
 
 def _to_wav(samples: list | Any, sample_rate: int = 24000) -> bytes:
-    """Convert normalized audio samples to mono 16-bit WAV bytes.
-
-    :param samples: Audio amplitude samples.
-    :param sample_rate: Audio sampling frequency in Hz.
-    :returns: Serialized mono 16-bit WAV bytes.
-    """
+    """Convert normalized audio samples to mono 16-bit WAV bytes."""
     buffer = io.BytesIO()
     flat = list(samples)
     with wave.open(buffer, "wb") as handle:

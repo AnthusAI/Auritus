@@ -21,6 +21,7 @@ AURITUS_PAUSE_MARKER = "[[auritus:pause]]"
 AURITUS_VOICE_RESET_MARKER = "[[auritus:voice:reset]]"
 
 DEFAULT_PAUSE_SILENCE_SECONDS = 0.45
+DEFAULT_BREAK_SILENCE_SECONDS = 0.75
 
 _VOICE_TOKEN_REGEX = re.compile(r"(\[\[auritus:voice:[^\]]+\]\]|\[\[auritus:break\]\])")
 _VOICE_MARKER_STRIP_REGEX = re.compile(r"\[\[auritus:voice:[^\]]+\]\]")

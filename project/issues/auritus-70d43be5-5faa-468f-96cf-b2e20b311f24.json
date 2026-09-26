@@ -1,0 +1,41 @@
+{
+  "id": "auritus-70d43be5-5faa-468f-96cf-b2e20b311f24",
+  "title": "Typed synthesis API: synthesize, Voice, SpeechOptions, Speech, request_key",
+  "description": "New `auritus/speech.py`, exported from `auritus`. It wraps `TTSBackend.generate` and derives segments from `breaks.py`. Adds a deterministic `fake` backend for specs. Specs: the story's scenarios on synthesis and the request key.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-9ffcc2be-a4e7-48e4-8c85-22103d560d7b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "f95b3d01-566c-48b1-87b3-3771f76c0400",
+      "author": "home",
+      "text": "Implemented on branch `feature/auritus-70d43b-typed-speech-api`.\n- New `auritus.speech` (re-exported from `auritus`): `Voice.parse`, `SpeechOptions(speed, seed)`, `synthesize` returning `Speech` (wav, sample_rate, duration, segments, provenance, request_key), and `request_key`.\n- `synthesize` speaks each break block separately and joins them with the standard 0.75 s silence, so segment timings are exact. Voice markers still switch voice per block.\n- `TTSBackend` gains `supports_speed` and `model_id()`. Kokoro honours speed (MLX and torch) and reports its real model repo. A backend that can't do speed raises `UnsupportedOption` instead of ignoring it.\n- A deterministic `fake` backend (named explicitly, never a fallback) makes specs possible without models.\n- `lang` was left out of SpeechOptions: no backend can honour it yet.\n- Spec `features/speech_library.feature`: 5 scenarios, green. pytest: 93 passed. black and ruff clean.\n- Real smoke test on Apple Silicon: kokoro:af_heart produced 24 kHz audio in 2 segments (0–1.80 s, 2.55–4.28 s), with provenance model mlx-community/Kokoro-82M-bf16.",
+      "created_at": "2026-09-26T16:22:29.796480Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Opus 5.5",
+        "name": "auritus-voice-integration"
+      }
+    }
+  ],
+  "created_at": "2026-09-26T15:20:03.835588Z",
+  "updated_at": "2026-09-26T17:28:47.165286Z",
+  "closed_at": "2026-09-26T17:28:47.165200Z",
+  "agent": {
+    "platform": "claude_code",
+    "model": "Opus 5.5",
+    "name": "auritus-voice-integration"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
+}

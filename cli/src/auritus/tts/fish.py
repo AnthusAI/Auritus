@@ -6,13 +6,12 @@ Weights are fetched at runtime per docs/TTS_LICENSES.md.
 from __future__ import annotations
 
 import io
-import math
 import os
 import struct
 import wave
 from typing import Any
 
-from auritus.tts.base import TTSBackend
+from auritus.tts.base import BackendUnavailable, TTSBackend
 from auritus.tts.breaks import (
     AURITUS_BREAK_MARKER,
     AURITUS_PAUSE_MARKER,
@@ -60,12 +59,19 @@ class FishBackend(TTSBackend):
     """Fish Speech TTS backend.
 
     On Apple Silicon: loads mlx-community/fishaudio-s2-pro-8bit-mlx via mlx-audio.
-    On Linux / AWS Batch GPU: loads via PyTorch on CUDA with fallback.
+    On Linux / AWS Batch GPU: loads via PyTorch on CUDA.
     """
 
     name = "fish"
     _model = None
     _is_mlx = None
+
+    def model_id(self) -> str:
+        """:returns: The MLX or PyTorch model repo this machine uses."""
+        cls = type(self)
+        if cls._is_mlx is None:
+            cls._is_mlx = cls._detect_mlx()
+        return FISH_MLX_MODEL if cls._is_mlx else FISH_TORCH_MODEL
 
     @classmethod
     def _detect_mlx(cls) -> bool:
@@ -83,13 +89,9 @@ class FishBackend(TTSBackend):
     def generate(self, text: str, meta: dict[str, Any]) -> bytes:
         """Generate speech audio using Fish Speech.
 
-        Only ImportError (an optional heavy dependency genuinely not
-        installed, e.g. local dev/test) falls back to the stub tone. A real
-        generation failure (CUDA OOM, a model bug, a download failure) must
-        raise so the job is correctly marked failed instead of silently
-        reporting success with fake audio -- this previously caught bare
-        Exception here, the same anti-pattern confirmed happening in
-        production for higgs.py and fixed there too.
+        Every failure raises, so a job is marked failed rather than reporting
+        success with fake audio. Missing model libraries, or no CUDA GPU for
+        the PyTorch path, raise :class:`BackendUnavailable`.
 
         :param text: Text string to synthesize.
         :param meta: Generation metadata dictionary including voice settings.
@@ -104,13 +106,13 @@ class FishBackend(TTSBackend):
         if FishBackend._is_mlx:
             try:
                 return self._generate_mlx(text, meta)
-            except ImportError:
-                return self._generate_fallback(text, meta)
+            except ImportError as exc:
+                raise BackendUnavailable.from_import_error(self.name, exc) from exc
 
         try:
             return self._generate_torch(text, meta)
-        except ImportError:
-            return self._generate_fallback(text, meta)
+        except ImportError as exc:
+            raise BackendUnavailable.from_import_error(self.name, exc) from exc
 
     def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
         """Generate via mlx-audio on Apple Silicon.
@@ -119,6 +121,7 @@ class FishBackend(TTSBackend):
         :param meta: Generation metadata dictionary.
         :returns: Synthesized audio bytes in WAV format.
         """
+        import mlx_audio  # noqa: F401 - missing libraries outrank missing weights
         import numpy as np
 
         try:
@@ -128,8 +131,9 @@ class FishBackend(TTSBackend):
                 FISH_MLX_MODEL, "model.safetensors"
             )
             if not isinstance(cached, str):
-                raise FileNotFoundError(
-                    f"Model weights for {FISH_MLX_MODEL} not cached locally"
+                raise BackendUnavailable(
+                    self.name,
+                    f"model weights for {FISH_MLX_MODEL} are not downloaded",
                 )
         except ImportError:
             pass
@@ -151,8 +155,8 @@ class FishBackend(TTSBackend):
             resolve_reference_text,
         )
 
-        ref_audio_path = resolve_reference_audio(voice)
-        ref_text = resolve_reference_text(voice)
+        ref_audio_path = resolve_reference_audio(voice, meta.get("voices_dir"))
+        ref_text = resolve_reference_text(voice, meta.get("voices_dir"))
         ref_mx = None
         if ref_audio_path:
             audio_data, file_sr = sf.read(str(ref_audio_path))
@@ -215,7 +219,7 @@ class FishBackend(TTSBackend):
         print(f"[fish] resolved device={device}", flush=True)
 
         if not torch.cuda.is_available():
-            return self._generate_fallback(text, meta)
+            raise BackendUnavailable(self.name, "PyTorch generation needs a CUDA GPU")
 
         from pathlib import Path
 
@@ -317,11 +321,11 @@ class FishBackend(TTSBackend):
         ref_text = meta.get("ref_text")
         references = []
         if not ref_file:
-            resolved_audio = resolve_reference_audio(voice)
+            resolved_audio = resolve_reference_audio(voice, meta.get("voices_dir"))
             if resolved_audio:
                 ref_file = str(resolved_audio)
                 if not ref_text:
-                    ref_text = resolve_reference_text(voice)
+                    ref_text = resolve_reference_text(voice, meta.get("voices_dir"))
         if not ref_file:
             local_ref = os.path.join(os.path.dirname(__file__), "basic_ref_en.wav")
             if os.path.exists(local_ref):
@@ -372,21 +376,6 @@ class FishBackend(TTSBackend):
             raise ValueError("Fish Speech generated no audio segments")
         audio_np = np.concatenate(all_chunks) if len(all_chunks) > 1 else all_chunks[0]
         return _to_wav(audio_np, sample_rate=sample_rate)
-
-    def _generate_fallback(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Synthetic fallback audio for unit testing or environments without GPU weights.
-
-        :param text: Text string to synthesize.
-        :param meta: Generation metadata dictionary.
-        :returns: Synthesized audio bytes in WAV format.
-        """
-        sample_rate = 24000
-        duration_ms = max(500, min(len(text) * 60, 5000))
-        frames = int(sample_rate * (duration_ms / 1000.0))
-        samples = [
-            0.2 * math.sin(2 * math.pi * 520.0 * i / sample_rate) for i in range(frames)
-        ]
-        return _to_wav(samples, sample_rate=sample_rate)
 
 
 def _to_wav(samples: list | Any, sample_rate: int = 24000) -> bytes:

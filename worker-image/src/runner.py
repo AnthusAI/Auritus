@@ -8,7 +8,7 @@ import traceback
 from typing import Any
 
 import httpx
-from tts.registry import get_backend
+from auritus.tts import get_backend
 
 
 def _require_env(primary: str, *aliases: str) -> str:
@@ -59,8 +59,8 @@ RUNTIME_PACKAGES = {
 def _install_backend(name: str) -> None:
     """Install the native TTS package if it is not already importable.
 
-    The worker image always ships ``tts.<name>`` wrappers, so import of that
-    module is not evidence that the synthesizer is installed.
+    The worker image always ships the ``auritus.tts.<name>`` wrappers, so
+    importing one is not evidence that the synthesizer is installed.
     """
     import importlib
     import subprocess

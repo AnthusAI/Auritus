@@ -28,6 +28,8 @@ __all__ = [
 ]
 
 KOKORO_DEFAULT_VOICE = "af_heart"
+KOKORO_MLX_MODEL = "mlx-community/Kokoro-82M-bf16"
+KOKORO_TORCH_MODEL = "hexgrad/Kokoro-82M"
 BREAK_SILENCE_SECONDS = 0.75
 PAUSE_SILENCE_SECONDS = DEFAULT_PAUSE_SILENCE_SECONDS
 
@@ -54,8 +56,15 @@ class KokoroBackend(TTSBackend):
     """
 
     name = "kokoro"
+    supports_speed = True
     _model = None
     _is_mlx = None
+
+    def model_id(self) -> str:
+        """:returns: The MLX or PyTorch Kokoro repo this machine uses."""
+        if KokoroBackend._is_mlx is None:
+            KokoroBackend._is_mlx = KokoroBackend._detect_mlx()
+        return KOKORO_MLX_MODEL if KokoroBackend._is_mlx else KOKORO_TORCH_MODEL
 
     @classmethod
     def _detect_mlx(cls) -> bool:
@@ -112,11 +121,9 @@ class KokoroBackend(TTSBackend):
         from mlx_audio.tts.utils import load_model
 
         if KokoroBackend._model is None:
-            KokoroBackend._model = load_model(
-                "mlx-community/Kokoro-82M-bf16",
-                lazy=False,
-            )
+            KokoroBackend._model = load_model(KOKORO_MLX_MODEL, lazy=False)
         default_voice = resolve_kokoro_voice(meta)
+        speed = float(meta.get("speed") or 1.0)
         sample_rate = 24000
         block_audios: list[np.ndarray] = []
         pause_gap = np.zeros(int(sample_rate * PAUSE_SILENCE_SECONDS), dtype=np.float32)
@@ -126,7 +133,9 @@ class KokoroBackend(TTSBackend):
             for p_idx, pause_text in enumerate(pause_segments):
                 if p_idx > 0:
                     block_parts.append(pause_gap)
-                gen = KokoroBackend._model.generate(pause_text, voice=block_voice)
+                gen = KokoroBackend._model.generate(
+                    pause_text, voice=block_voice, speed=speed
+                )
                 segments = [np.array(result.audio) for result in gen]
                 if segments:
                     block_parts.append(
@@ -150,11 +159,17 @@ class KokoroBackend(TTSBackend):
         AURITUS_BREAK_MARKER for real pauses, segments from KPipeline's own
         generator within each block for Kokoro's internal length limit.
         """
+        import torch
         from kokoro import KPipeline
 
         if KokoroBackend._model is None:
-            KokoroBackend._model = KPipeline(lang_code="a")
+            # Resolve the device explicitly so a Batch GPU run is verified, not
+            # assumed, to use the GPU it is billed for.
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            print(f"[kokoro] resolved device={device}", flush=True)
+            KokoroBackend._model = KPipeline(lang_code="a", device=device)
         default_voice = resolve_kokoro_voice(meta)
+        speed = float(meta.get("speed") or 1.0)
         sample_rate = 24000
         block_silence = [0.0] * int(sample_rate * BREAK_SILENCE_SECONDS)
         pause_silence = [0.0] * int(sample_rate * PAUSE_SILENCE_SECONDS)
@@ -166,7 +181,9 @@ class KokoroBackend(TTSBackend):
             for p_idx, pause_text in enumerate(pause_segments):
                 if p_idx > 0:
                     audio_list.extend(pause_silence)
-                results = list(KokoroBackend._model(pause_text, voice=block_voice))
+                results = list(
+                    KokoroBackend._model(pause_text, voice=block_voice, speed=speed)
+                )
                 for result in results:
                     audio_tensor = result.audio
                     audio_list.extend(
