@@ -21,6 +21,7 @@ from unittest.mock import Mock
 
 import boto3
 from behave import given, then, when
+from support.operator_tokens import operator_headers
 from moto import mock_aws
 
 
@@ -550,7 +551,7 @@ def step_request_cost_summary(context) -> None:
     event = _build_event(
         "GET",
         "/admin/costs",
-        headers={"authorization": "Bearer operator-token"},
+        headers=operator_headers(),
         query_params={
             "site_id": context.scan_site_id,
             "from": context.scan_from,

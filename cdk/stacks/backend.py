@@ -79,6 +79,8 @@ from aws_cdk import (
 )
 from constructs import Construct
 
+from stacks.operator_auth_layer import build_operator_auth_layer
+
 LAMBDA_ROOT = Path(__file__).resolve().parents[1] / "lambdas"
 DEFAULT_CLAIM_TIMEOUT_SECONDS = 900
 DEFAULT_RACE_SECONDS = 900
@@ -525,12 +527,21 @@ class BackendStack(Stack):
         if saml_idp:
             web_console_client.node.add_dependency(saml_idp)
 
+        operator_auth_layer = build_operator_auth_layer(self)
+        operator_client_ids = ",".join(
+            [
+                user_pool_client.user_pool_client_id,
+                web_console_client.user_pool_client_id,
+            ]
+        )
+
         router_fn = lambda_.Function(
             self,
             "RouterFn",
             runtime=lambda_.Runtime.PYTHON_3_11,
             handler="handler.handler",
             code=lambda_.Code.from_asset(str(LAMBDA_ROOT / "router")),
+            layers=[operator_auth_layer],
             timeout=Duration.seconds(30),
             memory_size=512,
             environment={
@@ -543,6 +554,7 @@ class BackendStack(Stack):
                     self.node.try_get_context("daily_site_quota") or 100
                 ),
                 "USER_POOL_ID": user_pool.user_pool_id,
+                "ALLOWED_CLIENT_IDS": operator_client_ids,
                 "SES_FROM_ADDRESS": str(
                     self.node.try_get_context("alert_from_address")
                     or "auritus@example.com"
@@ -586,11 +598,11 @@ class BackendStack(Stack):
             runtime=lambda_.Runtime.PYTHON_3_11,
             handler="handler.handler",
             code=lambda_.Code.from_asset(str(LAMBDA_ROOT / "authorizer")),
+            layers=[operator_auth_layer],
             timeout=Duration.seconds(10),
             environment={
                 "USER_POOL_ID": user_pool.user_pool_id,
-                "CLIENT_ID": user_pool_client.user_pool_client_id,
-                "ALLOWED_CLIENT_IDS": f"{user_pool_client.user_pool_client_id},{web_console_client.user_pool_client_id}",
+                "ALLOWED_CLIENT_IDS": operator_client_ids,
             },
         )
 

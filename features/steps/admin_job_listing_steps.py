@@ -11,11 +11,12 @@ from unittest.mock import Mock
 
 import boto3
 from behave import given, then, when
+from support.operator_tokens import operator_headers
 
 
 def _operator_headers() -> dict[str, str]:
     """Return valid operator auth headers."""
-    return {"authorization": "Bearer test-operator-token-12345"}
+    return operator_headers()
 
 
 def _ensure_handler_loaded(context) -> None:

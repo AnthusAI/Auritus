@@ -1,4 +1,9 @@
-"""Shared fixtures for router Lambda tests."""
+"""Shared fixtures for router Lambda tests.
+
+Puts the repository's ``features`` directory on ``sys.path`` so tests mint
+operator tokens with the same ``support.operator_tokens`` helper the behave
+specs use, which also puts the operator auth layer on ``sys.path``.
+"""
 
 import importlib
 import json
@@ -10,6 +15,10 @@ from unittest.mock import Mock
 import boto3
 import pytest
 from moto import mock_aws
+
+FEATURES_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "features")
+if FEATURES_PATH not in sys.path:
+    sys.path.insert(0, FEATURES_PATH)
 
 
 @pytest.fixture
