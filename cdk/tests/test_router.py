@@ -1,5 +1,7 @@
 """Behavioral tests for the router Lambda."""
 
+from support.operator_tokens import operator_headers
+
 
 def _site_headers() -> dict[str, str]:
     """Return valid site-key and origin headers."""
@@ -200,7 +202,7 @@ def test_daily_quota_site_specific(router_resources: dict[str, object]) -> None:
 
 
 def _operator_headers() -> dict[str, str]:
-    return {"authorization": "Bearer valid-operator-jwt"}
+    return operator_headers()
 
 
 def test_batch_cannot_steal_an_unexpired_local_claim(

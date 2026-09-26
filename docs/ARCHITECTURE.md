@@ -109,16 +109,29 @@ sequenceDiagram
   console or via `auritus login --sso aws-sso`.
 
 For the supported CLI path, short-lived JWTs are stored locally under
-`~/.auritus/credentials` with mode `0600`. Operator routes (`/sites`, claimable
-listing, kill switch) accept an `Authorization: Bearer` JWT. The current Lambda
-authorizer does not yet verify JWT signatures or expiry, so production-grade
-token validation remains required security work.
+`~/.auritus/credentials` with mode `0600`. The CLI and the web console send the
+Cognito **access** token as `Authorization: Bearer <token>`.
+
+Operator tokens are verified in two places with the same shared module
+(`auritus_operator_auth`, shipped as a Lambda layer with PyJWT and
+cryptography): the API Gateway Lambda authorizer on `/sites`, `/admin/*`, and
+`/jobs/claimable`, and the router itself on every operator check. A token is
+accepted only when its RS256 signature verifies against the user pool JWKS,
+its issuer is exactly the deployed user pool, it has not expired, its
+`token_use` is `access`, and its `client_id` is the CLI or web console app
+client. Missing verifier configuration denies every request.
+
+The job-mutation routes (`PUT /jobs/{hash}/claim`, `/done`, `/failed`, and
+`POST /jobs/{hash}/presign-upload`) have no gateway authorizer because Batch
+workers call them with a single-use job token. The router accepts either that
+job's token (compared in constant time) or a verified operator access token
+for an operator's local worker; anything else is refused with 403.
 
 ## Secure-by-design status
 
 The system is intentionally structured around private audio, short-lived
-delivery URLs, conditional job claims, and spending limits. Origin enforcement
-and production-grade operator JWT validation are not complete today. The full
+delivery URLs, conditional job claims, spending limits, and verified operator
+access tokens. Origin enforcement is not complete today. The full
 secure-by-design architecture and control evidence are still under development.
 This document describes current behavior, not a completed security assurance
 package. Future security material belongs in a dedicated section that identifies
@@ -134,8 +147,9 @@ each control's threat, owner, implementation evidence, and review status.
 | Control evidence | CDK, tests, logging, and review evidence for each claim. |
 - `auritus login --username <email>` calls Cognito `USER_PASSWORD_AUTH` and
   stores short-lived JWTs in `~/.auritus/credentials` (mode 0600).
-- Operator routes (`/sites`, claimable listing, kill switch) require
-  `Authorization: Bearer` JWT validated by a Lambda authorizer.
+- Operator routes (`/sites`, `/admin/*`, claimable listing) require a Cognito
+  access token whose signature, issuer, expiry, `token_use`, and `client_id`
+  are verified by the Lambda authorizer and again by the router.
 
 ## Audio delivery
 
