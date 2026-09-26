@@ -8,7 +8,7 @@ from pathlib import Path
 from behave import given, then, when
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "worker-image" / "src"))
+sys.path.insert(0, str(ROOT / "cli" / "src"))
 
 
 @given("an F5 job without an explicit voice_id")
@@ -28,7 +28,7 @@ def step_f5_job_with_empty_voice(context) -> None:
 
 @when("the F5 voice is resolved for synthesis")
 def step_resolve_f5_voice(context) -> None:
-    from tts.f5 import resolve_f5_voice
+    from auritus.tts.f5 import resolve_f5_voice
 
     context.resolved_voice_id = resolve_f5_voice(context.f5_meta)
 

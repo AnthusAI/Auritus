@@ -66,6 +66,13 @@ class FishBackend(TTSBackend):
     _model = None
     _is_mlx = None
 
+    def model_id(self) -> str:
+        """:returns: The MLX or PyTorch model repo this machine uses."""
+        cls = type(self)
+        if cls._is_mlx is None:
+            cls._is_mlx = cls._detect_mlx()
+        return FISH_MLX_MODEL if cls._is_mlx else FISH_TORCH_MODEL
+
     @classmethod
     def _detect_mlx(cls) -> bool:
         """Detect whether MLX is available on this platform.

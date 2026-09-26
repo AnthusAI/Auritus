@@ -73,15 +73,17 @@ def _force_mlx(context, classes, value: bool) -> None:
 
 @given("the speech model libraries are not installed")
 def step_no_model_libraries(context) -> None:
-    # Pin the Apple Silicon path so the scenario means the same on CI (Linux)
-    # as on a Mac: the backend gets as far as importing its model library.
-    _force_mlx(context, [_backend_class(s) for s in CLI_BACKENDS.values()], True)
+    # Unless a step already chose the platform, pin the Apple Silicon path so
+    # the scenario means the same on CI (Linux) as on a Mac.
+    if not getattr(context, "platform_pinned", False):
+        _force_mlx(context, [_backend_class(s) for s in CLI_BACKENDS.values()], True)
     _hide_model_packages(context)
 
 
 @given("this machine is not Apple Silicon")
 def step_not_apple_silicon(context) -> None:
     _force_mlx(context, [_backend_class(s) for s in CLI_BACKENDS.values()], False)
+    context.platform_pinned = True
 
 
 @when('I try to synthesize "{text}" with voice "{voice}"')
@@ -111,35 +113,3 @@ def step_unavailable_missing_module(context, backend: str) -> None:
     assert error.missing_module, str(error)
     assert error.missing_module.split(".")[0] in MODEL_PACKAGES, str(error)
     assert error.missing_module in str(error)
-
-
-@then('a BackendUnavailable error names "{backend}" and says it needs Apple Silicon')
-def step_unavailable_platform(context, backend: str) -> None:
-    error = _assert_unavailable(context, backend)
-    assert "Apple Silicon" in str(error), str(error)
-
-
-@when('the Batch worker\'s "{backend}" backend generates "{text}"')
-def step_worker_generates(context, backend: str, text: str) -> None:
-    sys.path.insert(0, str(ROOT / "worker-image" / "src"))
-    from tts import get_backend
-
-    instance = get_backend(backend)
-    if hasattr(type(instance), "_is_mlx"):
-        # The Batch worker runs on Linux GPUs, never Apple Silicon.
-        _force_mlx(context, [type(instance)], False)
-    context.worker_audio = None
-    try:
-        context.worker_audio = instance.generate(text, {"voice_id": "default"})
-        context.error = None
-    except Exception as exc:  # noqa: BLE001 - the scenario inspects the error
-        context.error = exc
-
-
-@then('the worker raises BackendUnavailable naming "{backend}"')
-def step_worker_unavailable(context, backend: str) -> None:
-    from tts.base import BackendUnavailable
-
-    assert context.worker_audio is None, "the worker produced stand-in audio"
-    assert isinstance(context.error, BackendUnavailable), repr(context.error)
-    assert context.error.backend == backend
