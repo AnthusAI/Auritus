@@ -8,12 +8,12 @@ from pathlib import Path
 from behave import then, when
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "worker-image" / "src"))
+sys.path.insert(0, str(ROOT / "cli" / "src"))
 
 
 @when("the TTS backend registry is loaded")
 def step_load_registry(context) -> None:
-    from tts import get_backend
+    from auritus.tts import get_backend
 
     context.registered_backends = [
         get_backend(name).name
@@ -28,7 +28,7 @@ def step_backend_registered(context, name: str) -> None:
 
 @when("the TTS backend is resolved from the registry")
 def step_resolve_backend(context) -> None:
-    from tts import get_backend
+    from auritus.tts import get_backend
 
     context.resolved_backend = get_backend(context.tts_backend)
 

@@ -8,7 +8,7 @@ from pathlib import Path
 from behave import given, then, when
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "worker-image" / "src"))
+sys.path.insert(0, str(ROOT / "cli" / "src"))
 
 
 @given('a speech text "{text}"')
@@ -27,7 +27,7 @@ def step_when_segmented_on_pauses(context) -> None:
 
     :param context: Behave test execution context.
     """
-    from tts.breaks import split_on_pauses
+    from auritus.tts.breaks import split_on_pauses
 
     context.pause_segments = split_on_pauses(context.speech_text)
 

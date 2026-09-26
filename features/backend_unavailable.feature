@@ -17,23 +17,17 @@ Feature: Missing speech backends fail loudly
       | qwen       |
       | f5         |
 
-  Scenario Outline: MLX-only backends refuse on machines without Apple Silicon
+  Scenario Outline: Off Apple Silicon, backends use PyTorch and fail loudly without it
     Given this machine is not Apple Silicon
+    And the speech model libraries are not installed
     When I try to synthesize "Hello" with voice "<backend>:default"
-    Then a BackendUnavailable error names "<backend>" and says it needs Apple Silicon
+    Then a BackendUnavailable error names "<backend>" and a missing module
 
     Examples:
       | backend    |
-      | higgs      |
       | chatterbox |
-
-  Scenario Outline: The Batch worker fails the job instead of faking audio
-    Given the speech model libraries are not installed
-    When the Batch worker's "<backend>" backend generates "Hello"
-    Then the worker raises BackendUnavailable naming "<backend>"
-
-    Examples:
-      | backend    |
       | higgs      |
-      | chatterbox |
       | fish       |
+      | kokoro     |
+      | qwen       |
+      | f5         |

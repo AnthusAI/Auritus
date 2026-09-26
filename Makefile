@@ -1,10 +1,11 @@
-.PHONY: check lint-python test-python lint-embed test-embed lint-console test-console build-console synth-cdk sync-embed build-embed build-site diagrams help
+.PHONY: check test-construct lint-python test-python lint-embed test-embed lint-console test-console build-console synth-cdk sync-embed build-embed build-site diagrams help
 
 help:
 	@echo "Auritus make targets"
 	@echo "  make check       - run all local quality gates"
 	@echo "  make lint-python - black --check + ruff"
 	@echo "  make test-python - pytest + behave"
+	@echo "  make test-construct - jsii build + jest for the CDK construct"
 	@echo "  make lint-embed  - eslint"
 	@echo "  make test-embed  - vitest"
 	@echo "  make lint-console - eslint for console app"
@@ -13,7 +14,7 @@ help:
 	@echo "  make synth-cdk   - cdk synth"
 	@echo "  make diagrams    - render pinned D2 documentation diagrams"
 
-check: diagrams lint-python test-python lint-embed test-embed lint-console test-console build-console synth-cdk
+check: diagrams lint-python test-python test-construct lint-embed test-embed lint-console test-console build-console synth-cdk
 
 lint-python:
 	cd cli && python3 -m black --check src tests ../features/steps ../worker-image/src
@@ -23,6 +24,9 @@ test-python:
 	cd cli && python3 -m pytest -q
 	python3 -m pip install -q -r cdk/requirements.txt
 	cd cli && python3 -m behave ../features
+
+test-construct:
+	cd construct && npm ci && npm test
 
 lint-embed:
 	cd embed && npm run lint

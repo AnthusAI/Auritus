@@ -1,7 +1,6 @@
-"""Chatterbox-TTS (Resemble AI) backend (MLX on Apple Silicon).
+"""Chatterbox-TTS (Resemble AI) backend for AWS Batch and Linux GPU workers.
 
-Weights are fetched at runtime from Hugging Face (mlx-community/chatterbox-fp16).
-See ``docs/TTS_LICENSES.md`` for license and fetch policy.
+Weights are fetched at runtime per docs/TTS_LICENSES.md.
 """
 
 from __future__ import annotations
@@ -30,12 +29,13 @@ __all__ = [
 ]
 
 CHATTERBOX_DEFAULT_VOICE = "default"
+CHATTERBOX_TORCH_MODEL = "ResembleAI/chatterbox"
 CHATTERBOX_MLX_MODEL = "mlx-community/chatterbox-fp16"
 
 # How long a real silence gap is between AURITUS_BREAK_MARKER-delimited
 # blocks for this specific backend/voice. The marker itself and how it's
-# split live in auritus.tts.breaks, shared by every backend -- only the
-# gap length is a per-backend tuning choice.
+# split live in tts.breaks, shared by every backend -- only the gap length
+# is a per-backend tuning choice.
 BREAK_SILENCE_SECONDS = 0.75
 PAUSE_SILENCE_SECONDS = DEFAULT_PAUSE_SILENCE_SECONDS
 
@@ -55,22 +55,26 @@ def resolve_chatterbox_voice(meta: dict[str, Any]) -> str:
 
 
 class ChatterboxBackend(TTSBackend):
-    """Chatterbox-TTS backend using mlx-audio on Apple Silicon.
+    """Chatterbox-TTS backend using Resemble AI Chatterbox.
 
-    Loads mlx-community/chatterbox-fp16 at runtime via mlx-audio.
-    Falls back to a safe synthesized WAV on non-Apple platforms.
+    On Apple Silicon: loads mlx-community/chatterbox-fp16 via mlx-audio.
+    On Linux / AWS Batch GPU: loads ResembleAI/chatterbox via PyTorch on CUDA.
     """
 
     name = "chatterbox"
     _model = None
     _is_mlx = None
 
+    def model_id(self) -> str:
+        """:returns: The MLX or PyTorch model repo this machine uses."""
+        cls = type(self)
+        if cls._is_mlx is None:
+            cls._is_mlx = cls._detect_mlx()
+        return CHATTERBOX_MLX_MODEL if cls._is_mlx else CHATTERBOX_TORCH_MODEL
+
     @classmethod
     def _detect_mlx(cls) -> bool:
-        """Detect whether MLX is available on this platform.
-
-        :returns: True if running on Apple Silicon Darwin.
-        """
+        """Detect whether MLX is available on this platform."""
         import platform
 
         if platform.system() != "Darwin":
@@ -80,9 +84,6 @@ class ChatterboxBackend(TTSBackend):
 
     def generate(self, text: str, meta: dict[str, Any]) -> bytes:
         """Generate speech audio using Chatterbox-TTS.
-
-        On Apple Silicon: uses mlx-audio (fast, native MLX).
-        On other platforms: falls back to safe synthesized audio.
 
         :param text: TTS input text.
         :param meta: Job metadata (voice_id, name, byline).
@@ -95,19 +96,10 @@ class ChatterboxBackend(TTSBackend):
 
         if ChatterboxBackend._is_mlx:
             return self._generate_mlx(text, meta)
-        raise BackendUnavailable(
-            self.name,
-            "it needs Apple Silicon (MLX) here; Linux/CUDA generation runs in the "
-            "worker image",
-        )
+        return self._generate_torch(text, meta)
 
     def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via mlx-audio (Apple Silicon).
-
-        :param text: TTS input text.
-        :param meta: Job metadata.
-        :returns: WAV audio bytes.
-        """
+        """Generate via mlx-audio on Apple Silicon."""
         import numpy as np
         from mlx_audio.tts.utils import load_model
 
@@ -126,7 +118,7 @@ class ChatterboxBackend(TTSBackend):
             )
         )
         voice = resolve_chatterbox_voice(meta)
-        ref_audio_path = resolve_reference_audio(voice)
+        ref_audio_path = resolve_reference_audio(voice, meta.get("voices_dir"))
         ref_audio_arg = str(ref_audio_path) if ref_audio_path else None
 
         blocks = split_on_breaks(text)
@@ -159,14 +151,64 @@ class ChatterboxBackend(TTSBackend):
         audio_np = np.concatenate(all_chunks) if len(all_chunks) > 1 else all_chunks[0]
         return _to_wav(audio_np, sample_rate=sample_rate)
 
+    def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
+        """Generate via PyTorch / CUDA.
+
+        Every failure raises, so a job is marked failed rather than reporting
+        success with fake audio. Missing libraries raise
+        :class:`BackendUnavailable`.
+        """
+        try:
+            import numpy as np
+            import torch
+            from chatterbox.tts import ChatterboxTTS
+        except ImportError as exc:
+            raise BackendUnavailable.from_import_error(self.name, exc) from exc
+
+        from auritus.tts.voices import resolve_reference_audio
+
+        if ChatterboxBackend._model is None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            print(f"[chatterbox] resolved device={device}", flush=True)
+            ChatterboxBackend._model = ChatterboxTTS.from_pretrained(
+                device=device,
+            )
+        voice = resolve_chatterbox_voice(meta)
+        ref_audio_path = resolve_reference_audio(voice, meta.get("voices_dir"))
+        ref_audio_arg = str(ref_audio_path) if ref_audio_path else None
+
+        blocks = split_on_breaks(text)
+        all_chunks: list[np.ndarray] = []
+        sample_rate = int(getattr(ChatterboxBackend._model, "sr", 24000))
+        silence = np.zeros(int(sample_rate * BREAK_SILENCE_SECONDS), dtype=np.float32)
+        pause_silence = np.zeros(
+            int(sample_rate * PAUSE_SILENCE_SECONDS), dtype=np.float32
+        )
+        for i, block in enumerate(blocks):
+            if i > 0:
+                all_chunks.append(silence)
+            pause_segments = split_on_pauses(block)
+            for p_idx, pause_text in enumerate(pause_segments):
+                if p_idx > 0:
+                    all_chunks.append(pause_silence)
+                if ref_audio_arg:
+                    wav = ChatterboxBackend._model.generate(
+                        pause_text, audio_prompt_path=ref_audio_arg
+                    )
+                else:
+                    wav = ChatterboxBackend._model.generate(pause_text)
+                if hasattr(wav, "cpu"):
+                    wav = wav.cpu().numpy()
+                all_chunks.append(np.asarray(wav, dtype=np.float32).reshape(-1))
+
+        if not all_chunks:
+            raise ValueError("Chatterbox-TTS generated no audio segments")
+        audio_np = np.concatenate(all_chunks) if len(all_chunks) > 1 else all_chunks[0]
+        return _to_wav(audio_np, sample_rate=sample_rate)
+
 
 def _to_wav(samples: list | Any, sample_rate: int = 24000) -> bytes:
-    """Convert normalized audio samples to mono 16-bit WAV bytes.
-
-    :param samples: Audio amplitude samples.
-    :param sample_rate: Audio sampling frequency in Hz.
-    :returns: Serialized mono 16-bit WAV bytes.
-    """
+    """Convert normalized audio samples to mono 16-bit WAV bytes."""
     buffer = io.BytesIO()
     flat = list(samples)
     with wave.open(buffer, "wb") as handle:

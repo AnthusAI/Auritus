@@ -60,6 +60,18 @@ jobs:
         working-directory: cli
         run: python -m behave ../features
 
+      - name: Construct — npm ci
+        working-directory: construct
+        run: npm ci
+
+      - name: Construct — jsii build and test
+        working-directory: construct
+        run: npm test
+
+      - name: Construct — Python package
+        working-directory: construct
+        run: npx jsii-pacmak --targets python
+
       - name: Embed — npm ci
         working-directory: embed
         run: npm ci
