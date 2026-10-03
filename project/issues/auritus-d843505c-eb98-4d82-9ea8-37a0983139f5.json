@@ -1,0 +1,38 @@
+{
+  "id": "auritus-d843505c-eb98-4d82-9ea8-37a0983139f5",
+  "title": "Fish backend silently substitutes a stock voice when a named voice cannot be resolved",
+  "description": "A job that explicitly names a voice (e.g. voice_id=serious) is generated in a DIFFERENT voice, silently, and marked status=done. No error, no warning.\n\nCAUSE\ncli/src/auritus/tts/fish.py:314-338 (_generate_torch): resolve_reference_audio(voice, ...) returns None when the voices directory is absent, and the code then falls back to the bundled cli/src/auritus/tts/basic_ref_en.wav ('Some call me nature, others call me mother nature.') and synthesizes with THAT reference. The job completes successfully.\n\nWHY IT FIRES ON AWS BATCH\nThe Batch worker image has no reference voices. worker-image/Dockerfile only does 'COPY cli /app/cli', and voices/*.wav is gitignored repo-wide per voices/README.md. basic_ref_en.wav IS shipped (cli/pyproject.toml package-data: auritus = ['tts/*.wav']). So every Batch job for a custom-voice site gets the stock voice.\n\nOBSERVED 2026-10-03\nPilobol.us pinned narration to voice_id=serious, tts_backend=fish and minted 11 jobs. 7 were claimed by Batch after the 15-minute local-claim timeout expired; those are narrated in the stock fallback voice, not 'serious'. 1 was claimed by the local worker (correct voice). See the sibling issue for the content-side cleanup.\n\nTHE FIX (the silent part is the bug)\nAn explicitly named voice that cannot be resolved should FAIL the job with a clear error, not substitute a stock voice and report success. The fallback is only defensible when no voice was named at all. Decide separately whether to provision reference voices to the Batch image / S3 so cloud fallback can serve custom-voice sites at all; Ryan was asked and deferred both decisions, so confirm scope before implementing.\n\nSECOND-ORDER ISSUE\nBatch uses fishaudio/s2-pro (full precision) while Apple Silicon local workers use mlx-community/fishaudio-s2-pro-8bit-mlx (8-bit quantized) - fish.py:33-34, model_id() at :74. Even with voices resolving correctly the two paths will not sound identical, so a site whose jobs split across local and Batch gets inconsistent narration. Worth an explicit product decision.",
+  "type": "bug",
+  "status": "in_progress",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "e021843f-f8d7-452f-83cc-8e645ee180e3",
+      "author": "home",
+      "text": "## Fix in review: fail loudly only (no provisioning, no fallback)\n\n- **Branch:** `fix/named-voice-fails-loudly` (commit `abc909a`)\n- **PR:** https://github.com/AnthusAI/Auritus/pull/77 (into `develop`, not merged)\n\n### What changed\nA named voice with no reference recording now raises `VoiceNotFound` (a `ValueError`) naming the voice and the folder searched, before any model loads. The Batch runner and the local worker both mark such a job **failed**, never done. Default-voice requests (no voice, `default`, or the backend default id: `narrator` for Fish/Chatterbox) still use the stock voice.\n\nSubstitution paths closed:\n- fish `_generate_torch` (Batch): bundled `basic_ref_en.wav`\n- fish `_generate_torch`: `meta[\"ref_file\"]` override pointing at a missing file fell through to the model voice (override removed, no callers)\n- fish `_generate_mlx` (local Apple Silicon): model's built-in voice\n- chatterbox `_generate_mlx` / `_generate_torch`: model's built-in voice\n- f5 `_generate_mlx`: f5-tts-mlx's bundled test reference; the mlx-audio ImportError branch ignored the recording, and now refuses a named voice\n- f5 `_generate_torch` (Batch): bundled / f5-tts example reference\n\n### Verification\n- New `features/named_voices.feature` (24 scenarios, model synthesis stubbed, no real TTS) plus unit tests for `require_reference_audio`.\n- Before: pytest 95 passed; behave 212 scenarios passed (5 skipped).\n- After: pytest 97 passed; behave 236 scenarios passed (5 skipped); cdk pytest 57 passed; black + ruff clean.\n- No TTS jobs run, nothing submitted to Batch, no narrations regenerated.\n\n### Still open (not in this PR)\n- Higgs and Bark ignore `voice_id` entirely, so a named voice is silently dropped there too.\n- The Batch runner does not catch `BackendUnavailable` (`RuntimeError`), so that failure exits without `PUT /failed`.\n- Batch vs local model mismatch (s2-pro vs 8-bit MLX) is unchanged.\n",
+      "created_at": "2026-10-03T17:36:38.951350Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Opus 5.5",
+        "name": "auritus-d84350-fix"
+      }
+    }
+  ],
+  "created_at": "2026-10-03T16:02:53.264841Z",
+  "updated_at": "2026-10-03T17:36:44.145715Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Opus 5 (1M context)",
+    "name": "projects-f3"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
