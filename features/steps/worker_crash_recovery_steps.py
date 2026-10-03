@@ -51,6 +51,7 @@ def step_run_worker_once(context) -> None:
             "poll_interval": 1,
             "claim_timeout": 30,
             "tts_backend": "kokoro",
+            "voices_dir": getattr(context, "worker_voices_dir", None),
         }
     }
     mock_put_response = MagicMock()

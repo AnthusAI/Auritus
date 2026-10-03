@@ -9,6 +9,7 @@ import io
 import os
 import struct
 import wave
+from pathlib import Path
 from typing import Any
 
 from auritus.tts.base import BackendUnavailable, TTSBackend
@@ -19,6 +20,7 @@ from auritus.tts.breaks import (
     split_on_breaks,
     split_on_pauses,
 )
+from auritus.tts.voices import require_reference_audio, resolve_reference_text
 
 __all__ = [
     "AURITUS_BREAK_MARKER",
@@ -30,6 +32,8 @@ __all__ = [
 ]
 
 FISH_DEFAULT_VOICE = "narrator"
+#: Voice ids that ask for Fish's default voice rather than naming one.
+FISH_DEFAULT_VOICE_IDS = frozenset({FISH_DEFAULT_VOICE, "default"})
 FISH_TORCH_MODEL = "fishaudio/s2-pro"
 FISH_MLX_MODEL = "mlx-community/fishaudio-s2-pro-8bit-mlx"
 
@@ -91,34 +95,46 @@ class FishBackend(TTSBackend):
 
         Every failure raises, so a job is marked failed rather than reporting
         success with fake audio. Missing model libraries, or no CUDA GPU for
-        the PyTorch path, raise :class:`BackendUnavailable`.
+        the PyTorch path, raise :class:`BackendUnavailable`. A named voice
+        with no reference recording raises
+        :class:`~auritus.tts.voices.VoiceNotFound` before any model loads.
 
         :param text: Text string to synthesize.
         :param meta: Generation metadata dictionary including voice settings.
         :returns: Synthesized audio bytes in WAV format.
         :raises ValueError: If input text is empty or whitespace.
+        :raises VoiceNotFound: If the named voice has no reference recording.
         """
         if not text.strip():
             raise ValueError("Cannot generate audio for empty text")
+        reference = require_reference_audio(
+            resolve_fish_voice(meta),
+            meta.get("voices_dir"),
+            default_voice_ids=FISH_DEFAULT_VOICE_IDS,
+        )
         if FishBackend._is_mlx is None:
             FishBackend._is_mlx = FishBackend._detect_mlx()
 
         if FishBackend._is_mlx:
             try:
-                return self._generate_mlx(text, meta)
+                return self._generate_mlx(text, meta, reference)
             except ImportError as exc:
                 raise BackendUnavailable.from_import_error(self.name, exc) from exc
 
         try:
-            return self._generate_torch(text, meta)
+            return self._generate_torch(text, meta, reference)
         except ImportError as exc:
             raise BackendUnavailable.from_import_error(self.name, exc) from exc
 
-    def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
+    def _generate_mlx(
+        self, text: str, meta: dict[str, Any], reference: Path | None
+    ) -> bytes:
         """Generate via mlx-audio on Apple Silicon.
 
         :param text: Text string to synthesize.
         :param meta: Generation metadata dictionary.
+        :param reference: The voice's reference recording, or None to speak
+            in the model's own default voice.
         :returns: Synthesized audio bytes in WAV format.
         """
         import mlx_audio  # noqa: F401 - missing libraries outrank missing weights
@@ -147,19 +163,16 @@ class FishBackend(TTSBackend):
                 getattr(FishBackend._model, "sr", 44100),
             )
         )
-        voice = resolve_fish_voice(meta)
         import mlx.core as mx
         import soundfile as sf
-        from auritus.tts.voices import (
-            resolve_reference_audio,
-            resolve_reference_text,
-        )
 
-        ref_audio_path = resolve_reference_audio(voice, meta.get("voices_dir"))
-        ref_text = resolve_reference_text(voice, meta.get("voices_dir"))
+        ref_text = None
         ref_mx = None
-        if ref_audio_path:
-            audio_data, file_sr = sf.read(str(ref_audio_path))
+        if reference is not None:
+            ref_text = resolve_reference_text(
+                resolve_fish_voice(meta), meta.get("voices_dir")
+            )
+            audio_data, file_sr = sf.read(str(reference))
             if audio_data.ndim > 1:
                 audio_data = audio_data.mean(axis=1)
             target_sr = sample_rate
@@ -205,11 +218,15 @@ class FishBackend(TTSBackend):
         audio_np = np.concatenate(all_chunks) if len(all_chunks) > 1 else all_chunks[0]
         return _to_wav(audio_np, sample_rate=sample_rate)
 
-    def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
+    def _generate_torch(
+        self, text: str, meta: dict[str, Any], reference: Path | None
+    ) -> bytes:
         """Generate via PyTorch on CUDA using fishaudio/s2-pro.
 
         :param text: Text string to synthesize.
         :param meta: Generation metadata dictionary including voice settings.
+        :param reference: The voice's reference recording, or None for a
+            default-voice request, which uses the bundled stock reference.
         :returns: Synthesized audio bytes in WAV format.
         """
         import numpy as np
@@ -220,8 +237,6 @@ class FishBackend(TTSBackend):
 
         if not torch.cuda.is_available():
             raise BackendUnavailable(self.name, "PyTorch generation needs a CUDA GPU")
-
-        from pathlib import Path
 
         import fish_speech
         from huggingface_hub import snapshot_download
@@ -311,28 +326,17 @@ class FishBackend(TTSBackend):
 
         from fish_speech.inference_engine import ServeTTSRequest
         from fish_speech.utils.schema import ServeReferenceAudio
-        from auritus.tts.voices import (
-            resolve_reference_audio,
-            resolve_reference_text,
-        )
 
-        voice = resolve_fish_voice(meta)
-        ref_file = meta.get("ref_file")
-        ref_text = meta.get("ref_text")
         references = []
-        if not ref_file:
-            resolved_audio = resolve_reference_audio(voice, meta.get("voices_dir"))
-            if resolved_audio:
-                ref_file = str(resolved_audio)
-                if not ref_text:
-                    ref_text = resolve_reference_text(voice, meta.get("voices_dir"))
-        if not ref_file:
-            local_ref = os.path.join(os.path.dirname(__file__), "basic_ref_en.wav")
-            if os.path.exists(local_ref):
-                ref_file = local_ref
-                if not ref_text:
-                    ref_text = "Some call me nature, others call me mother nature."
-        if ref_file and os.path.exists(ref_file):
+        if reference is not None:
+            ref_file = str(reference)
+            ref_text = resolve_reference_text(
+                resolve_fish_voice(meta), meta.get("voices_dir")
+            )
+        else:
+            ref_file = os.path.join(os.path.dirname(__file__), "basic_ref_en.wav")
+            ref_text = "Some call me nature, others call me mother nature."
+        if reference is not None or os.path.exists(ref_file):
             with open(ref_file, "rb") as f:
                 audio_bytes = f.read()
             references = [ServeReferenceAudio(audio=audio_bytes, text=ref_text or "")]

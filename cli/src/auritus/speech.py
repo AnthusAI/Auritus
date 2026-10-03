@@ -28,6 +28,7 @@ from auritus import __version__
 from auritus.tts import get_backend
 from auritus.tts.base import BackendUnavailable, TTSBackend
 from auritus.tts.breaks import DEFAULT_BREAK_SILENCE_SECONDS, parse_voiced_segments
+from auritus.tts.voices import VoiceNotFound
 
 __all__ = [
     "BackendUnavailable",
@@ -36,6 +37,7 @@ __all__ = [
     "SpeechOptions",
     "UnsupportedOption",
     "Voice",
+    "VoiceNotFound",
     "request_key",
     "synthesize",
 ]
@@ -216,6 +218,8 @@ def synthesize(
     :raises UnsupportedOption: If the backend cannot honour ``options``.
     :raises BackendUnavailable: If the backend's libraries are missing or it
         cannot run on this machine.
+    :raises VoiceNotFound: If a cloning backend is asked for a named voice
+        that has no reference recording.
     """
     options = options or SpeechOptions()
     backend: TTSBackend = get_backend(voice.backend)

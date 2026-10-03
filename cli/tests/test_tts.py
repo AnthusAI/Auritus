@@ -212,3 +212,50 @@ def test_fish_to_wav_normalization() -> None:
         data = np.frombuffer(wf.readframes(wf.getnframes()), dtype=np.int16)
         assert data.max() == 0
         assert data.min() == 0
+
+
+def test_require_reference_audio_refuses_a_missing_named_voice(
+    tmp_path: Path, monkeypatch
+) -> None:
+    import pytest
+
+    from auritus.tts.voices import VoiceNotFound, require_reference_audio
+
+    monkeypatch.delenv("AURITUS_VOICES", raising=False)
+    defaults = frozenset({"narrator", "default"})
+
+    with pytest.raises(VoiceNotFound, match="'serious'.*AURITUS_VOICES") as no_dir:
+        require_reference_audio("serious", default_voice_ids=defaults)
+    assert no_dir.value.directory is None
+
+    with pytest.raises(VoiceNotFound, match="'serious'") as empty_dir:
+        require_reference_audio("serious", tmp_path, default_voice_ids=defaults)
+    assert empty_dir.value.directory == tmp_path
+    assert "serious.wav" in str(empty_dir.value)
+    assert str(tmp_path) in str(empty_dir.value)
+
+    missing_dir = tmp_path / "absent"
+    with pytest.raises(VoiceNotFound, match="does not exist"):
+        require_reference_audio("serious", missing_dir, default_voice_ids=defaults)
+
+
+def test_require_reference_audio_lets_default_voices_use_the_stock_voice(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from auritus.tts.voices import require_reference_audio
+
+    monkeypatch.delenv("AURITUS_VOICES", raising=False)
+    defaults = frozenset({"narrator", "default"})
+    for voice_id in ("", "  ", "default", "narrator", "Narrator"):
+        assert require_reference_audio(voice_id, default_voice_ids=defaults) is None
+
+    (tmp_path / "serious.wav").touch()
+    (tmp_path / "narrator.wav").touch()
+    assert (
+        require_reference_audio("serious", tmp_path, default_voice_ids=defaults)
+        == (tmp_path / "serious.wav").resolve()
+    )
+    assert (
+        require_reference_audio("narrator", tmp_path, default_voice_ids=defaults)
+        == (tmp_path / "narrator.wav").resolve()
+    )

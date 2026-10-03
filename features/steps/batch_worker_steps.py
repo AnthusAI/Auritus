@@ -54,6 +54,7 @@ def step_worker_starts(context) -> None:
         ),
         patch.object(runner.httpx, "get", lambda url, **kw: respond("GET", url, **kw)),
         patch.object(runner.httpx, "put", lambda url, **kw: respond("PUT", url, **kw)),
+        patch.object(runner, "_install_backend", lambda name: None),
     ):
         context.worker_exit_code = runner.main()
 
