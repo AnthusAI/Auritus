@@ -12,6 +12,7 @@ from auritus.speech import (  # noqa: E402 - speech reads __version__ above
     SpeechOptions,
     UnsupportedOption,
     Voice,
+    VoiceNotFound,
     request_key,
     synthesize,
 )
@@ -23,6 +24,7 @@ __all__ = [
     "SpeechOptions",
     "UnsupportedOption",
     "Voice",
+    "VoiceNotFound",
     "__version__",
     "request_key",
     "synthesize",

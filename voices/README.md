@@ -8,6 +8,12 @@ All binary audio files (`*.wav`, `*.mp3`, `*.m4a`, `*.ogg`, `*.flac`, `*.aac`) i
 
 **Do not commit audio media into git.** Only scripts, documentation, and configuration belong in version control.
 
+## Missing Voices Fail the Job
+
+A request that names a voice (for example `serious`) must find `<voice_id>.wav` (or `.mp3`, `.flac`, `.ogg`, `.m4a`) in the voices folder: the caller's `voices_dir`, the local worker's `[worker] voices_dir` (default `./voices`), or `AURITUS_VOICES`. If it is not there, Chatterbox, F5-TTS, and Fish-Speech raise `VoiceNotFound`, naming the voice and the folder searched, and the job is marked failed. They never substitute a stock voice. Only a default-voice request (no voice, `default`, or the backend's own default id such as `narrator` for Fish and Chatterbox) speaks in the backend's stock voice.
+
+The AWS Batch worker image ships no reference voices, so a Batch job for a named cloned voice fails.
+
 ---
 
 ## Standard File Naming Patterns
