@@ -3,7 +3,7 @@
   "title": "Fish backend silently substitutes a stock voice when a named voice cannot be resolved",
   "description": "A job that explicitly names a voice (e.g. voice_id=serious) is generated in a DIFFERENT voice, silently, and marked status=done. No error, no warning.\n\nCAUSE\ncli/src/auritus/tts/fish.py:314-338 (_generate_torch): resolve_reference_audio(voice, ...) returns None when the voices directory is absent, and the code then falls back to the bundled cli/src/auritus/tts/basic_ref_en.wav ('Some call me nature, others call me mother nature.') and synthesizes with THAT reference. The job completes successfully.\n\nWHY IT FIRES ON AWS BATCH\nThe Batch worker image has no reference voices. worker-image/Dockerfile only does 'COPY cli /app/cli', and voices/*.wav is gitignored repo-wide per voices/README.md. basic_ref_en.wav IS shipped (cli/pyproject.toml package-data: auritus = ['tts/*.wav']). So every Batch job for a custom-voice site gets the stock voice.\n\nOBSERVED 2026-10-03\nPilobol.us pinned narration to voice_id=serious, tts_backend=fish and minted 11 jobs. 7 were claimed by Batch after the 15-minute local-claim timeout expired; those are narrated in the stock fallback voice, not 'serious'. 1 was claimed by the local worker (correct voice). See the sibling issue for the content-side cleanup.\n\nTHE FIX (the silent part is the bug)\nAn explicitly named voice that cannot be resolved should FAIL the job with a clear error, not substitute a stock voice and report success. The fallback is only defensible when no voice was named at all. Decide separately whether to provision reference voices to the Batch image / S3 so cloud fallback can serve custom-voice sites at all; Ryan was asked and deferred both decisions, so confirm scope before implementing.\n\nSECOND-ORDER ISSUE\nBatch uses fishaudio/s2-pro (full precision) while Apple Silicon local workers use mlx-community/fishaudio-s2-pro-8bit-mlx (8-bit quantized) - fish.py:33-34, model_id() at :74. Even with voices resolving correctly the two paths will not sound identical, so a site whose jobs split across local and Batch gets inconsistent narration. Worth an explicit product decision.",
   "type": "bug",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 0,
   "assignee": null,
   "creator": null,
@@ -22,11 +22,18 @@
         "model": "Opus 5.5",
         "name": "auritus-d84350-fix"
       }
+    },
+    {
+      "id": "c762cdad-13a5-458b-90b7-92b9fc8f8138",
+      "author": "home",
+      "text": "Merged: PR #77 squash-merged to develop as a8a372947855f9bab4e3c9f8740c35d59f2b11ff. Fish, Chatterbox and F5 now raise VoiceNotFound before any model loads for a named voice with no reference recording; local worker and Batch runner mark such jobs failed. Default-voice requests (none, default, narrator for Fish/Chatterbox) still succeed. Follow-ups: auritus-03327e (Higgs/Bark ignore voice_id), auritus-ce0e86 (Batch runner misses BackendUnavailable). Not yet released or deployed; Batch image still has no reference voices, so a named voice fails there by design.",
+      "created_at": "2026-10-03T17:43:12.295980Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-10-03T16:02:53.264841Z",
-  "updated_at": "2026-10-03T17:36:44.145715Z",
-  "closed_at": null,
+  "updated_at": "2026-10-03T17:43:14.959223Z",
+  "closed_at": "2026-10-03T17:43:14.959187Z",
   "agent": {
     "platform": "claude_code",
     "model": "Opus 5 (1M context)",
