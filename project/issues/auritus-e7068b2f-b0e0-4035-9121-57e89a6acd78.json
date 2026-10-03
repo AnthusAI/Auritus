@@ -1,0 +1,20 @@
+{
+  "id": "auritus-e7068b2f-b0e0-4035-9121-57e89a6acd78",
+  "title": "Regenerate 7 Pilobolus narrations that Batch produced in the wrong voice",
+  "description": "Downstream cleanup for auritus-d84350. Filed on the Auritus board rather than PILO because PILO is a newsroom/editorial board (idea/assignment/research/... statuses) and rejects engineering tasks.\n\nPilobol.us narration was pinned to voice_id=serious, tts_backend=fish (Pilobol.us commit 7fc6a75, live on all 11 pages). 11 jobs minted. Jobs claimed by AWS Batch were narrated in the bundled stock voice, NOT 'serious', because the Batch image has no reference voices and Fish silently falls back (see auritus-d84350).\n\nSTATE AS OF 2026-10-03 ~12:15 ET\n  5 done    batch  -> WRONG VOICE\n  2 claimed batch  -> WILL BE WRONG VOICE\n  1 done    local  -> correct ('serious' via 8-bit MLX)\n  3 pending        -> whichever worker claims first\n\nJob hashes: 678e800a a2085dd3 1ff2b869 2c71ccf0 5a32f11f 6cb29cb1 468ace02 cae1f4db 1039b796 2835f0b1 da9b4710\nInspect: curl -H 'x-auritus-site-key: WuNsWJc9fLoFesPzXkg2BZBurubafE2F' https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com/jobs/<hash>\nNOTE the site key must be a HEADER; ?site_key= returns 'site_key_required'.\n\nWHY BATCH GOT THEM\nMinted ~2.5h before login completed, so the 15-min local-claim timeout expired and Step Functions fell back to Batch GPU. Modelled cost that day: $2.34 GPU, $0.003 platform, $0.00 avoided.\n\nNEXT STEPS - Ryan deferred this decision, confirm scope before acting\n1. Regenerate all 11 for a uniform voice+model, or only the Batch ones? Batch uses full-precision fishaudio/s2-pro, local uses 8-bit MLX, so a mixed set will not sound uniform even after the voice bug is fixed.\n2. Start the local worker BEFORE minting, or inside the 15-min window, so Batch never claims. Run it from /Users/home/Projects/Auritus - the worker derives voices_dir from its own config relative to cwd, overriding AURITUS_VOICES.\n3. 'auritus job regenerate --hash <h>' exists. There is no 'job create' - jobs are minted only by a browser loading a page under the origin-locked site key (Pilobol.us has puppeteer for this).\n4. Login is 'auritus login --sso google'. Bare 'auritus login' prompts for email/password and will not work with Google auth.\n5. Fish MLX weights (6.3 GB) already downloaded on this machine.\n\nVerify by LISTENING. status=done does not mean the voice is correct - that is exactly what auritus-d84350 is about.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T16:03:38.154865Z",
+  "updated_at": "2026-10-03T16:03:38.154889Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
