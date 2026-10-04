@@ -5,9 +5,10 @@ from __future__ import annotations
 import io
 import struct
 import wave
+from pathlib import Path
 from typing import Any
 
-from auritus.tts.base import TTSBackend
+from auritus.tts.base import BackendUnavailable, TTSBackend
 from auritus.tts.breaks import (
     AURITUS_BREAK_MARKER,
     AURITUS_PAUSE_MARKER,
@@ -15,6 +16,7 @@ from auritus.tts.breaks import (
     split_on_breaks,
     split_on_pauses,
 )
+from auritus.tts.voices import require_reference_audio, resolve_reference_text
 
 __all__ = [
     "AURITUS_BREAK_MARKER",
@@ -26,6 +28,8 @@ __all__ = [
 ]
 
 F5_DEFAULT_VOICE = "default"
+#: Voice ids that ask for F5's default voice rather than naming one.
+F5_DEFAULT_VOICE_IDS = frozenset({F5_DEFAULT_VOICE})
 F5_MLX_MODEL = "mlx-community/F5-TTS"
 F5_TORCH_MODEL = "SWivid/F5-TTS"
 
@@ -84,38 +88,50 @@ class F5Backend(TTSBackend):
         On Apple Silicon: uses mlx-audio (fast, native MLX).
         On other platforms: falls back to PyTorch f5-tts.
 
+        A named voice with no reference recording raises
+        :class:`~auritus.tts.voices.VoiceNotFound` before any model loads.
+
         :param text: TTS input text.
         :param meta: Job metadata (voice_id, name, byline).
         :returns: WAV audio bytes at 24000 Hz mono 16-bit.
+        :raises VoiceNotFound: If the named voice has no reference recording.
         """
         if not text.strip():
             raise ValueError("Cannot generate audio for empty text")
+        reference = require_reference_audio(
+            resolve_f5_voice(meta),
+            meta.get("voices_dir"),
+            default_voice_ids=F5_DEFAULT_VOICE_IDS,
+        )
         if F5Backend._is_mlx is None:
             F5Backend._is_mlx = F5Backend._detect_mlx()
 
         if F5Backend._is_mlx:
-            return self._generate_mlx(text, meta)
-        return self._generate_torch(text, meta)
+            return self._generate_mlx(text, meta, reference)
+        return self._generate_torch(text, meta, reference)
 
-    def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
+    def _generate_mlx(
+        self, text: str, meta: dict[str, Any], reference: Path | None
+    ) -> bytes:
         """Generate via f5-tts-mlx (Apple Silicon).
 
         :param text: TTS input text.
         :param meta: Job metadata.
+        :param reference: The voice's reference recording, or None for a
+            default-voice request, which uses f5-tts-mlx's stock reference.
         :returns: WAV audio bytes.
+        :raises BackendUnavailable: If a named voice needs f5-tts-mlx and it
+            is not installed (the mlx-audio path cannot clone a voice).
         """
         import os
         import re
         import tempfile
 
-        from auritus.tts.voices import (
-            resolve_reference_audio,
-            resolve_reference_text,
-        )
-
         voice = resolve_f5_voice(meta)
-        ref_audio = resolve_reference_audio(voice, meta.get("voices_dir"))
-        ref_text = resolve_reference_text(voice, meta.get("voices_dir")) or ""
+        ref_audio = reference
+        ref_text = ""
+        if reference is not None:
+            ref_text = resolve_reference_text(voice, meta.get("voices_dir")) or ""
 
         try:
             import mlx.core as mx
@@ -213,7 +229,9 @@ class F5Backend(TTSBackend):
             if peak > 0.95:
                 combined = combined * (0.95 / peak)
             return _to_wav(combined, sample_rate=sample_rate)
-        except ImportError:
+        except ImportError as exc:
+            if reference is not None:
+                raise BackendUnavailable.from_import_error(self.name, exc) from exc
             import numpy as np
             from mlx_audio.tts.utils import load_model
 
@@ -227,7 +245,9 @@ class F5Backend(TTSBackend):
             audio_np = np.array(result.audio).reshape(-1)
             return _to_wav(audio_np, sample_rate=24000)
 
-    def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
+    def _generate_torch(
+        self, text: str, meta: dict[str, Any], reference: Path | None
+    ) -> bytes:
         """Generate via PyTorch f5-tts (fallback for non-Apple, e.g. AWS Batch).
 
         F5TTS's own device default was previously trusted implicitly;
@@ -237,6 +257,8 @@ class F5Backend(TTSBackend):
 
         :param text: TTS input text.
         :param meta: Job metadata.
+        :param reference: The voice's reference recording, or None for a
+            default-voice request, which uses the bundled stock reference.
         :returns: WAV audio bytes.
         """
         import os
@@ -248,21 +270,14 @@ class F5Backend(TTSBackend):
             device = "cuda" if torch.cuda.is_available() else "cpu"
             print(f"[f5] resolved device={device}", flush=True)
             F5Backend._model = F5TTS(device=device)
-        from auritus.tts.voices import (
-            resolve_reference_audio,
-            resolve_reference_text,
-        )
-
-        voice = resolve_f5_voice(meta)
-        ref_file = meta.get("ref_file")
-        ref_text = meta.get("ref_text")
-        if not ref_file:
-            resolved_audio = resolve_reference_audio(voice, meta.get("voices_dir"))
-            if resolved_audio:
-                ref_file = str(resolved_audio)
-                if not ref_text:
-                    ref_text = resolve_reference_text(voice, meta.get("voices_dir"))
-        if not ref_file:
+        ref_file = None
+        ref_text = None
+        if reference is not None:
+            ref_file = str(reference)
+            ref_text = resolve_reference_text(
+                resolve_f5_voice(meta), meta.get("voices_dir")
+            )
+        else:
             local_candidate = os.path.join(
                 os.path.dirname(__file__), "basic_ref_en.wav"
             )

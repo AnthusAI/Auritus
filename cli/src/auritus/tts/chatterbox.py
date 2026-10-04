@@ -8,6 +8,7 @@ from __future__ import annotations
 import io
 import struct
 import wave
+from pathlib import Path
 from typing import Any
 
 from auritus.tts.base import BackendUnavailable, TTSBackend
@@ -18,6 +19,7 @@ from auritus.tts.breaks import (
     split_on_breaks,
     split_on_pauses,
 )
+from auritus.tts.voices import require_reference_audio
 
 __all__ = [
     "AURITUS_BREAK_MARKER",
@@ -29,6 +31,9 @@ __all__ = [
 ]
 
 CHATTERBOX_DEFAULT_VOICE = "default"
+#: Voice ids that ask for Chatterbox's default voice rather than naming one;
+#: the router resolves an unset Chatterbox voice to ``narrator``.
+CHATTERBOX_DEFAULT_VOICE_IDS = frozenset({CHATTERBOX_DEFAULT_VOICE, "narrator"})
 CHATTERBOX_TORCH_MODEL = "ResembleAI/chatterbox"
 CHATTERBOX_MLX_MODEL = "mlx-community/chatterbox-fp16"
 
@@ -85,25 +90,38 @@ class ChatterboxBackend(TTSBackend):
     def generate(self, text: str, meta: dict[str, Any]) -> bytes:
         """Generate speech audio using Chatterbox-TTS.
 
+        A named voice with no reference recording raises
+        :class:`~auritus.tts.voices.VoiceNotFound` before any model loads.
+
         :param text: TTS input text.
         :param meta: Job metadata (voice_id, name, byline).
         :returns: WAV audio bytes at 24000 Hz mono 16-bit.
+        :raises VoiceNotFound: If the named voice has no reference recording.
         """
         if not text.strip():
             raise ValueError("Cannot generate audio for empty text")
+        reference = require_reference_audio(
+            resolve_chatterbox_voice(meta),
+            meta.get("voices_dir"),
+            default_voice_ids=CHATTERBOX_DEFAULT_VOICE_IDS,
+        )
         if ChatterboxBackend._is_mlx is None:
             ChatterboxBackend._is_mlx = ChatterboxBackend._detect_mlx()
 
         if ChatterboxBackend._is_mlx:
-            return self._generate_mlx(text, meta)
-        return self._generate_torch(text, meta)
+            return self._generate_mlx(text, meta, reference)
+        return self._generate_torch(text, meta, reference)
 
-    def _generate_mlx(self, text: str, meta: dict[str, Any]) -> bytes:
-        """Generate via mlx-audio on Apple Silicon."""
+    def _generate_mlx(
+        self, text: str, meta: dict[str, Any], reference: Path | None
+    ) -> bytes:
+        """Generate via mlx-audio on Apple Silicon.
+
+        :param reference: The voice's reference recording, or None to speak
+            in the model's own default voice.
+        """
         import numpy as np
         from mlx_audio.tts.utils import load_model
-
-        from auritus.tts.voices import resolve_reference_audio
 
         if ChatterboxBackend._model is None:
             ChatterboxBackend._model = load_model(
@@ -117,9 +135,7 @@ class ChatterboxBackend(TTSBackend):
                 getattr(ChatterboxBackend._model, "sr", 24000),
             )
         )
-        voice = resolve_chatterbox_voice(meta)
-        ref_audio_path = resolve_reference_audio(voice, meta.get("voices_dir"))
-        ref_audio_arg = str(ref_audio_path) if ref_audio_path else None
+        ref_audio_arg = str(reference) if reference is not None else None
 
         blocks = split_on_breaks(text)
         all_chunks: list[np.ndarray] = []
@@ -151,12 +167,17 @@ class ChatterboxBackend(TTSBackend):
         audio_np = np.concatenate(all_chunks) if len(all_chunks) > 1 else all_chunks[0]
         return _to_wav(audio_np, sample_rate=sample_rate)
 
-    def _generate_torch(self, text: str, meta: dict[str, Any]) -> bytes:
+    def _generate_torch(
+        self, text: str, meta: dict[str, Any], reference: Path | None
+    ) -> bytes:
         """Generate via PyTorch / CUDA.
 
         Every failure raises, so a job is marked failed rather than reporting
         success with fake audio. Missing libraries raise
         :class:`BackendUnavailable`.
+
+        :param reference: The voice's reference recording, or None to speak
+            in the model's own default voice.
         """
         try:
             import numpy as np
@@ -165,17 +186,13 @@ class ChatterboxBackend(TTSBackend):
         except ImportError as exc:
             raise BackendUnavailable.from_import_error(self.name, exc) from exc
 
-        from auritus.tts.voices import resolve_reference_audio
-
         if ChatterboxBackend._model is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
             print(f"[chatterbox] resolved device={device}", flush=True)
             ChatterboxBackend._model = ChatterboxTTS.from_pretrained(
                 device=device,
             )
-        voice = resolve_chatterbox_voice(meta)
-        ref_audio_path = resolve_reference_audio(voice, meta.get("voices_dir"))
-        ref_audio_arg = str(ref_audio_path) if ref_audio_path else None
+        ref_audio_arg = str(reference) if reference is not None else None
 
         blocks = split_on_breaks(text)
         all_chunks: list[np.ndarray] = []
