@@ -2,6 +2,18 @@
 
 <!-- version list -->
 
+## v0.27.2 (2026-10-04)
+
+### Bug Fixes
+
+- **auritus-d84350**: Drop Batch-runner scenarios that need the harness from the unreleased #76
+  ([`8958335`](https://github.com/AnthusAI/Auritus/commit/89583355b4d0357c26dec2165a2222671a78d757))
+
+- **auritus-d84350**: Fail a job whose named voice has no reference recording
+  ([#77](https://github.com/AnthusAI/Auritus/pull/77),
+  [`090e257`](https://github.com/AnthusAI/Auritus/commit/090e257bba0573d21bfecfc2033579a51985e52c))
+
+
 ## v0.27.1 (2026-09-26)
 
 ### Bug Fixes
