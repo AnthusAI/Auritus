@@ -3,7 +3,7 @@
 The library surface is re-exported here; see :mod:`auritus.speech`.
 """
 
-__version__ = "0.27.1"
+__version__ = "0.27.2"
 
 from auritus.speech import (  # noqa: E402 - speech reads __version__ above
     BackendUnavailable,
