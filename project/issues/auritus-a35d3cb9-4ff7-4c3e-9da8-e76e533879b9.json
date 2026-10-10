@@ -1,0 +1,20 @@
+{
+  "id": "auritus-a35d3cb9-4ff7-4c3e-9da8-e76e533879b9",
+  "title": "Step Functions falls back to Batch while a local worker is still generating the job",
+  "description": "Seen during auritus-e7068b (2026-10-03). Job 6cb29cb1 was claimed by the local worker (~19:17Z) and generated for ~36 min. While it was still running, the record shows Batch claimed it at 19:47Z and completed it at 19:54Z. The stored audio was written by the local worker at 19:53:45Z (correct voice, verified), so readers get the right audio, but the job record names the wrong producer and Batch GPU time was spent on a job already in progress. Expected: the local-claim timeout / Batch fallback must not fire while the claiming local worker is still heartbeating; long local jobs (35+ min) need lease renewal rather than a fixed 15-min window. Also check whether a late Batch completion can overwrite a local result (here the local write landed first by chance). Related: auritus-d84350.",
+  "type": "bug",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T22:51:25.011222Z",
+  "updated_at": "2026-10-03T22:51:25.011266Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

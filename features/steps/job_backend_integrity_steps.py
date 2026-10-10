@@ -229,6 +229,13 @@ def step_create_job_with_collision(context, new_backend: str) -> None:
     context.response_body = _decode_response_body(context.response)
 
 
+@then("the colliding job is rejected as a content hash mismatch")
+def step_colliding_job_rejected(context) -> None:
+    """The API refuses a hash that does not match the submitted text."""
+    assert context.response["statusCode"] == 400, context.response
+    assert context.response_body == {"error": "content_hash_mismatch"}
+
+
 @then('the stored job still has backend "{expected_backend}"')
 def step_verify_backend_unchanged(context, expected_backend: str) -> None:
     """Verify that the job's backend was not changed."""

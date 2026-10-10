@@ -1,0 +1,20 @@
+{
+  "id": "auritus-102d045f-5d1f-4b95-82a9-1c3e8b935810",
+  "title": "auritus login: --sso google is undiscoverable, and the OAuth loopback is hardcoded",
+  "description": "Papercuts hit while operating Auritus on 2026-10-03.\n\n1) DISCOVERABILITY. Ryan ran 'auritus login' expecting Google auth; it prompted 'Username (email)' and he was stuck. The correct invocation is 'auritus login --sso google'. The bare command falls straight through to the native Cognito USER_PASSWORD_AUTH path (cli/src/auritus/commands/login.py). The Typer help does mention SSO, but nothing in the prompt or the failure hints at --sso, and the default path is the one most operators will not want. Suggest: if the pool has external IdPs configured, either prompt for a choice or name --sso in the prompt text.\n\n2) HARDCODED LOOPBACK. auth.py login_with_sso() hardcodes redirect_uri='http://localhost:8080/callback' and binds HTTPServer(('localhost', 8080)). If anything already holds 8080 the flow fails confusingly. The app client does register http://127.0.0.1/callback, http://127.0.0.1:8080/callback, http://localhost/callback and http://localhost:8080/callback, so a port/host fallback is already permitted server-side. Suggest trying a free port from the registered set, or making it configurable.\n\n3) STALE REFRESH TOKEN UX. The cached refresh token had refresh_obtained_at=1 and the token POST returned 400 invalid_grant. The resulting message does not suggest re-running login with an SSO provider.\n\nVERIFIED CONFIG (account 335163751677, AWS_PROFILE=legacy, us-east-1)\n  user pool us-east-1_9r1qKAxj2 has a Google IdP\n  app client iq825h2l8b2qli2938h8jegce: SupportedIdentityProviders [COGNITO, Google], AllowedOAuthFlows [code], scopes [email, openid, profile], oauthEnabled true\n  authorize endpoint returns 302 to Google as expected\nSo the infrastructure is correct; this is purely CLI ergonomics.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T16:03:53.663711Z",
+  "updated_at": "2026-10-03T16:03:53.663741Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

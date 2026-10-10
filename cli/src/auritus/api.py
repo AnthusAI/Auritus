@@ -110,7 +110,6 @@ class AuritusClient:
     def create_job(
         self,
         *,
-        content_hash: str,
         text: str,
         site_key: str,
         name: str = "",
@@ -118,12 +117,14 @@ class AuritusClient:
         tts_backend: str = "kokoro",
         voice_id: str = "default",
     ) -> dict[str, Any]:
-        """Create a generation job."""
+        """Create a generation job; the API computes its content hash.
+
+        :returns: The API response, including the job's ``content_hash``.
+        """
         return self._request(
             "POST",
             "/jobs",
             json_body={
-                "content_hash": content_hash,
                 "text": text,
                 "name": name,
                 "byline": byline,

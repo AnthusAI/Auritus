@@ -27,7 +27,7 @@ def _resolve_voice_id(voice_id: str | None, backend: str) -> str:
     if handler_path not in sys.path:
         sys.path.insert(0, handler_path)
     handler = importlib.import_module("handler")
-    return handler._resolve_voice_id(voice_id, backend)
+    return handler.resolve_voice_id(voice_id, backend)
 
 
 class _VoicedDOMExtractor(HTMLParser):

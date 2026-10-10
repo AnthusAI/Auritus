@@ -126,9 +126,20 @@ The job-mutation routes (`PUT /jobs/{hash}/claim`, `/done`, `/failed`, and
 workers call them with a per-job token. The router accepts either that
 job's token (compared in constant time) or a verified operator access token
 for an operator's local worker; anything else is refused with 403. The job
-token is currently also returned to the site-key caller that creates the job,
-and job creation accepts a caller-supplied content hash; both are open
-security work.
+token is never returned to the caller that creates the job; the Batch worker
+receives it from the fallback workflow. A job token can request an upload URL
+only while its job is claimed, and the token is removed when the job is marked
+done or failed.
+
+The content hash is the SHA-256 of the normalized text, the voice ID, and the
+TTS backend joined by NUL characters. Normalization applies Unicode NFC,
+collapses every whitespace run (including Unicode spaces) to one space, and
+trims. The API computes the hash itself and rejects job creation with
+`content_hash_mismatch` when a caller sends a different one, so a public site
+key cannot bind its own text to another page's hash. The embed computes the
+same hash with Web Crypto, which requires a secure context (HTTPS or
+localhost). The rules live in one module, `auritus_content_hash` in the
+operator auth Lambda layer, used by the router and the migration script.
 
 Verification is offline, so a signed-out or disabled operator's access token
 remains valid until it expires (one hour).

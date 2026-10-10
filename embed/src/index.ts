@@ -34,20 +34,29 @@ export interface EmbedScriptConfig {
 }
 
 /**
- * Resolve the default voice ID for a given TTS backend.
+ * Resolve the voice ID the API hashes and renders for a TTS backend.
+ *
+ * Mirrors the router's `_resolve_voice_id`: a missing or `"default"` voice
+ * becomes the backend's default, and Qwen's legacy `"Chelsie"` becomes
+ * `"Ryan"`. The embed must resolve identically or the API rejects its
+ * content hash.
  */
-export function resolveDefaultVoice(ttsBackend: string): string {
+export function resolveVoiceId(
+  rawVoice: string | undefined,
+  ttsBackend: string,
+): string {
   const backend = (ttsBackend || "kokoro").trim().toLowerCase();
+  const unset = !rawVoice || rawVoice === "default";
   switch (backend) {
     case "kokoro":
-      return "af_heart";
+      return unset ? "af_heart" : rawVoice;
     case "qwen":
-      return "Ryan";
+      return unset || rawVoice === "Chelsie" ? "Ryan" : rawVoice;
     case "fish":
     case "chatterbox":
-      return "narrator";
+      return unset ? "narrator" : rawVoice;
     default:
-      return "default";
+      return rawVoice || "default";
   }
 }
 
@@ -97,7 +106,7 @@ export function readEmbedConfig(element: HTMLElement): EmbedScriptConfig {
   const ttsBackend =
     element.getAttribute("data-auritus-tts-backend")?.trim() || "kokoro";
   const explicitVoice = element.getAttribute("data-auritus-voice")?.trim();
-  const voiceId = explicitVoice || resolveDefaultVoice(ttsBackend);
+  const voiceId = resolveVoiceId(explicitVoice, ttsBackend);
 
   return {
     siteKey,
@@ -165,11 +174,17 @@ export async function boot(options: BootOptions = {}): Promise<HTMLElement> {
     root: config.root,
     ignoreSelectors: config.ignoreSelectors,
   });
-  const contentHash = computeContentHash(
+  const contentHash = await computeContentHash(
     text,
     config.voiceId,
     config.ttsBackend,
   );
+
+  if (generation !== bootGeneration) {
+    const skipped = document.createElement("div");
+    skipped.setAttribute("data-auritus-boot-skipped", "true");
+    return skipped;
+  }
 
   const api = new AuritusApiClient({
     baseUrl: config.apiBaseUrl,

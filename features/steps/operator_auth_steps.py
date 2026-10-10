@@ -2,19 +2,13 @@
 
 from __future__ import annotations
 
-import importlib
 import importlib.util
 import json
-import os
-import sys
-import uuid
 from pathlib import Path
-from unittest.mock import Mock
 
-import boto3
 from behave import given, then, when
-from moto import mock_aws
 
+from support.router_harness import start_router
 from support.operator_tokens import (
     OTHER_USER_POOL_ID,
     TEST_OPERATOR_SUB,
@@ -67,74 +61,10 @@ def _load_authorizer():
 
 
 def _start_router(context) -> None:
-    """Start moto, create the router's tables, and load the router handler."""
-    context.operator_auth_mock = mock_aws()
-    context.operator_auth_mock.start()
-    context.add_cleanup(context.operator_auth_mock.stop)
-    install_test_user_pool()
-    suffix = uuid.uuid4().hex[:12]
-    jobs_table = f"operator-auth-jobs-{suffix}"
-    sites_table = f"operator-auth-sites-{suffix}"
-    audio_bucket = f"operator-auth-audio-{suffix}"
-    os.environ.update(
-        {
-            "JOBS_TABLE": jobs_table,
-            "SITES_TABLE": sites_table,
-            "AUDIO_BUCKET": audio_bucket,
-            "AWS_DEFAULT_REGION": "us-east-1",
-        }
-    )
-    dynamodb = boto3.client("dynamodb", region_name="us-east-1")
-    dynamodb.create_table(
-        TableName=jobs_table,
-        KeySchema=[{"AttributeName": "content_hash", "KeyType": "HASH"}],
-        AttributeDefinitions=[
-            {"AttributeName": "content_hash", "AttributeType": "S"},
-            {"AttributeName": "status", "AttributeType": "S"},
-            {"AttributeName": "created_at", "AttributeType": "S"},
-        ],
-        GlobalSecondaryIndexes=[
-            {
-                "IndexName": "status-created_at-index",
-                "KeySchema": [
-                    {"AttributeName": "status", "KeyType": "HASH"},
-                    {"AttributeName": "created_at", "KeyType": "RANGE"},
-                ],
-                "Projection": {"ProjectionType": "ALL"},
-            }
-        ],
-        BillingMode="PAY_PER_REQUEST",
-    )
-    dynamodb.create_table(
-        TableName=sites_table,
-        KeySchema=[{"AttributeName": "site_id", "KeyType": "HASH"}],
-        AttributeDefinitions=[
-            {"AttributeName": "site_id", "AttributeType": "S"},
-            {"AttributeName": "site_key", "AttributeType": "S"},
-        ],
-        GlobalSecondaryIndexes=[
-            {
-                "IndexName": "site_key-index",
-                "KeySchema": [{"AttributeName": "site_key", "KeyType": "HASH"}],
-                "Projection": {"ProjectionType": "ALL"},
-            }
-        ],
-        BillingMode="PAY_PER_REQUEST",
-    )
-    boto3.client("s3", region_name="us-east-1").create_bucket(Bucket=audio_bucket)
-    router_path = str(LAMBDAS_PATH / "router")
-    if router_path not in sys.path:
-        sys.path.insert(0, router_path)
-    sys.modules.pop("handler", None)
-    context.operator_router = importlib.import_module("handler")
-    context.operator_router._sfn = Mock()
-    context.operator_router._batch = Mock()
-    context.operator_router._batch.describe_job_queues.return_value = {
-        "jobQueues": [{"state": "ENABLED"}]
-    }
-    context.operator_jobs_table = boto3.resource(
-        "dynamodb", region_name="us-east-1"
-    ).Table(jobs_table)
+    """Start the scenario's router and remember its jobs table."""
+    harness = start_router(context)
+    context.operator_router = harness.router
+    context.operator_jobs_table = harness.jobs_table
 
 
 def _call_router(context, method: str, path: str, body: dict | None = None) -> None:

@@ -1,0 +1,20 @@
+{
+  "id": "auritus-03327ec2-d00d-4510-8252-e41d8a34a8d9",
+  "title": "Higgs and Bark backends ignore voice_id, silently dropping a named voice",
+  "description": "Same class of bug as auritus-d84350 (fixed in PR #77 for Fish, Chatterbox and F5 only).\n\nPROBLEM\nA job that names a voice (for example voice_id=serious) completes status=done in the backend's default voice when its backend is Higgs or Bark, because neither honors voice_id.\n- cli/src/auritus/tts/higgs.py: HiggsBackend.generate() calls resolve_higgs_voice(meta) at lines ~112 and ~180 and immediately discards it (`_ = voice`). The named voice never reaches the model.\n- cli/src/auritus/tts/bark.py: BarkBackend.generate() never reads meta['voice_id'] at all.\nNeither uses the shared lookup in cli/src/auritus/tts/voices.py (require_reference_audio, VoiceNotFound), which Fish/Chatterbox/F5 now use.\n\nEXPECTED\nA named voice fails loudly with VoiceNotFound on any backend that cannot honor it, before any model loads, so the local worker (cli/src/auritus/worker/daemon.py) and Batch runner (worker-image/src/runner.py) mark the job failed. Requests with no voice, 'default', or the backend's own default id must still succeed in the stock voice. Decide per backend: either implement cloning via voices.py, or reject any non-default voice_id (a named voice the backend cannot honor is an error either way). Note the router (cdk/lambdas/operator_auth_layer/python/auritus_content_hash.py resolve_voice_id) returns the raw voice or 'default' for these backends.\n\nAPPROACH\nStart in features/named_voices.feature (add Higgs and Bark to the scenario outlines; see features/steps/named_voice_steps.py), then implement. Reuse VoiceNotFound; do not add a second error type.\n\nREFERENCES\nauritus-d84350, PR #77 (merge a8a3729).",
+  "type": "bug",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T17:43:06.930639Z",
+  "updated_at": "2026-10-03T17:43:06.930689Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

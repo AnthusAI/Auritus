@@ -76,6 +76,21 @@ Feature: A named voice that cannot be found fails the job
       | f5                  |
       | f5:default          |
 
+  Scenario: The Batch worker fails a job whose named voice is not in its image
+    Given the Auritus API has a "fish" job for voice "serious"
+    And the Batch image has no reference voices
+    And the cloning speech models are stubbed
+    When the Batch worker starts for that job
+    Then the Batch worker marks the job failed with a reason naming "serious"
+    And the Batch worker does not mark the job done
+
+  Scenario: The Batch worker still completes a default-voice job
+    Given the Auritus API has a "fish" job for voice "narrator"
+    And the Batch image has no reference voices
+    And the cloning speech models are stubbed
+    When the Batch worker starts for that job
+    Then the Batch worker marks the job done
+
   Scenario: The local worker fails a job whose named voice is not in its folder
     Given a claimable "fish" job for voice "serious" with an empty voices folder
     And the cloning speech models are stubbed

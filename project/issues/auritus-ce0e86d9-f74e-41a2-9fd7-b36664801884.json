@@ -1,0 +1,20 @@
+{
+  "id": "auritus-ce0e86d9-f74e-41a2-9fd7-b36664801884",
+  "title": "Batch runner does not mark the job failed when BackendUnavailable is raised",
+  "description": "Found while reviewing auritus-d84350 (PR #77).\n\nPROBLEM\nworker-image/src/runner.py main() wraps generation in `try: ... except (httpx.HTTPError, OSError, ValueError, KeyError)` (the except clause is at line ~203). auritus.tts.base.BackendUnavailable subclasses RuntimeError (cli/src/auritus/tts/base.py:9), which is not in that tuple. When a backend's model libraries are missing (or fish has no CUDA GPU), backend.generate() raises BackendUnavailable, the exception escapes main(), the process exits non-zero with a traceback, and mark_failed() is never called. The job stays claimed instead of failed, until the claim times out (GET /jobs/claimable excludes non-pending jobs), and Step Functions only sees a crashed container, not a recorded reason.\n\nThe local worker (cli/src/auritus/worker/daemon.py, around line 144) already catches Exception broadly and calls client.mark_failed; only the Batch runner has this gap. The same applies to any other unexpected exception type (RuntimeError, ImportError, subprocess.CalledProcessError from _install_backend, which runs inside the try block).\n\nEXPECTED\nAny exception from _install_backend / get_backend / backend.generate ends the job via mark_failed(...) with a reason, then returns non-zero. Simplest fix: catch BackendUnavailable (and arguably Exception, as daemon.py does) in main().\n\nAPPROACH\nStart in features/ (see features/batch_worker.feature and features/steps/batch_worker_steps.py; features/named_voices.feature has a Batch worker scenario for VoiceNotFound to model on): add a scenario where the backend raises BackendUnavailable and the worker marks the job failed and does not mark it done. Then fix runner.py.\n\nREFERENCES\nauritus-d84350, PR #77 (merge a8a3729).",
+  "type": "bug",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T17:43:07.594993Z",
+  "updated_at": "2026-10-03T17:43:07.595026Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
