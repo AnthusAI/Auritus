@@ -10,16 +10,29 @@
   "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "3227c4d2-4bfb-444e-84a1-e63eb9a54dd6",
+      "author": "home",
+      "text": "Source landed at AnthusAI/Auritus-web main 08334275c2c36fc2b9e67dbdb5a722ddbcd88653. Migration remains blocked: fresh SDK STS checks for both default and anthus return LoginRefreshRequired. Account 335163751677 is local configuration only, not remotely verified. aurit.us returned HTTP 200 through AmazonS3/CloudFront; www and console did not resolve. Proposed main-branch AWS source pipeline and buildspec are unprovisioned and unsynthesized; no persistent permission expansion, IAM role creation, deployment, or cloud write occurred. docs/MIGRATION.md carries inventory, permission review, candidate publication, commit-trigger proof, cutover, and rollback steps. Initial browser checks passed; repeat checks and later GitHub metadata recheck encountered OS no-buffer-space failures, recorded in docs/verification.json.",
+      "created_at": "2026-10-16T17:32:02.440639Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6.1-sol",
+        "name": "auritus-board"
+      }
+    }
+  ],
   "created_at": "2026-10-16T17:18:52.000463Z",
-  "updated_at": "2026-10-16T17:27:38.854570Z",
+  "updated_at": "2026-10-16T17:32:02.440672Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "gpt-6.1-sol",
     "name": "auritus-board"
   },
-  "right_now_summary": "The migration awaits renewed AWS access; no cloud changes or deployments have happened.",
-  "right_now_updated_at": "2026-10-16T17:27:40.515766Z",
+  "right_now_summary": "Migration awaits renewed AWS access; no cloud changes or deployments have been made.",
+  "right_now_updated_at": "2026-10-16T17:32:04.565444Z",
   "custom": {}
 }
