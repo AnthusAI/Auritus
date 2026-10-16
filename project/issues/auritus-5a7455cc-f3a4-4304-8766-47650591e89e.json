@@ -1,0 +1,25 @@
+{
+  "id": "auritus-5a7455cc-f3a4-4304-8766-47650591e89e",
+  "title": "Separate Auritus web source into private Auritus-web repository",
+  "description": "Create private AnthusAI/Auritus-web from the existing Auritus website and web console, preserving application behavior, routes, assets, branding, and design. Follow the actual Papyrus S3 and Markus architecture as verified from source, with GitHub Actions validation and deployment scaffolding only. Preserve the Auritus application repository and existing deployment. Acceptance: source repository exists privately; copied application retains its design and source provenance; separation and architecture decisions are documented; no deploy, AWS write, DNS change, credential change, or reauthentication occurs. Deployment migration is separate deferred work. Existing AWS sessions are expired; do not reauthenticate. Avoid builds due to limited disk space; report verification limits.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-16T17:18:37.137597Z",
+  "updated_at": "2026-10-16T17:19:09.334612Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "gpt-6.1-sol",
+    "name": "auritus-board"
+  },
+  "right_now_summary": "The Auritus web app is being separated into a private repository while deployment and infrastructure remain unchanged.",
+  "right_now_updated_at": "2026-10-16T17:19:11.209654Z",
+  "custom": {}
+}
