@@ -82,10 +82,25 @@
         "model": "gpt-6.1-sol",
         "name": "auritus-board"
       }
+    },
+    {
+      "id": "b1104c27-2d11-47df-afba-e4cf22281a0f",
+      "author": "home",
+      "text": "2026-10-16 reconciliation: Private Auritus-web source is complete (0833427; auritus-5a7455 closed) with actual Papyrus/Markus/S3 projection. Target aurit.us marketing and hear.aurit.us console in dedicated account961068435042. Existing Legacy data migration is not approved. Full-admin proposal was withdrawn at a22f424 and must not be reused. Remaining work: scoped target access/pipeline, data/auth migration decision, candidate verification, source-trigger proof and reviewed cutover. No new AWS changes authorized here.",
+      "created_at": "2026-10-16T20:46:54.161648Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6.1-sol",
+        "name": "unfinished-work-reconciliation",
+        "settings": {
+          "reasoning_effort": "medium"
+        }
+      }
     }
   ],
   "created_at": "2026-10-16T17:18:52.000463Z",
-  "updated_at": "2026-10-16T18:01:22.872531Z",
+  "updated_at": "2026-10-16T20:46:54.161696Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
