@@ -1,9 +1,9 @@
 {
   "id": "auritus-c52a19e2-1a9a-4b4c-8b7a-c3783fa4f0fc",
   "title": "Migrate Auritus web deployment after separate authorization",
-  "description": "Deferred follow-up to source separation in auritus-5a7455. Review and separately authorize migration of aurit.us hosting to the new private AnthusAI/Auritus-web repository using the verified Papyrus S3 and Markus deployment architecture. Before any deployment, establish available disk capacity, validate the application, review plan and rollback, verify current AWS state through authorized credentials, and obtain explicit authorization for AWS, deployment, DNS, or credential changes. Current source-only work authorizes none of those actions. Preserve the existing deployment until a separately approved cutover. This task stays backlog while deployment is deferred.",
+  "description": "Live migration is now authorized using main and AWS CodeBuild/Amplify source release automation; GitHub Actions is not used. Preserve the existing AWS account, Auritus application/backend/authentication, and existing design. Do not create long-lived credentials or expand persistent permissions without approval. Source candidate exists in private AnthusAI/Auritus-web with real pinned Papyrus S3 projection and Markus. Live migration and source-triggered pipeline are unfinished. Blocked: default and anthus AWS sessions are expired as confirmed by the SDK; renewal of an existing profile is requested. Subsequent AWS CLI shared-library failure also prevents CLI use, while SDK works but has expired credentials. Local account 335163751677 cannot yet be remotely verified. No cloud writes, routing changes, or deployments have occurred. After a valid existing session is available, inspect actual resources, review and validate the migration and rollback, then complete authorized cloud work while preserving application and authentication services.",
   "type": "task",
-  "status": "backlog",
+  "status": "blocked",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -12,14 +12,14 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-10-16T17:18:52.000463Z",
-  "updated_at": "2026-10-16T17:19:18.454236Z",
+  "updated_at": "2026-10-16T17:27:38.854570Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "gpt-6.1-sol",
     "name": "auritus-board"
   },
-  "right_now_summary": "The migration is deferred pending authorization, capacity checks, validation, and rollback planning.",
-  "right_now_updated_at": "2026-10-16T17:19:20.466637Z",
+  "right_now_summary": "The migration awaits renewed AWS access; no cloud changes or deployments have happened.",
+  "right_now_updated_at": "2026-10-16T17:27:40.515766Z",
   "custom": {}
 }

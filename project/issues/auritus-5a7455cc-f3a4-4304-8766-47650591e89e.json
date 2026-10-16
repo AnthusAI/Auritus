@@ -10,16 +10,29 @@
   "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "68728dfd-eede-4c91-915e-704f3482f3bf",
+      "author": "home",
+      "text": "Source candidate is ready in private AnthusAI/Auritus-web; source task remains in progress until code is pushed. All 52 original tracked site files remain unchanged under legacy-site; 21 exported routes retained. Actual Papyrus commit 1138a614ec5d291f54850316429eb7aa8087cb8f and Markus 0.5.1 provide S3 publication through the real handler and renderer. Six scenarios / 23 steps and local projection (103 objects) passed, with cloud clients replaced by test doubles. Seven local browser checks passed; external APIs were aborted, no jobs created. No fresh Next build or dependencies installed due to limited disk. README records provenance, architecture, verification limits, and unfinished live migration/pipeline. Awaiting source commit from implementation agent before closing.",
+      "created_at": "2026-10-16T17:26:38.621185Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6.1-sol",
+        "name": "auritus-board"
+      }
+    }
+  ],
   "created_at": "2026-10-16T17:18:37.137597Z",
-  "updated_at": "2026-10-16T17:19:09.334612Z",
+  "updated_at": "2026-10-16T17:27:04.401127Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "gpt-6.1-sol",
     "name": "auritus-board"
   },
-  "right_now_summary": "The Auritus web app is being separated into a private repository while deployment and infrastructure remain unchanged.",
-  "right_now_updated_at": "2026-10-16T17:19:11.209654Z",
+  "right_now_summary": "The private repository is prepared, but the source commit is still pending.",
+  "right_now_updated_at": "2026-10-16T17:27:06.241105Z",
   "custom": {}
 }
