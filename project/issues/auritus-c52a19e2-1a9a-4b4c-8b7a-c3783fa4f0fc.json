@@ -1,7 +1,7 @@
 {
   "id": "auritus-c52a19e2-1a9a-4b4c-8b7a-c3783fa4f0fc",
   "title": "Migrate Auritus web deployment after separate authorization",
-  "description": "Live migration is authorized using main and AWS CodeBuild/Amplify source release automation, with marketing at aurit.us and console at hear.aurit.us. Preserve the existing application/backend/authentication. Source separation landed in private AnthusAI/Auritus-web at 08334275c2c36fc2b9e67dbdb5a722ddbcd88653. AWS login blocker is superseded: renewed Endymion SSO verifies account 830955873957; Organizations identifies 335163751677 as legacy, which must not be used, and existing auritus-production account 961068435042. Existing papyrus-development profile verifies administrator SSO access to 961068435042. Inventory there contains no CloudFormation stacks, CloudFront distribution, Amplify apps, CodeConnections, CodePipelines, S3 buckets, or Route 53 zones. IAM has only SSO administrator, OrganizationAccountAccessRole, and AWS service-linked roles; no Amplify, CodeBuild, CodePipeline, or CDK deployment roles exist. Blocked pending specific approval before creating or expanding persistent access; user prohibits such changes without specific approval. Do not create long-lived credentials. Local historical app references point to prohibited Legacy 335163751677; the empty target inventory does not establish where the current live application resides. Account inventory, required access, current production location, deployment resources, existing-auth console hostname migration, commit-trigger proof, cutover, and rollback remain unresolved. No cloud mutations have occurred.",
+  "description": "Migration remains blocked pending specific approval for persistent deployment access and separately scoped Legacy writes. Approval packet and read-only inventory landed in AnthusAI/Auritus-web main e47b08713cdc48e42454d0a8f7138423728b7b18; source checkout clean. Target existing auritus-production account 961068435042 was verified empty. Parent later authorized Legacy read-only inspection, which verified actual current hosting in 335163751677: Amplify auritus-site d1xec2o22j5yq2 main from AnthusAI/Auritus, managed distribution d11nqalufqzgfu.cloudfront.net and Route 53 zone Z0891357UAST0841IMEZ, existing AuritusBackend/API/audio/Cognito resources. Earlier non-Amplify inference from HTTP S3 headers is corrected. Marketing remains aurit.us; console target is hear.aurit.us. Preferred new marketing deployment uses native Amplify GitHub App access scoped only to AnthusAI/Auritus-web main; no additional CodePipeline/CodeBuild/CodeConnections or GitHub Actions roles. Offline standard Papyrus app-shell synthesis verifies three roles and discloses direct AdministratorAccess versus standard AmplifyBackendDeployFullAccess v9 delegating administrator CDK CloudFormation execution. Do not change shared Papyrus source without parent coordination. Static console requires no IAM runtime role and retains existing browser JWT/Cognito/API. Existing Cognito callbacks omit hear.aurit.us; new callback/logout and DNS/hosting changes require Legacy writes not covered by read-only approval. Data/auth migration is separate. No cloud mutations, data/object/secret reads, auth move, or deployment occurred. See docs/PERSISTENT_ACCESS_APPROVAL.md, docs/standard-shell-access-review.json, docs/existing-production-inventory.json, and MIGRATION.md for exact approval scope, inventory, deployment proof, cutover, and rollback.",
   "type": "task",
   "status": "blocked",
   "priority": 2,
@@ -58,17 +58,29 @@
         "model": "gpt-6.1-sol",
         "name": "auritus-board"
       }
+    },
+    {
+      "id": "b423df51-0af3-4fe2-96f4-8dbc76e1305c",
+      "author": "home",
+      "text": "Access-review milestone: docs/PERSISTENT_ACCESS_APPROVAL.md scopes the requested approval; offline standard-shell synthesis in docs/standard-shell-access-review.json verifies exactly three roles. It explicitly contrasts pinned direct AdministratorAccess with preferred standard AWS AmplifyBackendDeployFullAccess v9, whose CDK CloudFormation execution still has administrator capability. No shared source was changed. Preferred deployment is native Amplify GitHub App access only to AnthusAI/Auritus-web main; no additional CodePipeline, CodeBuild, CodeConnections, or GitHub Actions roles. The old extra-pipeline proposal is superseded. Parent subsequently authorized Legacy read-only inspection: actual marketing hosting is Legacy Amplify WEB app d1xec2o22j5yq2 auritus-site, main auto-build from AnthusAI/Auritus, service/compute roles null; its managed distribution is d11nqalufqzgfu.cloudfront.net, absent from customer-owned ListDistributions. Existing Route 53 zone Z0891357UAST0841IMEZ has the apex A alias there. This corrects the earlier mistaken inference from an AmazonS3 HTTP header that hosting was not Amplify. Existing AuritusBackend API is 4o6atlkpeh; audio bucket auritusbackend-auritusaudio411e5f5a-6xnfrtbfvuha; audio distribution E1GS31KWY7U2KA/dayi61g3cahov.cloudfront.net. Cognito pool us-east-1_9r1qKAxj2 has estimated two users; web client 5hq60h5hq7k3era8k2uu1tc3qg supports Cognito and Google code grant, with old console.aurit.us and aurit.us/console callbacks; hear.aurit.us is absent. Five DynamoDB tables have approximately 241 items total: Jobs171, Sites5, Cost59, Timing6, Alerts0. Metadata only: no items, objects, or secrets read or copied. PITR disabled on all tables and audio versioning not enabled, observed unchanged. No hear or console DNS record. docs/existing-production-inventory.json and MIGRATION.md preserve evidence. A static console export needs no IAM runtime role; it uses browser JWTs with existing Cognito/API. New hear.aurit.us callback and DNS edits are Legacy writes and are not covered by read-only approval; data/auth relocation is also separate. Six scenarios/23 steps, Black/Ruff/syntax, and offline three-role synthesis passed. All cloud actions in this milestone were read-only. Migration remains blocked pending exact persistent-access approval and separately scoped Legacy writes; marketing stays aurit.us and console target hear.aurit.us.",
+      "created_at": "2026-10-16T17:57:21.309881Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6.1-sol",
+        "name": "auritus-board"
+      }
     }
   ],
   "created_at": "2026-10-16T17:18:52.000463Z",
-  "updated_at": "2026-10-16T17:51:01.207736Z",
+  "updated_at": "2026-10-16T17:57:51.537323Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "gpt-6.1-sol",
     "name": "auritus-board"
   },
-  "right_now_summary": "Migration awaits specific approval; no cloud changes have occurred, and the live app location remains unknown.",
-  "right_now_updated_at": "2026-10-16T17:51:02.854574Z",
+  "right_now_summary": "Migration awaits approval for persistent access and separate Legacy write permissions.",
+  "right_now_updated_at": "2026-10-16T17:57:52.662792Z",
   "custom": {}
 }
