@@ -46,17 +46,29 @@
         "model": "gpt-6.1-sol",
         "name": "auritus-board"
       }
+    },
+    {
+      "id": "f353eec7-a27a-4e66-be28-f716e0ab45ae",
+      "author": "home",
+      "text": "Approval preparation scope: prepare docs/PERSISTENT_ACCESS_APPROVAL.md and offline synthesis of the pinned standard Papyrus app-shell only; no deployment, IAM/auth change, cloud mutation, or Legacy account inspection. Prefer native Amplify GitHub App access limited to AnthusAI/Auritus-web main, with marketing pipeline/runtime kept separate from console. Supersede the alternative CodePipeline/CodeBuild/CodeConnections proposal; those additional roles are unnecessary for the preferred native path. Disclose actual pinned role scope: Papyrus app-shell creates AmplifyServiceRole trusted by amplify.amazonaws.com with direct AWS AdministratorAccess; its compute role uses the same principal with AWSLambdaBasicExecutionRole and CloudWatchLogsFullAccess; standard Papyrus authoring role trusts account root and grants broad account AppSyncQuery/AppSyncMutation and app media/jobs access. Official AmplifyBackendDeployFullAccess v9 is narrower on the service role but delegates CDK bootstrap roles including an administrator CloudFormation execution role. Do not describe these standard paths as least privilege or imply they avoid administrator deployment capability. Request exact persistent-access approval using standard Amplify/Papyrus without custom role engineering; parent must coordinate any proposed shared-package change. Migration remains blocked on specific approval. No new IAM, authentication, or Legacy actions are authorized by this preparation.",
+      "created_at": "2026-10-16T17:51:01.207699Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6.1-sol",
+        "name": "auritus-board"
+      }
     }
   ],
   "created_at": "2026-10-16T17:18:52.000463Z",
-  "updated_at": "2026-10-16T17:46:46.560991Z",
+  "updated_at": "2026-10-16T17:51:01.207736Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "gpt-6.1-sol",
     "name": "auritus-board"
   },
-  "right_now_summary": "Production location and approved deployment access remain unconfirmed, so no cloud changes have been made.",
-  "right_now_updated_at": "2026-10-16T17:46:49.334958Z",
+  "right_now_summary": "Migration awaits specific approval; no cloud changes have occurred, and the live app location remains unknown.",
+  "right_now_updated_at": "2026-10-16T17:51:02.854574Z",
   "custom": {}
 }
