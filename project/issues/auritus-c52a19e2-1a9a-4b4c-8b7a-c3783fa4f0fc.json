@@ -22,17 +22,29 @@
         "model": "gpt-6.1-sol",
         "name": "auritus-board"
       }
+    },
+    {
+      "id": "31a083a6-53c5-45b6-a673-be3e891e642d",
+      "author": "home",
+      "text": "User decision: the console hostname is hear.aurit.us, replacing console.aurit.us. Marketing remains aurit.us. Required migration work: configure console hosting/custom-domain and the record for hear.aurit.us in the existing Route 53 zone; update the existing console Cognito callback/logout allowlists and base URL from console.aurit.us to hear.aurit.us, including https://hear.aurit.us/callback and logout https://hear.aurit.us/login; verify browser sign-in and sign-out against the existing backend. Preserve the existing AWS account, authentication, and backend; do not create new auth or account resources. Existing AWS sessions remain blocked from prior checks, so this is a recorded migration decision and no live DNS, hosting, or Cognito changes are claimed.",
+      "created_at": "2026-10-16T17:39:19.031018Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6.1-sol",
+        "name": "auritus-board"
+      }
     }
   ],
   "created_at": "2026-10-16T17:18:52.000463Z",
-  "updated_at": "2026-10-16T17:32:02.440672Z",
+  "updated_at": "2026-10-16T17:39:19.031053Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "gpt-6.1-sol",
     "name": "auritus-board"
   },
-  "right_now_summary": "Migration awaits renewed AWS access; no cloud changes or deployments have been made.",
-  "right_now_updated_at": "2026-10-16T17:32:04.565444Z",
+  "right_now_summary": "Migration is ready, but expired AWS sessions still prevent DNS, hosting, and authentication changes.",
+  "right_now_updated_at": "2026-10-16T17:39:20.359896Z",
   "custom": {}
 }

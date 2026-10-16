@@ -64,7 +64,7 @@
   "created_at": "2026-09-11T21:38:50.679842Z",
   "updated_at": "2026-09-13T22:25:09.312896Z",
   "closed_at": null,
-  "right_now_summary": "Only the trusted publisher setup and first PyPI upload remain; all other release checks pass.",
-  "right_now_updated_at": "2026-10-16T17:32:06.048374Z",
+  "right_now_summary": "All work is complete except the first PyPI release through the trusted publisher.",
+  "right_now_updated_at": "2026-10-16T17:39:21.836863Z",
   "custom": {}
 }
