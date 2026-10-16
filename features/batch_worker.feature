@@ -17,8 +17,9 @@ Feature: The AWS Batch fallback worker
     raises BackendUnavailable instead of producing audio, and the Batch
     worker must release the job as failed rather than leave it claimed.
 
-    Given the Auritus API has a "kokoro" job for voice "af_heart"
+    Given the Auritus API has a "fish" job for voice "default"
+    And this machine is not Apple Silicon
     And the speech model libraries are not installed
     When the Batch worker starts for that job
-    Then the Batch worker marks the job failed because "kokoro" is unavailable
+    Then the Batch worker marks the job failed because "fish" is unavailable
     And the Batch worker does not mark the job done
