@@ -256,9 +256,6 @@ h1, h2, h3 { font-family: var(--font-display), serif; letter-spacing: -0.035em; 
 .security-note h2 { max-width: 24ch; }
 .security-note > p:not(.kicker) { max-width: 52rem; }
 .security-note a { color: var(--accent); font-weight: 800; }
-.marketing-footer { border-top: 1px solid var(--line); display: grid; gap: 1rem; grid-template-columns: auto 1fr auto; padding-block: 1.8rem 2.5rem; }
-.marketing-footer p { color: var(--ink-muted); margin: 0; }
-.marketing-footer > div { justify-content: flex-end; }
 
 .documentation-page { max-width: 1080px; padding-bottom: 6rem; }
 .docs-nav { margin-bottom: 3rem; }
@@ -381,8 +378,6 @@ nav.site { background: var(--paper-deep); display: flex; flex-wrap: wrap; gap: 1
   .choice-card { min-height: auto; }
   .setup-steps { grid-template-columns: 1fr; }
   .setup-steps li { padding: 1.25rem; }
-  .marketing-footer { grid-template-columns: 1fr; }
-  .marketing-footer > div { justify-content: flex-start; }
 }
 
 @media (prefers-color-scheme: dark) {
