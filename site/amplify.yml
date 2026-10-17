@@ -4,6 +4,7 @@ frontend:
     preBuild:
       commands:
         - npm ci
+        - npm update anthus-footer
     build:
       commands:
         - npm run build

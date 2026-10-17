@@ -90,7 +90,9 @@ jobs:
 
       - name: Site — npm ci
         working-directory: site
-        run: npm ci
+        run: |
+          npm ci
+          npm update anthus-footer
 
       - name: Site — lint
         working-directory: site
