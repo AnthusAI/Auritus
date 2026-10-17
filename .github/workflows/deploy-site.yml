@@ -40,6 +40,7 @@ jobs:
         working-directory: site
         run: |
           npm ci
+          npm update anthus-footer
           npm run build
 
       - name: Start Amplify deployment (placeholder)
