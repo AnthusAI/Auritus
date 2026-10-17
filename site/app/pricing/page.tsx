@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { SiteFooter } from "@/components/SiteFooter";
 import { DelegatedResponsibility } from "@/components/DelegatedResponsibility";
 
 export const metadata: Metadata = {
@@ -49,18 +50,7 @@ export default function PricingPage() {
 
       <DelegatedResponsibility />
 
-      <footer className="marketing-footer">
-        <Link className="wordmark" href="/">
-          Auritus<span>.</span>
-        </Link>
-        <p>Open-source, just-in-time narration for the web.</p>
-        <div>
-          <Link href="/#pricing">Pricing</Link>
-          <Link href="/docs">Documentation</Link>
-          <Link href="/examples">Examples</Link>
-          <a href="https://github.com/AnthusAI/Auritus">GitHub</a>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

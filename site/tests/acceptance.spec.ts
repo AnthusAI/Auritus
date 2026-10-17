@@ -595,7 +595,7 @@ test("marketing site renders pricing section and delegation ladder", async ({
 
   // Check footer link
   const footerPricing = page
-    .locator(".marketing-footer")
+    .locator(".site-footer")
     .getByRole("link", { name: "Pricing" });
   await expect(footerPricing).toBeVisible();
   await expect(footerPricing).toHaveAttribute("href", "/#pricing");
