@@ -1,7 +1,7 @@
 {
   "id": "auritus-c52a19e2-1a9a-4b4c-8b7a-c3783fa4f0fc",
   "title": "Migrate Auritus web deployment after separate authorization",
-  "description": "Migration remains blocked for architecture reconciliation and a concrete narrower persistent-access request. The previous Gen2 administrator-access request in docs/PERSISTENT_ACCESS_APPROVAL.md is WITHDRAWN, not awaiting approval. Comparison with private Papyrus-web PR2 head b0a5b6b5f0e1f93497e822dc351d341404421c89 shows the common minimum: native Amplify WEB plus committed Markdown, shared Papyrus engine/MarkusSiteProjector/SiteChrome and S3PageWriter, publication-owned design adapter, tests/render then own-bucket publication. Recommend private S3 with CloudFront OAC and short HTML TTL; no Gen2/CDK bootstrap/AppSync/Cognito/DynamoDB for current marketing requirements. Authenticated browser live CMS editing requires an explicit common capability decision for both publications; existing hooks are retained/tested until then. No capability removal, new implementation, shared-source change, or IAM mutation is authorized by documentation reconciliation. Existing target auritus-production961068435042 was verified empty; authorized Legacy read-only inventory verified current Amplify auritus-site d1xec2o22j5yq2 main from AnthusAI/Auritus, managed distribution d11nqalufqzgfu.cloudfront.net, Route 53 zone Z0891357UAST0841IMEZ and existing AuritusBackend/API/audio/Cognito. Marketing stays aurit.us; console target hear.aurit.us is a static JWT client of existing backend/auth with no IAM runtime role. Legacy DNS/Cognito/data writes still require separate approval. Earlier source and inventory packet landed at e47b08713cdc48e42454d0a8f7138423728b7b18; new architecture reconciliation docs are forthcoming. No cloud mutations occurred.",
+  "description": "Migration remains blocked for architecture reconciliation and a concrete narrower persistent-access request. The previous Gen2 administrator-access request in docs/PERSISTENT_ACCESS_APPROVAL.md is WITHDRAWN, not awaiting approval. Comparison with private Papyrus-web PR2 head b0a5b6b5f0e1f93497e822dc351d341404421c89 shows the common minimum: native Amplify WEB plus committed Markdown, shared Papyrus engine/MarkusSiteProjector/SiteChrome and S3PageWriter, publication-owned design adapter, tests/render then own-bucket publication. Recommend private S3 with CloudFront OAC and short HTML TTL; no Gen2/CDK bootstrap/AppSync/Cognito/DynamoDB for current marketing requirements. Authenticated browser live CMS editing requires an explicit common capability decision for both publications; existing hooks are retained/tested until then. No capability removal, new implementation, shared-source change, or IAM mutation is authorized by documentation reconciliation. Existing target auritus-production961068435042 was verified empty; authorized Legacy read-only inventory verified current Amplify auritus-site d1xec2o22j5yq2 main from AnthusAI/Auritus, managed distribution d11nqalufqzgfu.cloudfront.net, Route 53 zone Z0891357UAST0841IMEZ and existing AuritusBackend/API/audio/Cognito. Marketing stays aurit.us; console target hear.aurit.us is a static JWT client of existing backend/auth with no IAM runtime role. Legacy DNS/Cognito/data writes still require separate approval. Earlier source and inventory packet landed at e47b08713cdc48e42454d0a8f7138423728b7b18; new architecture reconciliation docs are forthcoming. No cloud mutations occurred.\n\n## Current next-step plan — 2026-10-17\n\nPriority3: retain private Auritus-web source separation and actual Papyrus/Markus/S3 implementation as complete; define precise migration/pipeline execution scope before live work. Dedicated account961068435042, aurit.us marketing/hear.aurit.us console. Existing Legacy data/auth migration is not approved. Full-admin proposal withdrawna22f424 remains withdrawn; never reinstate it.\n\nAcceptance before cutover: approved resource/access/data scope; source-triggered candidate from the private repository; preserved identities/content/audio references; authorized editor/publish behavior where required; candidate checks and reversible rollback; independent Git-trigger receipt. Any required migration, new persistent permissions or account changes need exact owner approval. No AWS console/browser, credentials or migration actions in this task.\n\nAuthority: Ryan requested this plan as the permanent Kanbus record. This action updates documentation only. The desired product outcomes are requested priorities, not claims of implementation or hosted acceptance. Existing implementation owners retain their approvals; recommendations needing further scope, release, permission or migration direction stay explicitly gated. No feature code, deployment, paid call, permission change or unrelated merge is performed here.",
   "type": "task",
   "status": "blocked",
   "priority": 2,
@@ -97,10 +97,25 @@
           "reasoning_effort": "medium"
         }
       }
+    },
+    {
+      "id": "2ec7427e-ce0d-4f2d-9343-fed23c304111",
+      "author": "home",
+      "text": "2026-10-17 next-step plan recorded in the description. Priority3: retain private Auritus-web source separation and actual Papyrus/Markus/S3 implementation as complete; define precise migration/pipeline execution scope before live work. Dedicated account961068435042, aurit.us marketing/hear.aurit.us console. Existing Legacy data/auth migration is not approved. Full-admin proposal withdrawna22f424 remains withdrawn; never reinstate it.\n\nAcceptance before cutover: approved resource/access/data scope; source-triggered candidate from the private repository; preserved identities/content/audio references; authorized editor/publish behavior where required; candidate checks and reversible rollback; independent Git-trigger receipt. Any required migration, new persistent permissions or account changes need exact owner approval. No AWS console/browser, credentials or migration actions in this task.",
+      "created_at": "2026-10-17T06:22:48.306434Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6.1-sol",
+        "name": "next-step-plan-reconciliation",
+        "settings": {
+          "reasoning_effort": "medium"
+        }
+      }
     }
   ],
   "created_at": "2026-10-16T17:18:52.000463Z",
-  "updated_at": "2026-10-16T20:46:54.161696Z",
+  "updated_at": "2026-10-17T06:22:48.306470Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
@@ -109,5 +124,8 @@
   },
   "right_now_summary": "The migration awaits architecture alignment and a narrower access request; no cloud changes have occurred.",
   "right_now_updated_at": "2026-10-16T18:01:24.967966Z",
-  "custom": {}
+  "custom": {
+    "project_label": "auritus",
+    "source": "shared"
+  }
 }
