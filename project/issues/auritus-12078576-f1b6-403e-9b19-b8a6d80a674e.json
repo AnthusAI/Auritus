@@ -1,0 +1,20 @@
+{
+  "id": "auritus-12078576-f1b6-403e-9b19-b8a6d80a674e",
+  "title": "Auritus/Apricity: fresh full export, keep frozen in legacy, plan Prospectus sign-in",
+  "description": "PLATFORM DECISIONS (thread \"Platform decisions\", 2026-10-17; source report /mnt/project-files/platform-decisions.md).\n\nAURITUS/APRICITY: both still in legacy; no board item tracks moving/retiring them; an Auritus board comment says keep own auth (conflicts with Prospectus). Recommendation: fresh full export of both to local disk, keep frozen in legacy, move Auritus sign-in to Prospectus when hear.aurit.us launches. Apricity depends on Auritus GPUs.\n\nSource: Claude Code Projects handoff, 2026-10-19.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-19T16:42:46.978650Z",
+  "updated_at": "2026-10-19T16:42:46.978672Z",
+  "closed_at": null,
+  "right_now_summary": "Auritus and Apricity will be exported, kept frozen in legacy, and moved to Prospectus sign-in later.",
+  "right_now_updated_at": "2026-10-19T16:42:48.692213Z",
+  "custom": {}
+}
