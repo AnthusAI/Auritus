@@ -17,21 +17,24 @@
       "text": "2026-10-19: Fix is in PR #80 (claude/project-thread-rzy19u, runner.py catches Exception and calls mark_failed; new Behave scenario in features/batch_worker.feature). CI was green on 2026-10-16. The PR is open and not merged; its base is an older develop commit, so it may need updating before merge. Awaiting Ryan's merge. Close this card after merge.",
       "created_at": "2026-10-19T16:45:57.392040Z",
       "comment_type": "default",
-      "data": {},
       "agent": {
         "platform": "claude_code",
         "model": "claude-sonnet-5-5",
-        "name": "project-thread",
-        "settings": {}
+        "name": "project-thread"
       }
+    },
+    {
+      "id": "c0d25cea-923f-4c61-9eee-966d86e6d2ed",
+      "author": "home",
+      "text": "2026-10-19 verified locally (not via CI): merged origin/develop into the PR head with no conflicts (local merge commit 0657e7a on branch pr80, in a worktree; the only incoming changes were board files). Re-ran black --check and ruff check on cli/src, cli/tests, features/steps, features/support, worker-image/src: clean. behave features/batch_worker.feature: 2 scenarios, 9 steps passed. Reviewer finding: reverting runner.py makes the new scenario fail because BackendUnavailable is not caught by the old narrow except tuple, so the job would stay claimed; the fix is correct. The broadened except Exception after claim is intentional. Not run: full make check. To land: push the updated branch (or Update branch on the PR), wait for CI, merge.",
+      "created_at": "2026-10-19T18:01:13.572104Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-10-03T17:43:07.594993Z",
-  "updated_at": "2026-10-19T16:45:57.392214Z",
+  "updated_at": "2026-10-19T18:01:13.572140Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {},
-  "agent": null,
-  "agent_assignment": null
+  "custom": {}
 }

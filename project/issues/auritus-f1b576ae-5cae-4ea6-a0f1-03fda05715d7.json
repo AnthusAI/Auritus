@@ -10,18 +10,24 @@
   "parent": "auritus-c52a19e2-1a9a-4b4c-8b7a-c3783fa4f0fc",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "0646c5ba-d469-4c09-8057-93255cb8b0e5",
+      "author": "home",
+      "text": "2026-10-19 review of Auritus-web main (2a9ed05), read-only. infra/marketing-publication.yml build role verified least privilege: trust limited to amplify.amazonaws.com with aws:SourceAccount and aws:SourceArn apps/*; inline policy only s3:ListBucket on the bucket and s3:GetObject/PutObject/DeleteObject on bucket/*. Template has no parameters (account and region from the deploy profile), 6 resources, outputs PublicationBucketName, CandidateDistributionId, CandidateDistributionDomainName, AmplifyPublicationBuildRoleArn. Documented deploy command uses a stale profile (papyrus-development); use papyrus-production and confirm aws sts get-caller-identity shows 712236451410 first. docs/SCOPED_ACCESS_REQUEST.md still names 961068435042 (lines 10, 37-38, 87); a local fix branch is being prepared in Auritus-web. Open points from the doc: vendor/papyrus submodule read access during the Amplify build, Python 3.12 on the build image, and the manual Amplify GitHub App connection by Ryan. Also: compiled templates web/static/templates/pricing.html and home.html contain malformed tags like <pNone>; under diagnosis.",
+      "created_at": "2026-10-19T18:01:13.618814Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-10-19T16:45:29.397692Z",
-  "updated_at": "2026-10-19T16:45:29.398065Z",
+  "updated_at": "2026-10-19T18:01:13.618845Z",
   "closed_at": null,
-  "right_now_summary": null,
-  "right_now_updated_at": null,
-  "custom": {},
   "agent": {
     "platform": "claude_code",
     "model": "claude-sonnet-5-5",
-    "name": "project-thread",
-    "settings": {}
+    "name": "project-thread"
   },
-  "agent_assignment": null
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
 }
