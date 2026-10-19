@@ -1,7 +1,7 @@
 {
   "id": "auritus-c52a19e2-1a9a-4b4c-8b7a-c3783fa4f0fc",
   "title": "Migrate Auritus web deployment after separate authorization",
-  "description": "Migration remains blocked for architecture reconciliation and a concrete narrower persistent-access request. The previous Gen2 administrator-access request in docs/PERSISTENT_ACCESS_APPROVAL.md is WITHDRAWN, not awaiting approval. Comparison with private Papyrus-web PR2 head b0a5b6b5f0e1f93497e822dc351d341404421c89 shows the common minimum: native Amplify WEB plus committed Markdown, shared Papyrus engine/MarkusSiteProjector/SiteChrome and S3PageWriter, publication-owned design adapter, tests/render then own-bucket publication. Recommend private S3 with CloudFront OAC and short HTML TTL; no Gen2/CDK bootstrap/AppSync/Cognito/DynamoDB for current marketing requirements. Authenticated browser live CMS editing requires an explicit common capability decision for both publications; existing hooks are retained/tested until then. No capability removal, new implementation, shared-source change, or IAM mutation is authorized by documentation reconciliation. Existing target auritus-production961068435042 was verified empty; authorized Legacy read-only inventory verified current Amplify auritus-site d1xec2o22j5yq2 main from AnthusAI/Auritus, managed distribution d11nqalufqzgfu.cloudfront.net, Route 53 zone Z0891357UAST0841IMEZ and existing AuritusBackend/API/audio/Cognito. Marketing stays aurit.us; console target hear.aurit.us is a static JWT client of existing backend/auth with no IAM runtime role. Legacy DNS/Cognito/data writes still require separate approval. Earlier source and inventory packet landed at e47b08713cdc48e42454d0a8f7138423728b7b18; new architecture reconciliation docs are forthcoming. No cloud mutations occurred.\n\n## Current next-step plan — 2026-10-17\n\nPriority3: retain private Auritus-web source separation and actual Papyrus/Markus/S3 implementation as complete; define precise migration/pipeline execution scope before live work. Dedicated account961068435042, aurit.us marketing/hear.aurit.us console. Existing Legacy data/auth migration is not approved. Full-admin proposal withdrawna22f424 remains withdrawn; never reinstate it.\n\nAcceptance before cutover: approved resource/access/data scope; source-triggered candidate from the private repository; preserved identities/content/audio references; authorized editor/publish behavior where required; candidate checks and reversible rollback; independent Git-trigger receipt. Any required migration, new persistent permissions or account changes need exact owner approval. No AWS console/browser, credentials or migration actions in this task.\n\nAuthority: Ryan requested this plan as the permanent Kanbus record. This action updates documentation only. The desired product outcomes are requested priorities, not claims of implementation or hosted acceptance. Existing implementation owners retain their approvals; recommendations needing further scope, release, permission or migration direction stay explicitly gated. No feature code, deployment, paid call, permission change or unrelated merge is performed here.",
+  "description": "Migration remains blocked for architecture reconciliation and a concrete narrower persistent-access request. The previous Gen2 administrator-access request in docs/PERSISTENT_ACCESS_APPROVAL.md is WITHDRAWN, not awaiting approval. Comparison with private Papyrus-web PR2 head b0a5b6b5f0e1f93497e822dc351d341404421c89 shows the common minimum: native Amplify WEB plus committed Markdown, shared Papyrus engine/MarkusSiteProjector/SiteChrome and S3PageWriter, publication-owned design adapter, tests/render then own-bucket publication. Recommend private S3 with CloudFront OAC and short HTML TTL; no Gen2/CDK bootstrap/AppSync/Cognito/DynamoDB for current marketing requirements. Authenticated browser live CMS editing requires an explicit common capability decision for both publications; existing hooks are retained/tested until then. No capability removal, new implementation, shared-source change, or IAM mutation is authorized by documentation reconciliation. Existing target auritus-production961068435042 was verified empty; authorized Legacy read-only inventory verified current Amplify auritus-site d1xec2o22j5yq2 main from AnthusAI/Auritus, managed distribution d11nqalufqzgfu.cloudfront.net, Route 53 zone Z0891357UAST0841IMEZ and existing AuritusBackend/API/audio/Cognito. Marketing stays aurit.us; console target hear.aurit.us is a static JWT client of existing backend/auth with no IAM runtime role. Legacy DNS/Cognito/data writes still require separate approval. Earlier source and inventory packet landed at e47b08713cdc48e42454d0a8f7138423728b7b18; new architecture reconciliation docs are forthcoming. No cloud mutations occurred.\n\n## Current next-step plan \u2014 2026-10-17\n\nPriority3: retain private Auritus-web source separation and actual Papyrus/Markus/S3 implementation as complete; define precise migration/pipeline execution scope before live work. Dedicated account961068435042, aurit.us marketing/hear.aurit.us console. Existing Legacy data/auth migration is not approved. Full-admin proposal withdrawna22f424 remains withdrawn; never reinstate it.\n\nAcceptance before cutover: approved resource/access/data scope; source-triggered candidate from the private repository; preserved identities/content/audio references; authorized editor/publish behavior where required; candidate checks and reversible rollback; independent Git-trigger receipt. Any required migration, new persistent permissions or account changes need exact owner approval. No AWS console/browser, credentials or migration actions in this task.\n\nAuthority: Ryan requested this plan as the permanent Kanbus record. This action updates documentation only. The desired product outcomes are requested priorities, not claims of implementation or hosted acceptance. Existing implementation owners retain their approvals; recommendations needing further scope, release, permission or migration direction stay explicitly gated. No feature code, deployment, paid call, permission change or unrelated merge is performed here.",
   "type": "task",
   "status": "blocked",
   "priority": 2,
@@ -17,10 +17,12 @@
       "text": "Source landed at AnthusAI/Auritus-web main 08334275c2c36fc2b9e67dbdb5a722ddbcd88653. Migration remains blocked: fresh SDK STS checks for both default and anthus return LoginRefreshRequired. Account 335163751677 is local configuration only, not remotely verified. aurit.us returned HTTP 200 through AmazonS3/CloudFront; www and console did not resolve. Proposed main-branch AWS source pipeline and buildspec are unprovisioned and unsynthesized; no persistent permission expansion, IAM role creation, deployment, or cloud write occurred. docs/MIGRATION.md carries inventory, permission review, candidate publication, commit-trigger proof, cutover, and rollback steps. Initial browser checks passed; repeat checks and later GitHub metadata recheck encountered OS no-buffer-space failures, recorded in docs/verification.json.",
       "created_at": "2026-10-16T17:32:02.440639Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "gpt-6.1-sol",
-        "name": "auritus-board"
+        "name": "auritus-board",
+        "settings": {}
       }
     },
     {
@@ -29,10 +31,12 @@
       "text": "User decision: the console hostname is hear.aurit.us, replacing console.aurit.us. Marketing remains aurit.us. Required migration work: configure console hosting/custom-domain and the record for hear.aurit.us in the existing Route 53 zone; update the existing console Cognito callback/logout allowlists and base URL from console.aurit.us to hear.aurit.us, including https://hear.aurit.us/callback and logout https://hear.aurit.us/login; verify browser sign-in and sign-out against the existing backend. Preserve the existing AWS account, authentication, and backend; do not create new auth or account resources. Existing AWS sessions remain blocked from prior checks, so this is a recorded migration decision and no live DNS, hosting, or Cognito changes are claimed.",
       "created_at": "2026-10-16T17:39:19.031018Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "gpt-6.1-sol",
-        "name": "auritus-board"
+        "name": "auritus-board",
+        "settings": {}
       }
     },
     {
@@ -41,10 +45,12 @@
       "text": "Verified inventory after Ryan renewed Endymion SSO: aws sts get-caller-identity --profile Endymion works in 830955873957. Organizations DescribeAccount names 335163751677 legacy: do not use. Organizations ListAccounts identifies existing auritus-production 961068435042. Existing papyrus-development profile targets 961068435042; STS verifies AWSReservedSSO_AdministratorAccess_b55dc1ddaaba401d/ryan. In 961068435042, CloudFormation stacks [], CloudFront null, Amplify apps [], CodeConnections [], CodePipelines [], S3 buckets [], Route 53 zones []. IAM roles comprise only SSO administrator, OrganizationAccountAccessRole, and AWS service-linked roles; no Amplify, CodeBuild, CodePipeline, or CDK deployment roles. The prior expired-login blocker is historical and superseded. Migration stays blocked because creating deployment access requires specific approval under the user restriction against creating or expanding persistent access without such approval. No cloud mutations. Historical local app references point to Legacy 335163751677, so current production cannot be assumed to reside in empty 961068435042. Marketing remains aurit.us; console target remains hear.aurit.us.",
       "created_at": "2026-10-16T17:46:46.560958Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "gpt-6.1-sol",
-        "name": "auritus-board"
+        "name": "auritus-board",
+        "settings": {}
       }
     },
     {
@@ -53,10 +59,12 @@
       "text": "Approval preparation scope: prepare docs/PERSISTENT_ACCESS_APPROVAL.md and offline synthesis of the pinned standard Papyrus app-shell only; no deployment, IAM/auth change, cloud mutation, or Legacy account inspection. Prefer native Amplify GitHub App access limited to AnthusAI/Auritus-web main, with marketing pipeline/runtime kept separate from console. Supersede the alternative CodePipeline/CodeBuild/CodeConnections proposal; those additional roles are unnecessary for the preferred native path. Disclose actual pinned role scope: Papyrus app-shell creates AmplifyServiceRole trusted by amplify.amazonaws.com with direct AWS AdministratorAccess; its compute role uses the same principal with AWSLambdaBasicExecutionRole and CloudWatchLogsFullAccess; standard Papyrus authoring role trusts account root and grants broad account AppSyncQuery/AppSyncMutation and app media/jobs access. Official AmplifyBackendDeployFullAccess v9 is narrower on the service role but delegates CDK bootstrap roles including an administrator CloudFormation execution role. Do not describe these standard paths as least privilege or imply they avoid administrator deployment capability. Request exact persistent-access approval using standard Amplify/Papyrus without custom role engineering; parent must coordinate any proposed shared-package change. Migration remains blocked on specific approval. No new IAM, authentication, or Legacy actions are authorized by this preparation.",
       "created_at": "2026-10-16T17:51:01.207699Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "gpt-6.1-sol",
-        "name": "auritus-board"
+        "name": "auritus-board",
+        "settings": {}
       }
     },
     {
@@ -65,10 +73,12 @@
       "text": "Access-review milestone: docs/PERSISTENT_ACCESS_APPROVAL.md scopes the requested approval; offline standard-shell synthesis in docs/standard-shell-access-review.json verifies exactly three roles. It explicitly contrasts pinned direct AdministratorAccess with preferred standard AWS AmplifyBackendDeployFullAccess v9, whose CDK CloudFormation execution still has administrator capability. No shared source was changed. Preferred deployment is native Amplify GitHub App access only to AnthusAI/Auritus-web main; no additional CodePipeline, CodeBuild, CodeConnections, or GitHub Actions roles. The old extra-pipeline proposal is superseded. Parent subsequently authorized Legacy read-only inspection: actual marketing hosting is Legacy Amplify WEB app d1xec2o22j5yq2 auritus-site, main auto-build from AnthusAI/Auritus, service/compute roles null; its managed distribution is d11nqalufqzgfu.cloudfront.net, absent from customer-owned ListDistributions. Existing Route 53 zone Z0891357UAST0841IMEZ has the apex A alias there. This corrects the earlier mistaken inference from an AmazonS3 HTTP header that hosting was not Amplify. Existing AuritusBackend API is 4o6atlkpeh; audio bucket auritusbackend-auritusaudio411e5f5a-6xnfrtbfvuha; audio distribution E1GS31KWY7U2KA/dayi61g3cahov.cloudfront.net. Cognito pool us-east-1_9r1qKAxj2 has estimated two users; web client 5hq60h5hq7k3era8k2uu1tc3qg supports Cognito and Google code grant, with old console.aurit.us and aurit.us/console callbacks; hear.aurit.us is absent. Five DynamoDB tables have approximately 241 items total: Jobs171, Sites5, Cost59, Timing6, Alerts0. Metadata only: no items, objects, or secrets read or copied. PITR disabled on all tables and audio versioning not enabled, observed unchanged. No hear or console DNS record. docs/existing-production-inventory.json and MIGRATION.md preserve evidence. A static console export needs no IAM runtime role; it uses browser JWTs with existing Cognito/API. New hear.aurit.us callback and DNS edits are Legacy writes and are not covered by read-only approval; data/auth relocation is also separate. Six scenarios/23 steps, Black/Ruff/syntax, and offline three-role synthesis passed. All cloud actions in this milestone were read-only. Migration remains blocked pending exact persistent-access approval and separately scoped Legacy writes; marketing stays aurit.us and console target hear.aurit.us.",
       "created_at": "2026-10-16T17:57:21.309881Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "gpt-6.1-sol",
-        "name": "auritus-board"
+        "name": "auritus-board",
+        "settings": {}
       }
     },
     {
@@ -77,10 +87,12 @@
       "text": "Architecture reconciliation before administrator approval: reviewed private Papyrus-web PR2 head b0a5b6b5f0e1f93497e822dc351d341404421c89, including web build/deploy/projector/publishing and review docs. Its path is Amplify WEB plus committed Markdown, actual shared Papyrus engine with MarkusSiteProjector and SiteChrome, then S3PageWriter; the build role writes only its own publication bucket. An optional CMS publish adapter already exists without requiring a new CMS backend. Auritus previously over-scoped the current marketing requirements into a full Gen2 newsroom without an explicit request for extra CMS editor capability. Withdraw the previous docs/PERSISTENT_ACCESS_APPROVAL.md Gen2 administrator-access request; it is not awaiting approval. Documentation reconciliation only at this step: no capability removal, new implementation, shared-package change, or IAM mutation. Recommended common minimum is the same shared Papyrus release/engine/Markus renderer/writers with a publication-owned design adapter; native Amplify WEB for private AnthusAI/Auritus-web main runs tests/render then publishes only to its own S3 bucket, with private bucket, CloudFront OAC, and short HTML TTL to avoid invalidation permission. Current marketing requirements do not need Gen2, CDK bootstrap, AppSync, Cognito, or DynamoDB. Authenticated browser live CMS editing must be an explicit common capability decision for both publications if required; retain and test existing hooks until then. Console hear.aurit.us remains a static client of existing JWT/backend authentication with no IAM runtime role. Legacy DNS/Cognito/data writes remain separately approved work. Migration remains blocked pending architecture reconciliation and a concrete narrower access request; do not proceed under the withdrawn administrator request.",
       "created_at": "2026-10-16T18:00:56.185778Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "gpt-6.1-sol",
-        "name": "auritus-board"
+        "name": "auritus-board",
+        "settings": {}
       }
     },
     {
@@ -89,6 +101,7 @@
       "text": "2026-10-16 reconciliation: Private Auritus-web source is complete (0833427; auritus-5a7455 closed) with actual Papyrus/Markus/S3 projection. Target aurit.us marketing and hear.aurit.us console in dedicated account961068435042. Existing Legacy data migration is not approved. Full-admin proposal was withdrawn at a22f424 and must not be reused. Remaining work: scoped target access/pipeline, data/auth migration decision, candidate verification, source-trigger proof and reviewed cutover. No new AWS changes authorized here.",
       "created_at": "2026-10-16T20:46:54.161648Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "gpt-6.1-sol",
@@ -104,6 +117,7 @@
       "text": "2026-10-17 next-step plan recorded in the description. Priority3: retain private Auritus-web source separation and actual Papyrus/Markus/S3 implementation as complete; define precise migration/pipeline execution scope before live work. Dedicated account961068435042, aurit.us marketing/hear.aurit.us console. Existing Legacy data/auth migration is not approved. Full-admin proposal withdrawna22f424 remains withdrawn; never reinstate it.\n\nAcceptance before cutover: approved resource/access/data scope; source-triggered candidate from the private repository; preserved identities/content/audio references; authorized editor/publish behavior where required; candidate checks and reversible rollback; independent Git-trigger receipt. Any required migration, new persistent permissions or account changes need exact owner approval. No AWS console/browser, credentials or migration actions in this task.",
       "created_at": "2026-10-17T06:22:48.306434Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "gpt-6.1-sol",
@@ -112,20 +126,36 @@
           "reasoning_effort": "medium"
         }
       }
+    },
+    {
+      "id": "b94eca62-9d92-4ecd-84db-c362c9409ad3",
+      "author": "unknown",
+      "text": "2026-10-19 status: Blocked on three things only Ryan can do or approve. (1) The marketing target account changed on 2026-10-18 to papyrus-production 712236451410 (Auritus-web #3, #4); the stack deployed on 2026-10-17 into 961068435042 is now orphaned. (2) Deploy to 712236451410 and the Amplify GitHub App connection run on Ryan's M1 Mac via Remote Control; cloud threads cannot get AWS access (access keys are blocked, login is SSO with a thumbprint). (3) Legacy writes for hear.aurit.us and any data or auth move still need exact approval. Split into sub-tasks auritus-f1b576, auritus-b5fa51, auritus-3e0a91. Nothing in this thread's work changed DNS, Cognito, or Legacy data. Project memory still lists 961068435042 as the marketing account; that is out of date.",
+      "created_at": "2026-10-19T16:45:56.791681Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-sonnet-5-5",
+        "name": "project-thread",
+        "settings": {}
+      }
     }
   ],
   "created_at": "2026-10-16T17:18:52.000463Z",
-  "updated_at": "2026-10-17T06:22:48.306470Z",
+  "updated_at": "2026-10-19T16:45:56.791874Z",
   "closed_at": null,
-  "agent": {
-    "platform": "codex",
-    "model": "gpt-6.1-sol",
-    "name": "auritus-board"
-  },
   "right_now_summary": "The migration awaits architecture alignment and a narrower access request; no cloud changes have occurred.",
   "right_now_updated_at": "2026-10-16T18:01:24.967966Z",
   "custom": {
     "project_label": "auritus",
     "source": "shared"
-  }
+  },
+  "agent": {
+    "platform": "codex",
+    "model": "gpt-6.1-sol",
+    "name": "auritus-board",
+    "settings": {}
+  },
+  "agent_assignment": null
 }

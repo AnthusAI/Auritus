@@ -10,11 +10,28 @@
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "40806f1e-301f-4eb9-9e2a-3b3252c107da",
+      "author": "unknown",
+      "text": "2026-10-19: Fix is in PR #80 (claude/project-thread-rzy19u, runner.py catches Exception and calls mark_failed; new Behave scenario in features/batch_worker.feature). CI was green on 2026-10-16. The PR is open and not merged; its base is an older develop commit, so it may need updating before merge. Awaiting Ryan's merge. Close this card after merge.",
+      "created_at": "2026-10-19T16:45:57.392040Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-sonnet-5-5",
+        "name": "project-thread",
+        "settings": {}
+      }
+    }
+  ],
   "created_at": "2026-10-03T17:43:07.594993Z",
-  "updated_at": "2026-10-03T17:43:07.595026Z",
+  "updated_at": "2026-10-19T16:45:57.392214Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {},
+  "agent": null,
+  "agent_assignment": null
 }

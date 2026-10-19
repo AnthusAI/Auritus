@@ -1,0 +1,27 @@
+{
+  "id": "auritus-3e0a9132-9941-423c-9217-2f39646a0e13",
+  "title": "Console cutover to hear.aurit.us: Route 53 record and Cognito callback allowlist",
+  "description": "NOT APPROVED. Recorded decision: the console hostname is hear.aurit.us, replacing console.aurit.us. Marketing stays on aurit.us. The console is a static client of the existing backend and Cognito with no IAM runtime role.\n\nRequired work, each of which is a write to the Legacy account 335163751677 and needs its own exact approval first:\n- console hosting and custom domain for hear.aurit.us, and the record in Route 53 zone Z0891357UAST0841IMEZ\n- add https://hear.aurit.us/callback and logout https://hear.aurit.us/login to Cognito pool us-east-1_9r1qKAxj2, web client 5hq60h5hq7k3era8k2uu1tc3qg\n- verify browser sign-in and sign-out against the existing backend\n\nOPEN QUESTION: auritus-120785 recommends moving Auritus sign-in to Prospectus when hear.aurit.us launches, which conflicts with the earlier decision to keep the existing Cognito pool. Resolve that before touching Cognito. Data and auth relocation is tracked in the Papyrus project (PPY-703162), not here.\n\nAll AWS work runs on Ryan's M1 Mac via Remote Control.\n\nSource: Claude Code Projects handoff, 2026-10-19.",
+  "type": "sub-task",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-c52a19e2-1a9a-4b4c-8b7a-c3783fa4f0fc",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-19T16:45:41.854043Z",
+  "updated_at": "2026-10-19T16:45:41.854683Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "claude_code",
+    "model": "claude-sonnet-5-5",
+    "name": "project-thread",
+    "settings": {}
+  },
+  "agent_assignment": null
+}
