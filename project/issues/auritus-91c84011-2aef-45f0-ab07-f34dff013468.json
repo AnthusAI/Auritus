@@ -10,11 +10,28 @@
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "37498177-44a5-4f3c-af46-8a68aa68eb7a",
+      "author": "unknown",
+      "text": "2026-10-19: Auritus-web already has the pricing ladder rendered from an offers data file (3c7cbc9, b6a0b41, merged in Auritus-web #2). The remaining question is whether that port is the one meant here and whether the Auritus repo site/ still needs the change; not verified.",
+      "created_at": "2026-10-19T16:45:58.527029Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-sonnet-5-5",
+        "name": "project-thread",
+        "settings": {}
+      }
+    }
+  ],
   "created_at": "2026-10-19T16:42:45.670002Z",
-  "updated_at": "2026-10-19T16:42:45.670040Z",
+  "updated_at": "2026-10-19T16:45:58.527200Z",
   "closed_at": null,
   "right_now_summary": "Aurit.us pricing still needs to align with the shared honest offer ladder.",
   "right_now_updated_at": "2026-10-19T16:42:46.958933Z",
-  "custom": {}
+  "custom": {},
+  "agent": null,
+  "agent_assignment": null
 }

@@ -1,0 +1,27 @@
+{
+  "id": "auritus-f1b576ae-5cae-4ea6-a0f1-03fda05715d7",
+  "title": "Deploy the marketing publication stack to papyrus-production and connect Amplify",
+  "description": "Auritus-web main (2a9ed05) now targets papyrus-production 712236451410 (decision 2026-10-18, Auritus-web #3 and #4). The template infra/marketing-publication.yml creates a private S3 bucket, a CloudFront candidate with no alias, and one Amplify-only IAM role scoped to that bucket. Nothing has been deployed to 712236451410 yet.\n\nSTEPS (all AWS work runs on Ryan's M1 Mac through Remote Control; cloud threads have no AWS access because access keys are blocked and login is SSO with a thumbprint):\n1. Verify the SSO profile resolves to account 712236451410 before anything else.\n2. Follow docs/SCOPED_ACCESS_REQUEST.md in Auritus-web with the stack name and profile it names, adjusted for the new account. Read the doc first; it was written for 961068435042 and the account-specific values must be re-checked.\n3. Ryan creates the Amplify WEB app on AnthusAI/Auritus-web main in the AWS console through the GitHub App (cannot be scripted), sets the service role to the stack's AmplifyPublicationBuildRole output, sets AURITUS_PUBLICATION_BUCKET to the stack's bucket output, keeps auto-build on.\n4. Prove a source-triggered publish: push to main, confirm the build publishes to the bucket and the CloudFront candidate serves it.\n\nGATES: no DNS, Cognito, or Legacy changes. Cutover of aurit.us needs separate exact approval. Do not widen the IAM role on failure; report the CloudFormation event reason instead.\n\nSource: Claude Code Projects handoff, 2026-10-19.",
+  "type": "sub-task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-c52a19e2-1a9a-4b4c-8b7a-c3783fa4f0fc",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-19T16:45:29.397692Z",
+  "updated_at": "2026-10-19T16:45:29.398065Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "claude_code",
+    "model": "claude-sonnet-5-5",
+    "name": "project-thread",
+    "settings": {}
+  },
+  "agent_assignment": null
+}
