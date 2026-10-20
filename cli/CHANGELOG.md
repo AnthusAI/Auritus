@@ -2,6 +2,26 @@
 
 <!-- version list -->
 
+## v1.0.1 (2026-10-20)
+
+### Bug Fixes
+
+- **site**: Correct model licenses and drop dead sample audio on Getting Started
+  ([#86](https://github.com/AnthusAI/Auritus/pull/86),
+  [`0645c93`](https://github.com/AnthusAI/Auritus/commit/0645c93afe6763b50e4c4bb73b457be1bb413a01))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`212313a`](https://github.com/AnthusAI/Auritus/commit/212313a279bd596eca08965ae0d5e78ff3daea82))
+
+- **kanbus**: Commit board state (issues)
+  ([`930fabe`](https://github.com/AnthusAI/Auritus/commit/930fabe9ffd6dc0547243d38e3de0a8f9b0dbc7f))
+
+- **kanbus**: File 2026-10-19 handoff items ([#83](https://github.com/AnthusAI/Auritus/pull/83),
+  [`29bb0a9`](https://github.com/AnthusAI/Auritus/commit/29bb0a9e3021437460b615dd0497fdc230c38267))
+
+
 ## v1.0.0 (2026-10-10)
 
 
