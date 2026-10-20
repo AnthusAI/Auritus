@@ -1,0 +1,45 @@
+{
+  "id": "auritus-5a7455cc-f3a4-4304-8766-47650591e89e",
+  "title": "Separate Auritus web source into private Auritus-web repository",
+  "description": "Source separation completed in private AnthusAI/Auritus-web on main at 08334275c2c36fc2b9e67dbdb5a722ddbcd88653; git push succeeded and checkout is clean. All 52 original tracked site files remain unchanged under legacy-site; 21 HTML routes, original design/assets, and application services are preserved. Actual Papyrus S3 projection pinned at 1138a614ec5d291f54850316429eb7aa8087cb8f and Markus 0.5.1 are wired through the real content-actions handler and renderer. Six scenarios and 23 steps passed with fake cloud clients only; local projection produced 103 objects. Initial seven browser checks passed with zero errors and external APIs aborted. A repeated browser run hit ERR_NO_BUFFER_SPACE; subsequent GitHub metadata recheck hit the same OS network condition, while source push succeeded and privacy was verified earlier. Verification limits are recorded in docs/verification.json. docs/MIGRATION.md records the remaining account inventory, permissions review, candidate CMS/S3, AWS pipeline, commit-trigger proof, cutover, and rollback work. Proposed infra/pipeline.yml and buildspec.yml reuse existing role/connection ARNs; they are unprovisioned and unsynthesized, create no IAM role, and use no GitHub Actions. No cloud writes or routing changes occurred. Live migration is separately authorized and tracked as blocked in auritus-c52a19.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-a983da8f-7347-4e81-b803-5b5d2249513b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "68728dfd-eede-4c91-915e-704f3482f3bf",
+      "author": "home",
+      "text": "Source candidate is ready in private AnthusAI/Auritus-web; source task remains in progress until code is pushed. All 52 original tracked site files remain unchanged under legacy-site; 21 exported routes retained. Actual Papyrus commit 1138a614ec5d291f54850316429eb7aa8087cb8f and Markus 0.5.1 provide S3 publication through the real handler and renderer. Six scenarios / 23 steps and local projection (103 objects) passed, with cloud clients replaced by test doubles. Seven local browser checks passed; external APIs were aborted, no jobs created. No fresh Next build or dependencies installed due to limited disk. README records provenance, architecture, verification limits, and unfinished live migration/pipeline. Awaiting source commit from implementation agent before closing.",
+      "created_at": "2026-10-16T17:26:38.621185Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6.1-sol",
+        "name": "auritus-board"
+      }
+    },
+    {
+      "id": "7ce9146d-56bd-483f-bc3c-9bd2b9b4ab72",
+      "author": "home",
+      "text": "Source-only complete: private AnthusAI/Auritus-web main commit 08334275c2c36fc2b9e67dbdb5a722ddbcd88653 pushed successfully. Preserved 52 original tracked files and 21 HTML routes; six Behave scenarios / 23 steps exercise actual content-actions and Markus rendering. Live migration and source-triggered release proof are not complete; auritus-c52a19 remains blocked awaiting renewed existing AWS session. No cloud writes.",
+      "created_at": "2026-10-16T17:31:49.350465Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-10-16T17:18:37.137597Z",
+  "updated_at": "2026-10-16T17:31:54.022027Z",
+  "closed_at": "2026-10-16T17:31:54.021991Z",
+  "agent": {
+    "platform": "codex",
+    "model": "gpt-6.1-sol",
+    "name": "auritus-board"
+  },
+  "right_now_summary": "Auritus web source is pushed to a private repository; live migration and release proof still await AWS access.",
+  "right_now_updated_at": "2026-10-16T17:31:55.517729Z",
+  "custom": {}
+}

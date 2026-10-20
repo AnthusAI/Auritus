@@ -3,16 +3,43 @@
   "title": "Batch runner does not mark the job failed when BackendUnavailable is raised",
   "description": "Found while reviewing auritus-d84350 (PR #77).\n\nPROBLEM\nworker-image/src/runner.py main() wraps generation in `try: ... except (httpx.HTTPError, OSError, ValueError, KeyError)` (the except clause is at line ~203). auritus.tts.base.BackendUnavailable subclasses RuntimeError (cli/src/auritus/tts/base.py:9), which is not in that tuple. When a backend's model libraries are missing (or fish has no CUDA GPU), backend.generate() raises BackendUnavailable, the exception escapes main(), the process exits non-zero with a traceback, and mark_failed() is never called. The job stays claimed instead of failed, until the claim times out (GET /jobs/claimable excludes non-pending jobs), and Step Functions only sees a crashed container, not a recorded reason.\n\nThe local worker (cli/src/auritus/worker/daemon.py, around line 144) already catches Exception broadly and calls client.mark_failed; only the Batch runner has this gap. The same applies to any other unexpected exception type (RuntimeError, ImportError, subprocess.CalledProcessError from _install_backend, which runs inside the try block).\n\nEXPECTED\nAny exception from _install_backend / get_backend / backend.generate ends the job via mark_failed(...) with a reason, then returns non-zero. Simplest fix: catch BackendUnavailable (and arguably Exception, as daemon.py does) in main().\n\nAPPROACH\nStart in features/ (see features/batch_worker.feature and features/steps/batch_worker_steps.py; features/named_voices.feature has a Batch worker scenario for VoiceNotFound to model on): add a scenario where the backend raises BackendUnavailable and the worker marks the job failed and does not mark it done. Then fix runner.py.\n\nREFERENCES\nauritus-d84350, PR #77 (merge a8a3729).",
   "type": "bug",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "40806f1e-301f-4eb9-9e2a-3b3252c107da",
+      "author": "unknown",
+      "text": "2026-10-19: Fix is in PR #80 (claude/project-thread-rzy19u, runner.py catches Exception and calls mark_failed; new Behave scenario in features/batch_worker.feature). CI was green on 2026-10-16. The PR is open and not merged; its base is an older develop commit, so it may need updating before merge. Awaiting Ryan's merge. Close this card after merge.",
+      "created_at": "2026-10-19T16:45:57.392040Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-sonnet-5-5",
+        "name": "project-thread"
+      }
+    },
+    {
+      "id": "c0d25cea-923f-4c61-9eee-966d86e6d2ed",
+      "author": "home",
+      "text": "2026-10-19 verified locally (not via CI): merged origin/develop into the PR head with no conflicts (local merge commit 0657e7a on branch pr80, in a worktree; the only incoming changes were board files). Re-ran black --check and ruff check on cli/src, cli/tests, features/steps, features/support, worker-image/src: clean. behave features/batch_worker.feature: 2 scenarios, 9 steps passed. Reviewer finding: reverting runner.py makes the new scenario fail because BackendUnavailable is not caught by the old narrow except tuple, so the job would stay claimed; the fix is correct. The broadened except Exception after claim is intentional. Not run: full make check. To land: push the updated branch (or Update branch on the PR), wait for CI, merge.",
+      "created_at": "2026-10-19T18:01:13.572104Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "d2038f7e-8824-47ef-9844-c0eb20ec76f6",
+      "author": "home",
+      "text": "2026-10-20: PR #80 (claude/project-thread-rzy19u, head aebade6) is still open and unmerged; its last update was 2026-10-16. Status moved open -> in_progress. The local pr80 worktree (.claude/worktrees/agent-a5196a82e73af45bc) is 4 commits ahead of the remote PR branch and has not been pushed: 0657e7a (clean merge of develop, verified locally 2026-10-19), 29bb0a9, bb220fb, 212313a (board commits already on develop). To land: push the updated branch or use Update branch on the PR, wait for CI, merge, then close this card.",
+      "created_at": "2026-10-20T13:16:06.574764Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-10-03T17:43:07.594993Z",
-  "updated_at": "2026-10-03T17:43:07.595026Z",
+  "updated_at": "2026-10-20T13:16:06.574780Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

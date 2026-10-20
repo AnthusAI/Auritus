@@ -1,0 +1,37 @@
+{
+  "id": "auritus-91c84011-2aef-45f0-ab07-f34dff013468",
+  "title": "aurit.us pricing port to the shared honest offer ladder",
+  "description": "STUBS: open items named by the coordinator whose details live in other threads or boards and were NOT re-verified in this session. Whoever picks these up should read the original thread/board first.\n\n1. aurit.us pricing port (Auritus site pricing alignment with the shared offer ladder / honest pricing).\n\nStub caveat: details live in other threads or boards and were NOT re-verified; read the original thread/board first.\n\nSource: Claude Code Projects handoff, 2026-10-19.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "37498177-44a5-4f3c-af46-8a68aa68eb7a",
+      "author": "unknown",
+      "text": "2026-10-19: Auritus-web already has the pricing ladder rendered from an offers data file (3c7cbc9, b6a0b41, merged in Auritus-web #2). The remaining question is whether that port is the one meant here and whether the Auritus repo site/ still needs the change; not verified.",
+      "created_at": "2026-10-19T16:45:58.527029Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-sonnet-5-5",
+        "name": "project-thread",
+        "settings": {}
+      }
+    }
+  ],
+  "created_at": "2026-10-19T16:42:45.670002Z",
+  "updated_at": "2026-10-19T16:45:58.527200Z",
+  "closed_at": null,
+  "right_now_summary": "Aurit.us pricing still needs to align with the shared honest offer ladder.",
+  "right_now_updated_at": "2026-10-19T16:42:46.958933Z",
+  "custom": {},
+  "agent": null,
+  "agent_assignment": null
+}

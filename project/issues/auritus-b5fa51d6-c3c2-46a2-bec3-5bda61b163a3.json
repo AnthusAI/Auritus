@@ -1,0 +1,33 @@
+{
+  "id": "auritus-b5fa51d6-c3c2-46a2-bec3-5bda61b163a3",
+  "title": "Retire the orphaned auritus-marketing-publication stack in auritus-production",
+  "description": "On 2026-10-17 a cloud-authored template was deployed from the Mac session as stack auritus-marketing-publication in 961068435042 (auritus-production): private publication bucket auritus-marketing-publication-publicationbucket-6owd43ejsolh, CloudFront candidate d3w4yztm0ehggr.cloudfront.net (403 until first publish), and Amplify build role AmplifyPublicationBuildRo-SLxl069c7a9C. On 2026-10-18 the account decision moved the marketing publication to papyrus-production 712236451410, so this stack is unused.\n\nState as of the 2026-10-17 report; not re-verified since. The bucket should be empty (nothing was ever published). No Amplify app was ever connected to it.\n\nTODO: confirm the stack still exists and the bucket is empty, then delete the stack on Ryan's Mac via Remote Control with Ryan's explicit approval for the delete. Do not delete anything else in that account; it also holds application inventory that belongs to the separate data and auth move tracked in the Papyrus project (PPY-703162).\n\nSource: Claude Code Projects handoff, 2026-10-19.",
+  "type": "sub-task",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-c52a19e2-1a9a-4b4c-8b7a-c3783fa4f0fc",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "16073f95-430d-4966-9dcb-caf268a58f4a",
+      "author": "home",
+      "text": "2026-10-19 DISCREPANCY to resolve before any delete: the Auritus-web README (line 5) and docs/MIGRATION.md:87 say read-only inventory of 961068435042 found no CloudFormation stacks and that no publication infrastructure was ever created there, but the 2026-10-18 handoff says stack auritus-marketing-publication was deployed there on 2026-10-17. Verify with aws cloudformation describe-stacks (profile that resolves to 961068435042, confirm via sts get-caller-identity) whether the stack exists. If it does not, close this card as not needed. If it does, confirm the bucket is empty, then get Ryan's explicit delete approval.",
+      "created_at": "2026-10-19T18:01:13.671020Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-10-19T16:45:35.631673Z",
+  "updated_at": "2026-10-19T18:01:13.671055Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "claude-sonnet-5-5",
+    "name": "project-thread"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

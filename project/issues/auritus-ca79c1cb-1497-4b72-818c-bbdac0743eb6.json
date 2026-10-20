@@ -36,17 +36,48 @@
         "model": "claude-opus-5-5",
         "name": "Claude Code desktop"
       }
+    },
+    {
+      "id": "278d95c4-2238-429e-921e-e27c4747e8c2",
+      "author": "home",
+      "text": "Production rollout 2026-10-17 (legacy account AuritusBackend, us-east-1):\n- Deployed v1.0.0 (9d0c016) with aws-cdk 2.1141.0. cdk diff beforehand: Lambda code updates (RouterFn, AuthorizerFn, BatchTelemetryFn, CostReconciliationFn) and an OperatorAuthLayer version replacement only; no table, bucket, or Cognito changes. Deploy succeeded in 38s.\n- Verified live: POST /jobs with the public demo site key and a mismatched content_hash returns HTTP 400 {\"error\": \"content_hash_mismatch\"}.\n- migrate_content_hashes.py copy: dry run would copy 72 (already canonical 56, in flight 1, canonical exists 1, no text 0). --apply: copy 72; in flight 1; canonical exists 1; no text 0.\n- remove-legacy dry run: would remove 113, kept 2 (the in-flight row and the row whose canonical copy predates migration). Independently checked all 113: each canonical row exists and its migrated_from equals the legacy key (112 done, 1 failed).\n- remains: remove-legacy --apply was not run; the agent's permission classifier blocked the delete. Ryan runs it, then this issue closes.",
+      "created_at": "2026-10-17T16:47:05.412150Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code desktop"
+      }
+    },
+    {
+      "id": "b5f09fca-5d81-4750-9ab5-2c5aaffd886e",
+      "author": "unknown",
+      "text": "2026-10-19: Unchanged since the rollout comment. The only remaining step is Ryan running remove-legacy --apply on his Mac against the jobs table AuritusBackend-AuritusJobsAF7BE862-1SQ1AUUYO8M0E (profile legacy, us-east-1, from a v1.0.0 checkout; expect 113 removed, 2 kept). The Mac session's classifier blocks that mass delete, so Ryan must run it himself or approve it in that session. Close this card and unwire any blocked-by edges afterwards.",
+      "created_at": "2026-10-19T16:45:57.944760Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-sonnet-5-5",
+        "name": "project-thread"
+      }
+    },
+    {
+      "id": "ad2d7720-83e6-4696-9283-2a93bcfe8fef",
+      "author": "home",
+      "text": "2026-10-19 pre-flight audit of scripts/migrate_content_hashes.py remove-legacy (read-only code review by a sub-agent; live table state NOT verified, AWS SSO expired). Deletable = no migrated_from, non-empty text, recomputed hash != key, and a row exists at the recomputed key whose migrated_from equals this key (script lines ~120-145). It does NOT compare the copy's attributes, does NOT check the audio object exists in S3, and the delete condition is only attribute_exists(content_hash), so a row changed between check and delete would still be removed. Dry run is the default; --apply is the only gate; no backup, no account/profile guard, no confirmation. Reruns are idempotent; a row vanishing mid-run crashes the script. Recommended before --apply: confirm v1.0.0 checkout; AWS_PROFILE=legacy aws sts get-caller-identity must show 335163751677; take a backup (aws dynamodb create-backup --table-name AuritusBackend-AuritusJobsAF7BE862-1SQ1AUUYO8M0E --backup-name pre-remove-legacy-20261019 --region us-east-1); dry run and expect remove 113, kept 2; spot-check 3-5 legacy audio_key objects with aws s3api head-object; apply; rerun dry run and expect remove 0, kept 2. Owner must run or approve --apply.",
+      "created_at": "2026-10-19T18:01:13.522122Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-26T19:04:31.653321Z",
-  "updated_at": "2026-09-26T23:55:17.794680Z",
+  "updated_at": "2026-10-19T18:01:13.522225Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
     "model": "claude-opus-5-5",
     "name": "Claude Code desktop"
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "The fix is deployed; Ryan still needs to remove 113 verified legacy job rows.",
+  "right_now_updated_at": "2026-10-17T16:47:07.036169Z",
   "custom": {}
 }
