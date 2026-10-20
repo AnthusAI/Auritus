@@ -10,9 +10,17 @@
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "2e314e58-1db9-4405-b6d4-2e6e5dd7e217",
+      "author": "home",
+      "text": "2026-10-20: PR #86 merged to develop at 13:15Z as 0645c93 (fix written in 4e1c010); the Higgs card in site/components/GettingStartedWizard.tsx no longer contains Higgs-v2. Not closing yet: acceptance is the live page, and at the time of this comment 'curl -s https://aurit.us/docs/getting-started | grep -c Higgs-v2' still returns 1, so the Amplify build of develop has not reached aurit.us. Close once that count is 0 and the Higgs card names Higgs Audio v3 with the non-commercial license.",
+      "created_at": "2026-10-20T13:16:06.481435Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-10-20T04:29:55.039147Z",
-  "updated_at": "2026-10-20T10:21:35.874420Z",
+  "updated_at": "2026-10-20T13:16:06.481456Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

@@ -10,9 +10,17 @@
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "34db9896-e848-4fcc-b9ab-744d93229fb6",
+      "author": "home",
+      "text": "2026-10-20: PR #86 merged to develop at 13:15Z as 0645c93 (change written in 4e1c010); the dead job-redeem sample players are removed from site/components/GettingStartedWizard.tsx. Not closing yet: the live https://aurit.us/docs/getting-started page still serves all three execute-api .../redeem links, so the change has not been deployed. Close after the live page no longer references them.",
+      "created_at": "2026-10-20T13:16:06.508807Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-10-20T04:29:55.403523Z",
-  "updated_at": "2026-10-20T10:21:35.907783Z",
+  "updated_at": "2026-10-20T13:16:06.508825Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
