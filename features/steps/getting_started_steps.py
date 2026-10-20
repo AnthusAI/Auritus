@@ -2,7 +2,33 @@
 
 from __future__ import annotations
 
+import re
+from pathlib import Path
+
 from behave import given, then, when
+
+WIZARD_SOURCE = (
+    Path(__file__).resolve().parents[2]
+    / "site"
+    / "components"
+    / "GettingStartedWizard.tsx"
+)
+
+
+def read_model_cards_from_wizard_source() -> list[dict]:
+    """Parse the model option objects out of the real wizard component source.
+
+    :returns: One dictionary per model card with its string fields.
+    """
+    source = WIZARD_SOURCE.read_text(encoding="utf-8")
+    block = source.split("const MODEL_OPTIONS: ModelOption[] = [", 1)[1]
+    block = block.split("\n];", 1)[0]
+    cards = []
+    for entry in re.split(r"\n  \},?\n", block):
+        fields = dict(re.findall(r"^\s{4}(\w+): '([^']*)',$", entry, re.MULTILINE))
+        if fields:
+            cards.append(fields)
+    return cards
 
 
 @given("a visitor on the getting started documentation page")
@@ -26,11 +52,7 @@ def step_visitor_on_guide(context) -> None:
         },
     ]
     context.selected_auth = None
-    context.models = [
-        {"id": "kokoro", "name": "Kokoro-82M", "voice": "af_heart", "has_audio": True},
-        {"id": "qwen", "name": "Qwen3-TTS", "voice": "Ryan", "has_audio": True},
-        {"id": "higgs", "name": "Higgs-v2", "voice": "default", "has_audio": True},
-    ]
+    context.models = read_model_cards_from_wizard_source()
     context.selected_model = context.models[0]
 
 
@@ -87,12 +109,6 @@ def step_review_models(context) -> None:
     context.displayed_models = context.models
 
 
-@then("each model option includes an inline audio preview")
-def step_verify_model_audio(context) -> None:
-    for m in context.displayed_models:
-        assert m.get("has_audio") is True
-
-
 @when('the visitor selects the "{model_name}" model option')
 def step_select_model(context, model_name: str) -> None:
     matching = [m for m in context.models if m["name"] == model_name]
@@ -108,3 +124,35 @@ def step_verify_snippet_update(
 ) -> None:
     assert context.selected_model["id"] == expected_backend
     assert context.selected_model["voice"] == expected_voice
+
+
+def find_model_card(context, model_name: str) -> dict:
+    matching = [m for m in context.displayed_models if m["name"] == model_name]
+    assert matching, f"no model card named {model_name!r}"
+    return matching[0]
+
+
+@then('the "{model_name}" card shows the license "{expected_license}"')
+def step_verify_card_license(context, model_name: str, expected_license: str) -> None:
+    assert find_model_card(context, model_name)["license"] == expected_license
+
+
+@then('no model card is named "{model_name}"')
+def step_verify_no_card_named(context, model_name: str) -> None:
+    assert all(m["name"] != model_name for m in context.displayed_models)
+
+
+@then('the "{model_name}" card shows the size "{expected_size}"')
+def step_verify_card_size(context, model_name: str, expected_size: str) -> None:
+    assert expected_size in find_model_card(context, model_name)["footprint"]
+
+
+@then("no model card shows a latency figure")
+def step_verify_no_latency(context) -> None:
+    assert all("latency" not in m for m in context.displayed_models)
+
+
+@then("no model card references an API job redeem URL")
+def step_verify_no_job_urls(context) -> None:
+    assert all("/jobs/" not in " ".join(m.values()) for m in context.displayed_models)
+    assert "/redeem" not in WIZARD_SOURCE.read_text(encoding="utf-8")

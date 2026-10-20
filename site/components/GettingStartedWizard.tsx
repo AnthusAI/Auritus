@@ -20,11 +20,8 @@ interface ModelOption {
   name: string;
   voice: string;
   license: string;
-  latency: string;
   footprint: string;
   hardware: string;
-  audioSampleText: string;
-  audioSampleUrl: string;
   docLink: string;
 }
 
@@ -97,11 +94,8 @@ const MODEL_OPTIONS: ModelOption[] = [
     name: 'Kokoro-82M',
     voice: 'af_heart',
     license: 'Apache 2.0',
-    latency: '~1.8s TTFB',
-    footprint: '82M params (~320MB RAM)',
+    footprint: '82M params',
     hardware: 'Apple Silicon (MLX), CPU, or Cloud GPU',
-    audioSampleText: 'Four score and seven years ago our fathers brought forth on this continent a new nation...',
-    audioSampleUrl: 'https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com/jobs/e2e-kokoro-final/redeem',
     docLink: '/examples/basic',
   },
   {
@@ -109,23 +103,17 @@ const MODEL_OPTIONS: ModelOption[] = [
     name: 'Qwen3-TTS',
     voice: 'Ryan',
     license: 'Apache 2.0',
-    latency: '~3.2s TTFB',
-    footprint: '0.5B params (~1.8GB VRAM)',
+    footprint: '1.7B params',
     hardware: 'NVIDIA GPU (CUDA) or AWS Batch fallback',
-    audioSampleText: 'The brave men, living and dead, who struggled here, have consecrated it, far above our poor power...',
-    audioSampleUrl: 'https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com/jobs/407fefa6b1842e899b42f14601642fca8ca4f4d925182261a229ac3462fe327f/redeem',
     docLink: '/examples/qwen',
   },
   {
     id: 'higgs',
-    name: 'Higgs-v2',
+    name: 'Higgs Audio v3',
     voice: 'default',
-    license: 'Apache 2.0',
-    latency: '< 1.0s TTFB',
-    footprint: 'Lightweight streaming',
-    hardware: 'CPU or GPU edge worker',
-    audioSampleText: 'Fast narration preview for lightweight real-time stream processing.',
-    audioSampleUrl: 'https://4o6atlkpeh.execute-api.us-east-1.amazonaws.com/jobs/6f8084e9/redeem',
+    license: 'Non-commercial research',
+    footprint: '4B params',
+    hardware: 'Apple Silicon (MLX) or NVIDIA GPU (CUDA)',
     docLink: '/docs/architecture',
   },
 ];
@@ -282,10 +270,10 @@ auritus deploy --region us-east-1`}</code>
         <div className="section-badge">Step 3: Speech Generation</div>
         <h2 className="section-heading">Select your default TTS model</h2>
         <p className="section-subtext">
-          Compare open-source voice models side-by-side. Listen to real speech generated from each model to choose the right balance of speed and expressiveness.
+          Compare the supported voice models side-by-side, including the license that governs the weights of each model. See docs/TTS_LICENSES.md before any commercial deployment.
         </p>
 
-        {/* Side-by-side Model Picker with Inline Audio Previews */}
+        {/* Side-by-side Model Picker */}
         <div className="option-deck" role="radiogroup" aria-label="TTS Model choice">
           {MODEL_OPTIONS.map((model) => {
             const isSelected = selectedModel === model.id;
@@ -306,19 +294,8 @@ auritus deploy --region us-east-1`}</code>
                 <p className="card-tagline">Voice: <strong>{model.voice}</strong></p>
 
                 <div className="specs-list">
-                  <div><span>Latency:</span> <strong>{model.latency}</strong></div>
                   <div><span>Footprint:</span> <strong>{model.footprint}</strong></div>
                   <div><span>Target:</span> <strong>{model.hardware}</strong></div>
-                </div>
-
-                {/* Inline Audio Player Preview */}
-                <div className="audio-preview-box" onClick={(e) => e.stopPropagation()}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase' }}>
-                    Sample Audio:
-                  </span>
-                  <audio controls src={model.audioSampleUrl} style={{ width: '100%', height: '32px', marginTop: '0.25rem' }}>
-                    Your browser does not support the audio element.
-                  </audio>
                 </div>
 
                 <div style={{ marginTop: '0.75rem', textAlign: 'right' }}>
