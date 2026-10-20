@@ -1,0 +1,25 @@
+{
+  "id": "auritus-80c5220a-d8db-4eea-8d2c-416d03a6c646",
+  "title": "Auritus-web README and Auritus README both claim to be the site",
+  "description": "**Problem**\nThe Auritus-web README and the Auritus README each describe themselves as the home of the aurit.us site, so it is unclear which repository is canonical.\n\n**Evidence**\nAuritus-web README.md and Auritus README.md / site/README.md. Filed on the Auritus board because Auritus-web has no board.\n\n**Fix**\nDecide which repository owns the site and say so in both READMEs.\n\n**How to verify**\nBoth READMEs name the same canonical repository for aurit.us.\n\nSource: Anthus repo audit, 2026-10-20.",
+  "type": "bug",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-20T04:29:57.248838Z",
+  "updated_at": "2026-10-20T04:29:57.248885Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "claude-opus-5-5",
+    "name": "audit-filing"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
