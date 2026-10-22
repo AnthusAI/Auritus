@@ -92,4 +92,29 @@ describe("overlapping boot", () => {
 
     expect(playersAttached).toBe(1);
   });
+  it("shows a calm message, never the raw API error, when job creation fails", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: false,
+        status: 400,
+        text: async () => '{"error": "content_hash_mismatch"}',
+      })),
+    );
+    const element = document.querySelector(
+      "[data-auritus-site-key]",
+    ) as HTMLElement;
+    await expect(boot({ element })).rejects.toThrow("content_hash_mismatch");
+
+    const errorEl = document
+      .querySelector(".auritus-root")
+      ?.shadowRoot?.querySelector(".auritus-error") as HTMLElement;
+    expect(errorEl.hidden).toBe(false);
+    expect(errorEl.textContent).toBe(
+      "Narration is unavailable right now. Please try again later.",
+    );
+    expect(errorEl.textContent).not.toContain("content_hash_mismatch");
+    expect(warn).toHaveBeenCalled();
+  });
 });

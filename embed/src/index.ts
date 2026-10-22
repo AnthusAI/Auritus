@@ -1,4 +1,5 @@
 import { AuritusApiClient } from "./api.js";
+import { visitorMessage } from "./user-message.js";
 import {
   computeContentHash,
   generateTtsText,
@@ -237,7 +238,7 @@ export async function boot(options: BootOptions = {}): Promise<HTMLElement> {
       const errorEl = host.shadowRoot?.querySelector(".auritus-error");
       if (errorEl instanceof HTMLElement) {
         errorEl.hidden = false;
-        errorEl.textContent = err instanceof Error ? err.message : String(err);
+        errorEl.textContent = visitorMessage(err);
       }
     }
     throw err;
