@@ -1,4 +1,5 @@
 import type { AuritusApiClient, JobRecord } from "../api.js";
+import { visitorMessage } from "../user-message.js";
 import { PLAYER_STYLES } from "./styles.js";
 
 export interface MountPlayerOptions {
@@ -213,7 +214,7 @@ export function mountPlayer(options: MountPlayerOptions): HTMLElement {
         return;
       }
       settled = true;
-      setError(message);
+      setError(visitorMessage(err));
       stopPolling();
     } finally {
       refreshInFlight = false;
