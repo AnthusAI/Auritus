@@ -96,6 +96,27 @@ speech.request_key  # stable SHA-256 of the request, for caching
 
 `request_key(text, voice, options)` gives the same key without synthesizing. A backend that can't honour an option raises `UnsupportedOption` rather than ignoring it. The `fake` backend makes a deterministic tone for tests.
 
+### Use from another language
+
+Run `python -m auritus.speech_bridge` and exchange protocol-v1 newline-delimited
+JSON requests. The process handles multiple requests until EOF. stdout contains
+JSON responses; diagnostics go to stderr. Start with a capabilities request:
+
+```json
+{"protocol":1,"id":"check-1","op":"capabilities","voice":"kokoro:af_heart"}
+```
+
+Synthesis accepts `text`, `voice`, `speed`, `seed`, and `outputDir` alongside
+`protocol`, `id`, and `op: "synthesize"`. Create an empty, non-symlink segment
+directory for each request. The bridge publishes `speech.wav` and `speech.json`
+together there and returns sample counts, digests, and model provenance.
+
+Install runtime dependencies and model and voice files explicitly before use.
+The bridge does not download them or fall back to a paid provider. Readiness
+currently checks Kokoro's cached files; it does not prove successful inference.
+Other real backends report not ready until their offline loading is supported.
+The `fake` backend is simulated and intended for protocol tests.
+
 ## Layout
 
 | Path | Role |

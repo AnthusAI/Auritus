@@ -59,6 +59,8 @@ class KokoroBackend(TTSBackend):
     supports_speed = True
     _model = None
     _is_mlx = None
+    _local_model_path = None
+    _local_voice_path = None
 
     def model_id(self) -> str:
         """:returns: The MLX or PyTorch Kokoro repo this machine uses."""
@@ -121,7 +123,9 @@ class KokoroBackend(TTSBackend):
         from mlx_audio.tts.utils import load_model
 
         if KokoroBackend._model is None:
-            KokoroBackend._model = load_model(KOKORO_MLX_MODEL, lazy=False)
+            KokoroBackend._model = load_model(
+                KokoroBackend._local_model_path or KOKORO_MLX_MODEL, lazy=False
+            )
         default_voice = resolve_kokoro_voice(meta)
         speed = float(meta.get("speed") or 1.0)
         sample_rate = 24000
@@ -134,7 +138,9 @@ class KokoroBackend(TTSBackend):
                 if p_idx > 0:
                     block_parts.append(pause_gap)
                 gen = KokoroBackend._model.generate(
-                    pause_text, voice=block_voice, speed=speed
+                    pause_text,
+                    voice=str(KokoroBackend._local_voice_path or block_voice),
+                    speed=speed,
                 )
                 segments = [np.array(result.audio) for result in gen]
                 if segments:
@@ -167,7 +173,20 @@ class KokoroBackend(TTSBackend):
             # assumed, to use the GPU it is billed for.
             device = "cuda" if torch.cuda.is_available() else "cpu"
             print(f"[kokoro] resolved device={device}", flush=True)
-            KokoroBackend._model = KPipeline(lang_code="a", device=device)
+            if KokoroBackend._local_model_path is not None:
+                from kokoro import KModel
+
+                path = KokoroBackend._local_model_path
+                model = KModel(
+                    repo_id=KOKORO_TORCH_MODEL,
+                    config=str(path / "config.json"),
+                    model=str(path / "kokoro-v1_0.pth"),
+                )
+                KokoroBackend._model = KPipeline(
+                    lang_code="a", device=device, model=model.to(device).eval()
+                )
+            else:
+                KokoroBackend._model = KPipeline(lang_code="a", device=device)
         default_voice = resolve_kokoro_voice(meta)
         speed = float(meta.get("speed") or 1.0)
         sample_rate = 24000
@@ -182,7 +201,11 @@ class KokoroBackend(TTSBackend):
                 if p_idx > 0:
                     audio_list.extend(pause_silence)
                 results = list(
-                    KokoroBackend._model(pause_text, voice=block_voice, speed=speed)
+                    KokoroBackend._model(
+                        pause_text,
+                        voice=str(KokoroBackend._local_voice_path or block_voice),
+                        speed=speed,
+                    )
                 )
                 for result in results:
                     audio_tensor = result.audio
