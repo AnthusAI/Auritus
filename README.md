@@ -117,6 +117,11 @@ currently checks Kokoro's cached files; it does not prove successful inference.
 Other real backends report not ready until their offline loading is supported.
 The `fake` backend is simulated and intended for protocol tests.
 
+`request_key` identifies the Auritus request but does not include immutable
+snapshot revisions. Consumers caching bridge audio must include both
+`modelRevision` and `extensions["auritus.kokoro"].voiceRevision`, and disable
+reuse when either is unavailable or `cacheDisabledReason` is non-null.
+
 ## Layout
 
 | Path | Role |

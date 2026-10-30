@@ -574,3 +574,93 @@ def check_loader_paths(context):
     with wave.open(io.BytesIO(context.audio)) as wav:
         assert wav.getnframes() == 2
     context.backend_state.stop()
+
+
+@given("a simulated Kokoro capability with distinct pinned model and voice revisions")
+def distinct_revisions(context):
+    context.revisions = ("a" * 40, "b" * 40, None)
+
+
+@given("a simulated Kokoro capability with an unknown voice revision")
+def missing_voice_revision(context):
+    context.revisions = ("a" * 40, None, None)
+
+
+@when("the host checks the simulated Kokoro capability")
+def check_simulated_capability(context):
+    from unittest.mock import patch
+    from auritus import speech_bridge
+    from auritus.tts.kokoro import KokoroBackend
+
+    with patch.object(
+        speech_bridge.importlib.util, "find_spec", return_value=object()
+    ), patch.object(KokoroBackend, "_detect_mlx", return_value=True), patch.object(
+        speech_bridge, "_kokoro_readiness", return_value=context.revisions
+    ):
+        context.capability = speech_bridge._capabilities(
+            speech_bridge.Voice.parse("kokoro:af_heart")
+        )
+
+
+@then("caching is enabled and both revisions are reported")
+def known_revisions_enable_cache(context):
+    assert context.capability["modelRevision"] == "a" * 40
+    assert (
+        context.capability["extensions"]["auritus.kokoro"]["voiceRevision"] == "b" * 40
+    )
+    assert context.capability["cacheDisabledReason"] is None
+
+
+@then("caching is disabled because the voice revision is unknown")
+def unknown_voice_disables_cache(context):
+    assert context.capability["modelRevision"] == "a" * 40
+    assert context.capability["cacheDisabledReason"] == "Voice revision is unavailable"
+    assert "auritus.kokoro" not in context.capability["extensions"]
+
+
+@when("the host synthesizes simulated speech using that capability")
+def synthesize_distinct_revisions(context):
+    from unittest.mock import patch
+    from auritus.tts.kokoro import KokoroBackend
+
+    check_simulated_capability(context)
+    capability = context.capability
+    prepare_injected_kokoro(context)
+    context.capability = capability
+
+    def snapshot(repo):
+        return Path("/tmp") / (("b" if repo.startswith("prince-canuma/") else "a") * 40)
+
+    with patch.object(
+        context.bridge, "synthesize", return_value=context.injected
+    ), patch.object(KokoroBackend, "_detect_mlx", return_value=True), patch.object(
+        context.bridge, "_local_snapshot", side_effect=snapshot
+    ), patch.multiple(
+        KokoroBackend, _model=None, _local_model_path=None, _local_voice_path=None
+    ):
+        context.result = context.bridge._synthesize(
+            context.request,
+            context.bridge.Voice.parse("kokoro:af_heart"),
+            context.capability,
+        )
+
+
+@then("the speech provenance permits caching and retains both revisions")
+def check_distinct_provenance(context):
+    provenance = context.result["provenance"]
+    assert provenance["modelRevision"] == "a" * 40
+    assert provenance["extensions"]["auritus.kokoro"]["voiceRevision"] == "b" * 40
+    assert provenance["cacheDisabledReason"] is None
+    context.optional_modules.stop()
+    context.directory.cleanup()
+
+
+@given("a simulated Kokoro capability with an unknown model revision")
+def missing_model_revision(context):
+    context.revisions = (None, "b" * 40, None)
+
+
+@then("caching is disabled because the model revision is unknown")
+def unknown_model_disables_cache(context):
+    assert context.capability["modelRevision"] is None
+    assert context.capability["cacheDisabledReason"] == "Model revision is unavailable"

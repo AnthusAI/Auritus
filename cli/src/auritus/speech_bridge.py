@@ -173,15 +173,12 @@ def _capabilities(voice: Voice) -> dict:
         installed = bool(module and importlib.util.find_spec(module))
         ready = False
         reason = "Offline loading is not verified for this backend"
-    cache_reason = (
-        None
-        if ready and revision and voice_revision == revision
-        else (
-            "Voice snapshot revision is separate from model revision"
-            if ready and revision
-            else "Model revision is unavailable"
-        )
-    )
+    if ready and revision and voice_revision:
+        cache_reason = None
+    elif not revision:
+        cache_reason = "Model revision is unavailable"
+    else:
+        cache_reason = "Voice revision is unavailable"
     extensions = {"auritus.simulation": {"simulated": simulated}}
     if reason:
         extensions["auritus.readiness"] = {"reason": reason}
