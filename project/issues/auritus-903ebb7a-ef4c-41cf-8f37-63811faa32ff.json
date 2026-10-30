@@ -1,0 +1,20 @@
+{
+  "id": "auritus-903ebb7a-ef4c-41cf-8f37-63811faa32ff",
+  "title": "Verify real offline Kokoro narration through VideoML",
+  "description": "Companion to VideoML P16 (videoml-42506c). Explicitly prepare pinned Kokoro af_heart model and voice assets, inspect offline prerequisites, then synthesize the complete narrated fixture with credentials removed and network disabled. Record immutable model/voice revisions, dependency versions, hardware, sample counts and license provenance. No fake backend or silent fallback can satisfy this gate. Add opt-in real-model behavior documentation/tests without implicit CI downloads; any Auritus product correction must start with Gherkin and pass literal make check before a product commit. Primary owns acceptance and board writes.",
+  "type": "story",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-9ffcc2be-a4e7-48e4-8c85-22103d560d7b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-30T22:35:44.250965Z",
+  "updated_at": "2026-10-30T22:35:49.645560Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
