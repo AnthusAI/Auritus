@@ -3,7 +3,7 @@
   "title": "Versioned offline speech bridge for VideoML hosts",
   "description": "## Behavior\nA VideoML host can keep one local Auritus process alive and send versioned NDJSON capabilities and synthesis requests without login, AWS, or an HTTP server.\n\n## Canonical contract\nCoordinated by VideoML/toolchain issue videoml-f4f9f3 (P13), under initiative videoml-dbc2b1 D06/D07 and P02 schemas in VideoML/specification. Wrap existing auritus.speech.synthesize, Voice and SpeechOptions; do not copy model backends or alter hosted content_hash.\n\n## Implementation\nAdd cli/src/auritus/speech_bridge.py executable as python -m auritus.speech_bridge. Protocol v1 supports capabilities and synthesize, correlates IDs, returns structured recoverable errors while staying alive, reserves stdout for JSON and stderr for diagnostics, writes WAV/metadata atomically, reports model identity/revision and capability readiness without downloading weights. Unknown/missing backends or models fail explicitly, never produce stand-in audio or paid fallback. Fatal protocol/process errors exit nonzero; clean EOF exits zero.\n\n## Acceptance\nBegin with features/speech_bridge.feature and behavior steps. Verify capabilities; good request / recoverable error / good request in one process; stdout cleanliness; invalid fields and paths; explicit fake backend for protocol tests; missing models and unsupported options; atomic artifact metadata and measured samples. Run required quality gates. Real Kokoro validation is separate VideoML P16, not satisfied by mock speech.\n\n## Coordination\nTerra worker edits product code; primary owns board, review and integration. Do not close until primary accepts evidence. The open speech library initiative remains the native parent; VideoML board holds cross-repository execution order.",
   "type": "story",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -17,11 +17,18 @@
       "text": "Implementation accepted by primary and Terra review at 5836302; product PR https://github.com/AnthusAI/Auritus/pull/91 targets develop. Literal make check passed (250 behavior scenarios, 5 skipped); primary independently passed all11 bridge scenarios. Model/voice pinning and reload, native fd stdout isolation, atomic directory publication reviewed and fixed. Tests use explicit simulated/injected audio; real offline Kokoro remains separate P16 acceptance. Runtime capability probe correctly reports installed=true/ready=false for missing cached model. Keep story in_progress until PR lands. README documents new protocol and limitations.",
       "created_at": "2026-10-30T21:10:37.769633Z",
       "comment_type": "default"
+    },
+    {
+      "id": "d68ef545-f82f-4bee-9750-842329ebe32f",
+      "author": "home",
+      "text": "Landed in develop via PR91 merge70e2df7b18a99b7a2683bb53d1424f95a6915c67 after CIquality passed5m43s on head215b6b7. Local literal make check passed. LinuxCI exposed3optionaldependency assumptions in simulatedfixtures; fixed with explicit module stubs and reproduced red/green under blockedimports. Primary+Terra review accepted. Real offline Kokoro remains VideoMLP16, not claimed by bridge tests. README updated.",
+      "created_at": "2026-10-30T21:23:30.800278Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-10-30T20:49:27.949833Z",
-  "updated_at": "2026-10-30T21:10:37.770219Z",
-  "closed_at": null,
+  "updated_at": "2026-10-30T21:23:30.836646Z",
+  "closed_at": "2026-10-30T21:23:30.836532Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
