@@ -1,0 +1,20 @@
+{
+  "id": "auritus-aec852f7-e777-4c0b-af17-63662cf95e14",
+  "title": "Make separately pinned Kokoro voice revisions usable for cache identity",
+  "description": "VideoML P15 must cache default local Kokoro output using all immutable identities. The bridge currently reports cacheDisabledReason even when both model and voice snapshots are known, solely because their repositories have different revisions. Change readiness/provenance to allow caching when both identities are known and pinned, retaining voiceRevision in auritus.kokoro extensions; unknown model or voice revision still disables cache. Do not change hosted content_hash or request_key. Add Gherkin before code for distinct-known revisions and missing-voice identity; preserve actual local model/voice pinning and offline behavior. Primary owns review/board/commits, Terra implements. Full make check and PR to develop required before product landing; no real inference claim from fixtures.",
+  "type": "bug",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-9ffcc2be-a4e7-48e4-8c85-22103d560d7b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-30T21:42:51.237970Z",
+  "updated_at": "2026-10-30T21:42:55.668878Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
