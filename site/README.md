@@ -1,16 +1,14 @@
 # aurit.us marketing site
 
 Next.js App Router site for [aurit.us](https://aurit.us): product landing,
-documentation, and embed examples.
+documentation, and embed examples. It is a static export (`output: 'export'`
+in `next.config.js`); there is no server runtime.
 
 ## Amplify Hosting
 
-`amplify.yml` runs `npm ci` and `npm run build` in this directory. Connect the
-Amplify app to the Auritus GitHub repository with `appRoot` set to `site/` (or
-build from this folder in monorepo-aware CI).
-
-Artifacts use the default Next.js output (`.next`). Enable SSR on Amplify for
-App Router routes.
+The repository root `amplify.yml` is the only Amplify build spec. It sets
+`appRoot` to `site`, runs `npm ci` and `npm run build`, and publishes the
+static export from `out/`. No server-side rendering setting is needed.
 
 ## Custom domain and DNS
 
@@ -33,5 +31,6 @@ Set `NEXT_PUBLIC_AURITUS_API_ENDPOINT` when pointing examples at a deployed API.
 
 ## Embed script
 
-`public/embed.js` is a placeholder. Release pipelines should copy
-`embed/dist` output here (or to the CDN origin) before production builds.
+`public/embed.js` is the built player and generator bundle from `embed/`.
+Regenerate it with `make sync-embed` (or `make build-site`), which copies
+`embed/dist/embed.js` here before production builds.
