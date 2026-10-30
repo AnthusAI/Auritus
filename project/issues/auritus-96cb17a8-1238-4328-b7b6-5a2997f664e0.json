@@ -10,9 +10,17 @@
   "parent": "auritus-9ffcc2be-a4e7-48e4-8c85-22103d560d7b",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "37d2b19d-6c70-4652-9419-0c903ffe049f",
+      "author": "home",
+      "text": "Implementation accepted by primary and Terra review at 5836302; product PR https://github.com/AnthusAI/Auritus/pull/91 targets develop. Literal make check passed (250 behavior scenarios, 5 skipped); primary independently passed all11 bridge scenarios. Model/voice pinning and reload, native fd stdout isolation, atomic directory publication reviewed and fixed. Tests use explicit simulated/injected audio; real offline Kokoro remains separate P16 acceptance. Runtime capability probe correctly reports installed=true/ready=false for missing cached model. Keep story in_progress until PR lands. README documents new protocol and limitations.",
+      "created_at": "2026-10-30T21:10:37.769633Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-10-30T20:49:27.949833Z",
-  "updated_at": "2026-10-30T20:52:21.095929Z",
+  "updated_at": "2026-10-30T21:10:37.770219Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
