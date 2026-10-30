@@ -1,0 +1,20 @@
+{
+  "id": "auritus-96cb17a8-1238-4328-b7b6-5a2997f664e0",
+  "title": "Versioned offline speech bridge for VideoML hosts",
+  "description": "## Behavior\nA VideoML host can keep one local Auritus process alive and send versioned NDJSON capabilities and synthesis requests without login, AWS, or an HTTP server.\n\n## Canonical contract\nCoordinated by VideoML/toolchain issue videoml-f4f9f3 (P13), under initiative videoml-dbc2b1 D06/D07 and P02 schemas in VideoML/specification. Wrap existing auritus.speech.synthesize, Voice and SpeechOptions; do not copy model backends or alter hosted content_hash.\n\n## Implementation\nAdd cli/src/auritus/speech_bridge.py executable as python -m auritus.speech_bridge. Protocol v1 supports capabilities and synthesize, correlates IDs, returns structured recoverable errors while staying alive, reserves stdout for JSON and stderr for diagnostics, writes WAV/metadata atomically, reports model identity/revision and capability readiness without downloading weights. Unknown/missing backends or models fail explicitly, never produce stand-in audio or paid fallback. Fatal protocol/process errors exit nonzero; clean EOF exits zero.\n\n## Acceptance\nBegin with features/speech_bridge.feature and behavior steps. Verify capabilities; good request / recoverable error / good request in one process; stdout cleanliness; invalid fields and paths; explicit fake backend for protocol tests; missing models and unsupported options; atomic artifact metadata and measured samples. Run required quality gates. Real Kokoro validation is separate VideoML P16, not satisfied by mock speech.\n\n## Coordination\nTerra worker edits product code; primary owns board, review and integration. Do not close until primary accepts evidence. The open speech library initiative remains the native parent; VideoML board holds cross-repository execution order.",
+  "type": "story",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "auritus-9ffcc2be-a4e7-48e4-8c85-22103d560d7b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-30T20:49:27.949833Z",
+  "updated_at": "2026-10-30T20:49:27.949893Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
