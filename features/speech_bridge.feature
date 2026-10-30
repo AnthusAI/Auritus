@@ -57,3 +57,23 @@ Feature: A persistent offline speech bridge
     Given simulated PyTorch Kokoro dependencies and selected local paths
     When the Kokoro backend generates simulated PyTorch audio
     Then the model and voice loaders receive those selected paths
+
+  Scenario: Distinct pinned Kokoro model and voice revisions enable cache identity
+    Given a simulated Kokoro capability with distinct pinned model and voice revisions
+    When the host checks the simulated Kokoro capability
+    Then caching is enabled and both revisions are reported
+
+  Scenario: An unknown Kokoro voice revision disables cache identity
+    Given a simulated Kokoro capability with an unknown voice revision
+    When the host checks the simulated Kokoro capability
+    Then caching is disabled because the voice revision is unknown
+
+  Scenario: Simulated speech provenance retains distinct pinned voice identity
+    Given a simulated Kokoro capability with distinct pinned model and voice revisions
+    When the host synthesizes simulated speech using that capability
+    Then the speech provenance permits caching and retains both revisions
+
+  Scenario: An unknown Kokoro model revision disables cache identity
+    Given a simulated Kokoro capability with an unknown model revision
+    When the host checks the simulated Kokoro capability
+    Then caching is disabled because the model revision is unknown
