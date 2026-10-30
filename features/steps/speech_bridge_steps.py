@@ -236,6 +236,16 @@ def verify_diagnostic(context):
 
 @given("a simulated cached Kokoro request and injected speech result")
 def prepare_injected_kokoro(context):
+    from types import ModuleType
+    from unittest.mock import patch
+
+    fake_spacy = ModuleType("spacy")
+    fake_spacy.__path__ = []
+    fake_spacy.cli = ModuleType("spacy.cli")
+    context.optional_modules = patch.dict(
+        sys.modules, {"spacy": fake_spacy, "spacy.cli": fake_spacy.cli}
+    )
+    context.optional_modules.start()
     from auritus import speech_bridge
     from auritus.speech import SpeechOptions, Voice, synthesize
 
@@ -289,17 +299,20 @@ def check_injected_kokoro(context):
     assert context.result["extensions"]["auritus.simulation"]["simulated"] is False
     data = (Path(context.directory.name) / "speech.wav").read_bytes()
     assert hashlib.sha256(data).hexdigest() == context.result["audioSha256"]
+    context.optional_modules.stop()
     context.directory.cleanup()
 
 
 @given("a local-only cache resolver spy")
 def prepare_cache_spy(context):
-    from unittest.mock import patch
+    from types import ModuleType
+    from unittest.mock import Mock, patch
 
-    context.resolver_spy = patch(
-        "huggingface_hub.snapshot_download", return_value="/tmp/snapshot"
-    )
-    context.resolver = context.resolver_spy.start()
+    fake_hub = ModuleType("huggingface_hub")
+    context.resolver = Mock(return_value="/tmp/snapshot")
+    fake_hub.snapshot_download = context.resolver
+    context.resolver_spy = patch.dict(sys.modules, {"huggingface_hub": fake_hub})
+    context.resolver_spy.start()
 
 
 @when("the bridge resolves a cached snapshot")
@@ -371,6 +384,7 @@ def check_snapshot_bindings(context):
     assert [model.name for model, _ in context.bindings] == ["a" * 40, "b" * 40]
     assert all(voice.parent.parent == model for model, voice in context.bindings)
     context.backend_state.stop()
+    context.optional_modules.stop()
     context.directory.cleanup()
 
 
