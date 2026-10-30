@@ -3,17 +3,25 @@
   "title": "Make separately pinned Kokoro voice revisions usable for cache identity",
   "description": "VideoML P15 must cache default local Kokoro output using all immutable identities. The bridge currently reports cacheDisabledReason even when both model and voice snapshots are known, solely because their repositories have different revisions. Change readiness/provenance to allow caching when both identities are known and pinned, retaining voiceRevision in auritus.kokoro extensions; unknown model or voice revision still disables cache. Do not change hosted content_hash or request_key. Add Gherkin before code for distinct-known revisions and missing-voice identity; preserve actual local model/voice pinning and offline behavior. Primary owns review/board/commits, Terra implements. Full make check and PR to develop required before product landing; no real inference claim from fixtures.",
   "type": "bug",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "auritus-9ffcc2be-a4e7-48e4-8c85-22103d560d7b",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "c2b0726f-a14d-419a-ac07-5051181d3fb2",
+      "author": "home",
+      "text": "Accepted and merged in PR92 (commit870fbb6). Distinct pinned model/voice revisions now permit caching; missing either disables reuse. Independent source review passed. Literal make check passed including254behavior scenarios,5skipped, lint, unit/build andCDKsynth; GitHub quality run41134494901 passed. No real model inference claim. README documents both revisions in consumer cache identity.",
+      "created_at": "2026-10-30T22:01:45.415889Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-10-30T21:42:51.237970Z",
-  "updated_at": "2026-10-30T21:42:55.668878Z",
-  "closed_at": null,
+  "updated_at": "2026-10-30T22:01:45.537612Z",
+  "closed_at": "2026-10-30T22:01:45.537427Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
