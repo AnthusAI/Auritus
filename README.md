@@ -130,6 +130,10 @@ reuse when either is unavailable or `cacheDisabledReason` is non-null.
 | `cdk/` | Python CDK backend |
 | `embed/` | TypeScript generator + player |
 | `worker-image/` | GPU Batch container |
+| `console/` | Next.js operator web console |
+| `construct/` | Reusable CDK constructs (`GpuRenderFleet`) for other AWS accounts |
+| `voices/` | Reference voice samples and transcripts for voice cloning |
+| `scripts/` | Operator scripts: DNS setup, hash migration, diagram rendering |
 | `site/` | Next.js site on Amplify |
 | `features/` | Gherkin specifications |
 | `docs/` | Architecture and self-hosting |
@@ -141,7 +145,7 @@ make check
 ```
 
 Git Flow: product PRs target `develop`. `main` is the release branch
-(semantic-release + PyPI). Kanbus board commits go straight to `develop`
+(semantic-release; PyPI publishing stays off until `AURITUS_PUBLISH_PYPI` is enabled, and the CLI is not on PyPI yet). Kanbus board commits go straight to `develop`
 (no PR).
 
 ## License
