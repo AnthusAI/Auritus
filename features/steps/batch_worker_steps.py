@@ -63,3 +63,18 @@ def step_worker_starts(context) -> None:
 def step_worker_exits_cleanly(context) -> None:
     assert context.worker_exit_code == 0, context.worker_requests
     assert not any(url.endswith("/claim") for _, url in context.worker_requests)
+
+
+@then('the Batch worker marks the job failed because "{backend}" is unavailable')
+def step_worker_marks_failed_for_unavailable_backend(context, backend: str) -> None:
+    failure_requests = [
+        (method, body)
+        for method, url, body in context.worker_requests
+        if url.endswith("/failed")
+    ]
+    assert len(failure_requests) == 1, context.worker_requests
+    method, body = failure_requests[0]
+    assert method == "PUT", method
+    assert body["reason"].startswith("BackendUnavailable: "), body["reason"]
+    assert backend in body["reason"], body["reason"]
+    assert context.worker_exit_code == 1, context.worker_exit_code

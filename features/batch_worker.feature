@@ -11,3 +11,15 @@ Feature: The AWS Batch fallback worker
     Given the Auritus API reports the worker token for the job as not found
     When the Batch worker starts for that job
     Then the Batch worker exits successfully without claiming the job
+
+  Scenario: A Batch worker whose speech backend is unavailable fails the job
+    The GPU image can lack a backend's model libraries. The backend then
+    raises BackendUnavailable instead of producing audio, and the Batch
+    worker must release the job as failed rather than leave it claimed.
+
+    Given the Auritus API has a "fish" job for voice "default"
+    And this machine is not Apple Silicon
+    And the speech model libraries are not installed
+    When the Batch worker starts for that job
+    Then the Batch worker marks the job failed because "fish" is unavailable
+    And the Batch worker does not mark the job done
