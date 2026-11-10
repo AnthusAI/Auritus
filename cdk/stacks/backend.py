@@ -694,6 +694,15 @@ class BackendStack(Stack):
             "WorkerImageRepo",
             repository_name="auritus-worker",
             removal_policy=RemovalPolicy.RETAIN,
+            # Each worker image is ~8.7 GB; without a rule they pile up at
+            # ~$0.03/day each. Keep the newest few (the :latest image the Batch
+            # job definition pulls is always the newest push).
+            lifecycle_rules=[
+                ecr.LifecycleRule(
+                    description="Keep the 5 newest worker images",
+                    max_image_count=5,
+                )
+            ],
         )
         worker_image_tag = self.node.try_get_context("worker_image_tag") or "latest"
         worker_image_uri = f"{worker_repo.repository_uri}:{worker_image_tag}"
