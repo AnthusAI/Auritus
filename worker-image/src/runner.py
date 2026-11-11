@@ -124,7 +124,13 @@ def mark_failed(
 
 
 def main() -> int:
-    """Redeem token, claim job, generate TTS, upload, and mark done or failed."""
+    """Redeem token, claim job, generate TTS, upload, and mark done or failed.
+
+    Any exception after the claim, including ``BackendUnavailable`` from the
+    speech backend, marks the job failed so it is never left claimed.
+
+    :returns: ``0`` when the job is done or needs no work, ``1`` when it failed.
+    """
     api_url = _require_env("API_URL", "AURITUS_API_ENDPOINT").rstrip("/")
     job_hash = _require_env("JOB_HASH", "AURITUS_CONTENT_HASH")
     job_token = _require_env("JOB_TOKEN", "AURITUS_JOB_TOKEN")
@@ -200,7 +206,7 @@ def main() -> int:
         done.raise_for_status()
         print(f"done {job_hash}")
         return 0
-    except (httpx.HTTPError, OSError, ValueError, KeyError) as exc:
+    except Exception as exc:
         reason = f"{type(exc).__name__}: {exc}"
         print(reason, file=sys.stderr)
         traceback.print_exc()
